@@ -1,0 +1,10 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Zaminnegar API (placeholder)",
+    "description": "Replaced by `pnpm openapi:generate`.",
+    "version": "0.0.0"
+  },
+  "paths": {},
+  "components": { "schemas": {} }
+}

@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Vazirmatn Variable', system-ui, sans-serif;
+  --color-ink: #1b2a24;
+  --color-ink-soft: #55645c;
+  --color-panel: #f6f7f4;
+  --color-line: #d3dacf;
+  --color-field: #2f7d4f;
+  --color-field-dark: #1f5a38;
+  --color-saffron: #e0a419;
+  --color-danger: #b3261e;
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    @apply bg-panel font-sans text-sm text-ink antialiased;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-saffron;
+  }
+}

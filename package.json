@@ -1,0 +1,27 @@
+{
+  "name": "zaminnegar",
+  "version": "1.0.0",
+  "description": "Farmland management and GIS application.",
+  "private": true,
+  "scripts": {
+    "dev:api": "pnpm --filter @zaminnegar/api start:dev",
+    "dev:bff": "pnpm --filter @zaminnegar/bff dev",
+    "dev": "pnpm run '/^dev:.*/'",
+    "openapi:generate": "pnpm --filter @zaminnegar/api openapi:generate",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "catalog:"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.15.0",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.15.0",
+  "type": "module"
+}

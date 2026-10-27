@@ -1,0 +1,18 @@
+allowBuilds:
+  '@nestjs/core': true
+  '@scarf/scarf': true
+  '@swc/core': true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+
+packages:
+  - apps/*
+  - packages/*
+
+# Versions shared by several packages live here so they can never drift apart.
+catalog:
+  '@types/node': ^22.0.0
+  prettier: ^3.6.0
+  typescript: ^6.0.0
+  zod: ^4.1.0
