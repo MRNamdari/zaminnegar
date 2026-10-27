@@ -6,11 +6,11 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useWorkspace } from '@/features/workspace/context/workspace-context';
 import { fa } from '@/messages/fa';
-import type { MapConfig } from '../types';
+import { WORKSPACE_MAP_ID, type MapConfig } from '../types';
 
 /** Zoom, home, "my location" and basemap switch, stacked at the map's inline-start edge. */
 export function MapControls({ config }: { config: MapConfig }) {
-  const { current: map } = useMap();
+  const map = useMap()[WORKSPACE_MAP_ID];
   const { basemap, setBasemap } = useWorkspace();
 
   const locate = () => {

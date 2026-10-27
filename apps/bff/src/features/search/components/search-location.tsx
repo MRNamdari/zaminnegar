@@ -7,6 +7,7 @@ import { useMap } from 'react-map-gl/maplibre';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { FIT_BOUNDS_OPTIONS, toLngLatBounds } from '@/features/map/lib/geometry';
+import { WORKSPACE_MAP_ID } from '@/features/map/types';
 import { unwrapActionResult } from '@/lib/actions/unwrap-action-result';
 import { useAppForm } from '@/lib/form/use-app-form';
 import { fa } from '@/messages/fa';
@@ -17,7 +18,7 @@ import type { Place } from '../types';
 
 /** Header search box: place names / addresses (geocoded) or raw `lat, lon` coordinates. */
 export function SearchLocation() {
-  const { current: map } = useMap();
+  const map = useMap()[WORKSPACE_MAP_ID];
   const [results, setResults] = useState<Place[] | null>(null);
 
   const search = useMutation({

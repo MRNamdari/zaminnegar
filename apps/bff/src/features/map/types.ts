@@ -1,3 +1,5 @@
+export const WORKSPACE_MAP_ID = 'workspace-map';
+
 /** `[longitude, latitude]` in WGS 84. */
 export type Position = [longitude: number, latitude: number];
 

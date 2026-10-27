@@ -14,7 +14,7 @@ import { useFinishDrawing } from '../hooks/use-finish-drawing';
 import { useFitProjectExtent } from '../hooks/use-fit-project-extent';
 import { useVertexEditor } from '../hooks/use-vertex-editor';
 import { toMultiPolygon } from '../lib/geometry';
-import type { MapConfig, Position } from '../types';
+import { WORKSPACE_MAP_ID, type MapConfig, type Position } from '../types';
 import { BasemapLayers } from './basemap-layers';
 import { DraftLayers } from './draft-layers';
 import { ParcelLayers } from './parcel-layers';
@@ -76,6 +76,7 @@ export function InteractiveMap({ config }: { config: MapConfig }) {
 
   return (
     <MapGL
+      id={WORKSPACE_MAP_ID}
       initialViewState={{ longitude: config.defaultCenter[0], latitude: config.defaultCenter[1], zoom: config.defaultZoom }}
       mapStyle={BACKGROUND_STYLE}
       maxZoom={21}

@@ -7,6 +7,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { StateMessage } from '@/components/ui/state-message';
 import { FIT_BOUNDS_OPTIONS, getBounds, toLngLatBounds } from '@/features/map/lib/geometry';
+import { WORKSPACE_MAP_ID } from '@/features/map/types';
 import { useWorkspace } from '@/features/workspace/context/workspace-context';
 import { cn } from '@/lib/utils/cn';
 import { formatNumber } from '@/lib/utils/format';
@@ -18,7 +19,7 @@ import { useParcels } from '../hooks/use-parcels';
 export function ParcelList() {
   const { projectId, selectedParcelId, selectParcel, parcelFilter, setParcelFilter } = useWorkspace();
   const { data: parcels = [], isPending, isError, refetch } = useParcels(projectId);
-  const { current: map } = useMap();
+  const map = useMap()[WORKSPACE_MAP_ID];
   const deleteAll = useDeleteAllParcels(projectId);
   const [confirmingDeleteAll, setConfirmingDeleteAll] = useState(false);
 
