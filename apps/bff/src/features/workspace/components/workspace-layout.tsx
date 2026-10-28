@@ -13,6 +13,7 @@ import { ParcelList } from '@/features/parcels/components/parcel-list';
 import { ParcelPropertiesPanel } from '@/features/parcels/components/parcel-properties-panel';
 import { ProjectSelector } from '@/features/projects/components/project-selector';
 import { useProjects } from '@/features/projects/hooks/use-projects';
+import { RegionSelector } from '@/features/regions/components/region-selector';
 import { SearchLocation } from '@/features/search/components/search-location';
 import { cn } from '@/lib/utils/cn';
 import { fa } from '@/messages/fa';
@@ -44,6 +45,7 @@ export function WorkspaceLayout({ mapConfig }: { mapConfig: MapConfig }) {
           <span className="max-sm:sr-only">{fa.appName}</span>
         </h1>
         <ProjectSelector currentProjectId={projectId} />
+        <RegionSelector />
         <SearchLocation />
         <div className="ms-auto flex items-center gap-2">
           <SyncStatus />

@@ -1,10 +1,2439 @@
 {
   "openapi": "3.0.0",
-  "info": {
-    "title": "Zaminnegar API (placeholder)",
-    "description": "Replaced by `pnpm openapi:generate`.",
-    "version": "0.0.0"
+  "paths": {
+    "/api/v1/regions": {
+      "post": {
+        "description": "Region names are unique.",
+        "operationId": "RegionsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRegionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created region.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The request conflicts with existing data (e.g. duplicate name).\n\nA region with this name already exists."
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a region",
+        "tags": [
+          "Regions"
+        ]
+      },
+      "get": {
+        "description": "Most recently changed regions first. Each region carries its parcel count and extent.",
+        "operationId": "RegionsController_list_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of items to return.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Number of items to skip.",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "example": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of regions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegionListDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List regions",
+        "tags": [
+          "Regions"
+        ]
+      }
+    },
+    "/api/v1/regions/{regionId}": {
+      "get": {
+        "operationId": "RegionsController_get_v1",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": true,
+            "in": "path",
+            "description": "region id.",
+            "schema": {
+              "format": "uuid",
+              "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The region.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a region",
+        "tags": [
+          "Regions"
+        ]
+      }
+    },
+    "/api/v1/regions/{regionId}/blocks": {
+      "post": {
+        "description": "Block names are unique inside a region.",
+        "operationId": "BlocksController_create_v1",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBlockDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created block.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlockDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The request conflicts with existing data (e.g. duplicate name).\n\nA block with this name already exists in the region."
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a block",
+        "tags": [
+          "Blocks"
+        ]
+      },
+      "get": {
+        "operationId": "BlocksController_list_v1",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of items to return.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Number of items to skip.",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "example": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of blocks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlockListDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List blocks in a region",
+        "tags": [
+          "Blocks"
+        ]
+      }
+    },
+    "/api/v1/regions/{regionId}/blocks/{blockId}": {
+      "get": {
+        "operationId": "BlocksController_get_v1",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": true,
+            "in": "path",
+            "description": "Region id.",
+            "schema": {
+              "format": "uuid",
+              "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11",
+              "type": "string"
+            }
+          },
+          {
+            "name": "blockId",
+            "required": true,
+            "in": "path",
+            "description": "Block id.",
+            "schema": {
+              "format": "uuid",
+              "example": "4c6e6459-fda9-4c71-bb9c-8bb66efc0701",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The block.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlockDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a block",
+        "tags": [
+          "Blocks"
+        ]
+      }
+    },
+    "/api/v1/owners": {
+      "post": {
+        "operationId": "OwnersController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOwnerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created owner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnerDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The request conflicts with existing data (e.g. duplicate name).\n\nAn owner with this name already exists."
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create an owner",
+        "tags": [
+          "Owners"
+        ]
+      },
+      "get": {
+        "operationId": "OwnersController_list_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of items to return.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Number of items to skip.",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "example": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of owners.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnerListDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List owners",
+        "tags": [
+          "Owners"
+        ]
+      }
+    },
+    "/api/v1/owners/{ownerId}": {
+      "get": {
+        "operationId": "OwnersController_get_v1",
+        "parameters": [
+          {
+            "name": "ownerId",
+            "required": true,
+            "in": "path",
+            "description": "Owner id.",
+            "schema": {
+              "format": "uuid",
+              "example": "b6f0f4b9-b615-4d33-a4d2-70fb4f37af2a",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The owner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnerDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get an owner",
+        "tags": [
+          "Owners"
+        ]
+      }
+    },
+    "/api/v1/parcels/{parcelId}/owners": {
+      "post": {
+        "operationId": "ParcelOwnersController_assign_v1",
+        "parameters": [
+          {
+            "name": "parcelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateParcelOwnerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The owner assignment on the parcel.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParcelOwnerDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The request conflicts with existing data (e.g. duplicate name).\n\nThe owner is already assigned to this parcel."
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Attach an owner to a parcel with a share",
+        "tags": [
+          "ParcelOwners"
+        ]
+      },
+      "get": {
+        "operationId": "ParcelOwnersController_list_v1",
+        "parameters": [
+          {
+            "name": "parcelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of items to return.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Number of items to skip.",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "example": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of ownership links.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ParcelOwnerDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List owners on a parcel",
+        "tags": [
+          "ParcelOwners"
+        ]
+      }
+    },
+    "/api/v1/parcels/{parcelId}/owners/{ownerId}": {
+      "delete": {
+        "operationId": "ParcelOwnersController_remove_v1",
+        "parameters": [
+          {
+            "name": "parcelId",
+            "required": true,
+            "in": "path",
+            "description": "Parcel id.",
+            "schema": {
+              "format": "uuid",
+              "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11",
+              "type": "string"
+            }
+          },
+          {
+            "name": "ownerId",
+            "required": true,
+            "in": "path",
+            "description": "Owner id.",
+            "schema": {
+              "format": "uuid",
+              "example": "b6f0f4b9-b615-4d33-a4d2-70fb4f37af2a",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Remove an owner from a parcel",
+        "tags": [
+          "ParcelOwners"
+        ]
+      }
+    },
+    "/api/v1/projects": {
+      "post": {
+        "description": "Project names are unique.",
+        "operationId": "ProjectsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created project.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The request conflicts with existing data (e.g. duplicate name).\n\nA project with this name already exists."
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a project",
+        "tags": [
+          "Projects"
+        ]
+      },
+      "get": {
+        "description": "Most recently changed projects first. Each project carries its parcel count and extent.",
+        "operationId": "ProjectsController_list_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of items to return.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Number of items to skip.",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "example": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of projects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectListDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List projects",
+        "tags": [
+          "Projects"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}": {
+      "get": {
+        "operationId": "ProjectsController_get_v1",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "description": "Project id.",
+            "schema": {
+              "format": "uuid",
+              "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The project.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a project",
+        "tags": [
+          "Projects"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/parcels": {
+      "get": {
+        "description": "Returns every parcel, oldest first. Geometry is GeoJSON in EPSG:4326.",
+        "operationId": "ParcelsController_list_v1",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "description": "Id of the project that owns the parcels.",
+            "schema": {
+              "format": "uuid",
+              "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All parcels of the project.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ParcelDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List parcels of a project",
+        "tags": [
+          "Parcels"
+        ]
+      },
+      "post": {
+        "description": "The polygon is validated by PostGIS (`ST_IsValid`); self-intersecting polygons are rejected with 422. The area is computed server-side.",
+        "operationId": "ParcelsController_create_v1",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "description": "Id of the project that owns the parcels.",
+            "schema": {
+              "format": "uuid",
+              "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateParcelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created parcel.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParcelDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The request conflicts with existing data (e.g. duplicate name).\n\nA parcel with this name already exists in the project."
+          },
+          "422": {
+            "description": "The request was well-formed but semantically invalid (e.g. an invalid polygon).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a parcel",
+        "tags": [
+          "Parcels"
+        ]
+      },
+      "delete": {
+        "description": "Irreversible. The project itself is kept.",
+        "operationId": "ParcelsController_removeAll_v1",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "description": "Id of the project that owns the parcels.",
+            "schema": {
+              "format": "uuid",
+              "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "All parcels were deleted."
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Delete every parcel of a project",
+        "tags": [
+          "Parcels"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/parcels/{parcelId}": {
+      "get": {
+        "operationId": "ParcelsController_get_v1",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "description": "Id of the project that owns the parcels.",
+            "schema": {
+              "format": "uuid",
+              "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11",
+              "type": "string"
+            }
+          },
+          {
+            "name": "parcelId",
+            "required": true,
+            "in": "path",
+            "description": "Parcel id.",
+            "schema": {
+              "format": "uuid",
+              "example": "c7a1b2f4-3d56-4e78-9a01-b2c3d4e5f607",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The parcel.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParcelDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a parcel",
+        "tags": [
+          "Parcels"
+        ]
+      },
+      "patch": {
+        "description": "Send only the fields to change. Sending `geometry` re-validates the polygon and recomputes the area.",
+        "operationId": "ParcelsController_update_v1",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "description": "Id of the project that owns the parcels.",
+            "schema": {
+              "format": "uuid",
+              "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11",
+              "type": "string"
+            }
+          },
+          {
+            "name": "parcelId",
+            "required": true,
+            "in": "path",
+            "description": "Parcel id.",
+            "schema": {
+              "format": "uuid",
+              "example": "c7a1b2f4-3d56-4e78-9a01-b2c3d4e5f607",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateParcelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated parcel.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParcelDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The request conflicts with existing data (e.g. duplicate name).\n\nAnother parcel of the project already uses this name."
+          },
+          "422": {
+            "description": "The request was well-formed but semantically invalid (e.g. an invalid polygon).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update a parcel",
+        "tags": [
+          "Parcels"
+        ]
+      },
+      "delete": {
+        "operationId": "ParcelsController_remove_v1",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "description": "Id of the project that owns the parcels.",
+            "schema": {
+              "format": "uuid",
+              "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11",
+              "type": "string"
+            }
+          },
+          {
+            "name": "parcelId",
+            "required": true,
+            "in": "path",
+            "description": "Parcel id.",
+            "schema": {
+              "format": "uuid",
+              "example": "c7a1b2f4-3d56-4e78-9a01-b2c3d4e5f607",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The parcel was deleted."
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Delete a parcel",
+        "tags": [
+          "Parcels"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/exports/geojson": {
+      "get": {
+        "description": "RFC 7946 FeatureCollection in WGS 84 with `[longitude, latitude]` coordinates. Each feature carries the parcel styling and area.",
+        "operationId": "ParcelsExportController_geoJson_v1",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "description": "Project id.",
+            "schema": {
+              "format": "uuid",
+              "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The FeatureCollection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParcelFeatureCollectionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed validation (details contain per-field messages).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Export parcels as GeoJSON",
+        "tags": [
+          "Exports"
+        ]
+      }
+    }
   },
-  "paths": {},
-  "components": { "schemas": {} }
+  "info": {
+    "title": "Zaminnegar API",
+    "description": "Farmland management API. Geometry is GeoJSON in WGS 84 (EPSG:4326) with `[longitude, latitude]` ordering. Errors share one envelope (`ErrorResponseDto`).",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "Projects",
+      "description": "Groups of parcels, e.g. one farm or survey."
+    },
+    {
+      "name": "Parcels",
+      "description": "Land parcels with PostGIS-validated boundaries."
+    },
+    {
+      "name": "Exports",
+      "description": "Download project data in standard formats."
+    }
+  ],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "MultiPolygonDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "MultiPolygon"
+            ],
+            "example": "MultiPolygon"
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              }
+            },
+            "description": "Polygons → rings → `[longitude, latitude]` positions (WGS 84). Rings must be closed.",
+            "example": [
+              [
+                [
+                  [
+                    49.6,
+                    37.3
+                  ],
+                  [
+                    49.61,
+                    37.3
+                  ],
+                  [
+                    49.61,
+                    37.31
+                  ],
+                  [
+                    49.6,
+                    37.31
+                  ],
+                  [
+                    49.6,
+                    37.3
+                  ]
+                ]
+              ]
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ]
+      },
+      "CreateRegionDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique region name.",
+            "minLength": 1,
+            "maxLength": 120,
+            "example": "Shaft rice paddies 2026"
+          },
+          "description": {
+            "type": "string",
+            "description": "Free-text description.",
+            "maxLength": 2000,
+            "default": "",
+            "example": "Parcels surveyed during the spring planting season."
+          },
+          "territory": {
+            "description": "Region territory boundary in WGS 84.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MultiPolygonDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "territory"
+        ]
+      },
+      "RegionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11"
+          },
+          "name": {
+            "type": "string",
+            "example": "Shaft rice paddies 2026"
+          },
+          "description": {
+            "type": "string",
+            "example": "Parcels surveyed during the spring planting season."
+          },
+          "parcelCount": {
+            "type": "number",
+            "description": "Number of parcels in the project.",
+            "example": 12
+          },
+          "extent": {
+            "description": "Bounding box `[west, south, east, north]` of all parcels; `null` while the region is empty.",
+            "minItems": 4,
+            "maxItems": 4,
+            "nullable": true,
+            "example": [
+              49.59,
+              37.29,
+              49.62,
+              37.32
+            ],
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-27T09:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Also bumped whenever a parcel of the project changes.",
+            "example": "2026-10-27T10:05:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "parcelCount",
+          "extent",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "description": "HTTP status code.",
+            "example": 404
+          },
+          "code": {
+            "type": "string",
+            "description": "Stable machine-readable error code.",
+            "example": "PROJECT_NOT_FOUND"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable explanation.",
+            "example": "Project not found."
+          },
+          "details": {
+            "type": "object",
+            "description": "Structured context, e.g. an array of ValidationErrorDetailDto for 400 responses.",
+            "nullable": true,
+            "example": null
+          },
+          "path": {
+            "type": "string",
+            "description": "Request path.",
+            "example": "/api/v1/projects/5f0c…"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 time the error was produced.",
+            "example": "2026-10-27T09:30:00.000Z"
+          }
+        },
+        "required": [
+          "statusCode",
+          "code",
+          "message",
+          "path",
+          "timestamp"
+        ]
+      },
+      "RegionListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RegionDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total number of regions, ignoring pagination.",
+            "example": 3
+          },
+          "limit": {
+            "type": "number",
+            "example": 20
+          },
+          "offset": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "CreateBlockDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Block name, unique inside the region.",
+            "minLength": 1,
+            "maxLength": 120,
+            "example": "North block"
+          },
+          "description": {
+            "type": "string",
+            "description": "Free-text description.",
+            "maxLength": 2000,
+            "default": "",
+            "example": "Upper orchard subdivision."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "BlockDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "4c6e6459-fda9-4c71-bb9c-8bb66efc0701"
+          },
+          "regionId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11"
+          },
+          "name": {
+            "type": "string",
+            "example": "North block"
+          },
+          "description": {
+            "type": "string",
+            "example": "Upper orchard subdivision."
+          },
+          "parcelCount": {
+            "type": "number",
+            "description": "Number of parcels in this block.",
+            "example": 6
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-27T09:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-27T10:05:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "regionId",
+          "name",
+          "description",
+          "parcelCount",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "BlockListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BlockDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total number of blocks, ignoring pagination.",
+            "example": 3
+          },
+          "limit": {
+            "type": "number",
+            "example": 20
+          },
+          "offset": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "CreateOwnerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Owner name.",
+            "minLength": 1,
+            "maxLength": 120,
+            "example": "Ali Rezaei"
+          },
+          "phone": {
+            "type": "object",
+            "description": "Owner phone number.",
+            "maxLength": 40,
+            "example": "+989121234567"
+          },
+          "email": {
+            "type": "object",
+            "description": "Owner email address.",
+            "maxLength": 255,
+            "example": "owner@example.com"
+          },
+          "notes": {
+            "type": "object",
+            "description": "Free-text notes.",
+            "example": "Primary owner of the west parcel."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "OwnerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "b6f0f4b9-b615-4d33-a4d2-70fb4f37af2a"
+          },
+          "name": {
+            "type": "string",
+            "example": "Ali Rezaei"
+          },
+          "phone": {
+            "type": "object",
+            "example": "+989121234567"
+          },
+          "email": {
+            "type": "object",
+            "example": "owner@example.com"
+          },
+          "notes": {
+            "type": "object",
+            "example": "Primary owner of the west parcel."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-27T09:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-27T10:05:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "OwnerListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OwnerDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total number of owners, ignoring pagination.",
+            "example": 3
+          },
+          "limit": {
+            "type": "number",
+            "example": 20
+          },
+          "offset": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "CreateParcelOwnerDto": {
+        "type": "object",
+        "properties": {
+          "ownerId": {
+            "type": "string",
+            "description": "Owner id to attach to the parcel.",
+            "format": "uuid",
+            "example": "b6f0f4b9-b615-4d33-a4d2-70fb4f37af2a"
+          },
+          "share": {
+            "type": "number",
+            "description": "Ownership share in the range [0, 1].",
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.5
+          }
+        },
+        "required": [
+          "ownerId",
+          "share"
+        ]
+      },
+      "ParcelOwnerDto": {
+        "type": "object",
+        "properties": {
+          "parcelId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11"
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "b6f0f4b9-b615-4d33-a4d2-70fb4f37af2a"
+          },
+          "share": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.5
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-27T09:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-27T10:05:00.000Z"
+          }
+        },
+        "required": [
+          "parcelId",
+          "ownerId",
+          "share",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateProjectDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique project name.",
+            "minLength": 1,
+            "maxLength": 120,
+            "example": "Shaft rice paddies 2026"
+          },
+          "description": {
+            "type": "string",
+            "description": "Free-text description.",
+            "maxLength": 2000,
+            "default": "",
+            "example": "Parcels surveyed during the spring planting season."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ProjectDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11"
+          },
+          "name": {
+            "type": "string",
+            "example": "Shaft rice paddies 2026"
+          },
+          "description": {
+            "type": "string",
+            "example": "Parcels surveyed during the spring planting season."
+          },
+          "parcelCount": {
+            "type": "number",
+            "description": "Number of parcels in the project.",
+            "example": 12
+          },
+          "extent": {
+            "description": "Bounding box `[west, south, east, north]` of all parcels; `null` while the project is empty.",
+            "minItems": 4,
+            "maxItems": 4,
+            "nullable": true,
+            "example": [
+              49.59,
+              37.29,
+              49.62,
+              37.32
+            ],
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-27T09:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Also bumped whenever a parcel of the project changes.",
+            "example": "2026-10-27T10:05:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "parcelCount",
+          "extent",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ProjectListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total number of projects, ignoring pagination.",
+            "example": 3
+          },
+          "limit": {
+            "type": "number",
+            "example": 20
+          },
+          "offset": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "ParcelDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "c7a1b2f4-3d56-4e78-9a01-b2c3d4e5f607"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11"
+          },
+          "name": {
+            "type": "string",
+            "example": "North paddy"
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/MultiPolygonDto"
+          },
+          "fillColor": {
+            "type": "string",
+            "example": "#2F7D4F"
+          },
+          "fillOpacity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.35
+          },
+          "strokeColor": {
+            "type": "string",
+            "example": "#FFFFFF"
+          },
+          "strokeWidth": {
+            "type": "number",
+            "example": 2
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "example": "Irrigated from the east canal."
+          },
+          "areaM2": {
+            "type": "number",
+            "description": "Geodesic area in square meters (PostGIS `ST_Area(geom::geography)`). An estimate, not a survey-grade value.",
+            "example": 10432.7
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-27T09:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-27T10:05:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "name",
+          "geometry",
+          "fillColor",
+          "fillOpacity",
+          "strokeColor",
+          "strokeWidth",
+          "notes",
+          "areaM2",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateParcelDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Parcel name, unique inside the project.",
+            "maxLength": 120,
+            "example": "North paddy"
+          },
+          "geometry": {
+            "description": "Parcel boundary in WGS 84. Self-intersecting polygons are rejected with 422.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MultiPolygonDto"
+              }
+            ]
+          },
+          "fillColor": {
+            "type": "string",
+            "description": "Fill color as `#RRGGBB`.",
+            "pattern": "^#[0-9A-Fa-f]{6}$",
+            "default": "#2F7D4F",
+            "example": "#2F7D4F"
+          },
+          "fillOpacity": {
+            "type": "number",
+            "description": "Fill opacity.",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.35,
+            "example": 0.35
+          },
+          "strokeColor": {
+            "type": "string",
+            "description": "Boundary color as `#RRGGBB`.",
+            "pattern": "^#[0-9A-Fa-f]{6}$",
+            "default": "#FFFFFF",
+            "example": "#FFFFFF"
+          },
+          "strokeWidth": {
+            "type": "number",
+            "description": "Boundary width in pixels.",
+            "minimum": 0.5,
+            "maximum": 10,
+            "default": 2,
+            "example": 2
+          },
+          "notes": {
+            "type": "string",
+            "description": "Free-text notes; `null` clears them.",
+            "nullable": true,
+            "maxLength": 5000,
+            "example": "Irrigated from the east canal."
+          }
+        },
+        "required": [
+          "name",
+          "geometry"
+        ]
+      },
+      "UpdateParcelDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Parcel name, unique inside the project.",
+            "maxLength": 120,
+            "example": "North paddy"
+          },
+          "geometry": {
+            "description": "Parcel boundary in WGS 84. Self-intersecting polygons are rejected with 422.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MultiPolygonDto"
+              }
+            ]
+          },
+          "fillColor": {
+            "type": "string",
+            "description": "Fill color as `#RRGGBB`.",
+            "pattern": "^#[0-9A-Fa-f]{6}$",
+            "default": "#2F7D4F",
+            "example": "#2F7D4F"
+          },
+          "fillOpacity": {
+            "type": "number",
+            "description": "Fill opacity.",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.35,
+            "example": 0.35
+          },
+          "strokeColor": {
+            "type": "string",
+            "description": "Boundary color as `#RRGGBB`.",
+            "pattern": "^#[0-9A-Fa-f]{6}$",
+            "default": "#FFFFFF",
+            "example": "#FFFFFF"
+          },
+          "strokeWidth": {
+            "type": "number",
+            "description": "Boundary width in pixels.",
+            "minimum": 0.5,
+            "maximum": 10,
+            "default": 2,
+            "example": 2
+          },
+          "notes": {
+            "type": "string",
+            "description": "Free-text notes; `null` clears them.",
+            "nullable": true,
+            "maxLength": 5000,
+            "example": "Irrigated from the east canal."
+          }
+        }
+      },
+      "ParcelFeaturePropertiesDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "c7a1b2f4-3d56-4e78-9a01-b2c3d4e5f607"
+          },
+          "name": {
+            "type": "string",
+            "example": "North paddy"
+          },
+          "fillColor": {
+            "type": "string",
+            "example": "#2F7D4F"
+          },
+          "fillOpacity": {
+            "type": "number",
+            "example": 0.35
+          },
+          "strokeColor": {
+            "type": "string",
+            "example": "#FFFFFF"
+          },
+          "strokeWidth": {
+            "type": "number",
+            "example": 2
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "areaM2": {
+            "type": "number",
+            "description": "Geodesic area in square meters.",
+            "example": 10432.7
+          },
+          "areaHectares": {
+            "type": "number",
+            "description": "Geodesic area in hectares.",
+            "example": 1.04327
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-27T09:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-27T10:05:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "fillColor",
+          "fillOpacity",
+          "strokeColor",
+          "strokeWidth",
+          "notes",
+          "areaM2",
+          "areaHectares",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ParcelFeatureDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Feature"
+            ],
+            "example": "Feature"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Same as `properties.id`.",
+            "example": "c7a1b2f4-3d56-4e78-9a01-b2c3d4e5f607"
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/MultiPolygonDto"
+          },
+          "properties": {
+            "$ref": "#/components/schemas/ParcelFeaturePropertiesDto"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "geometry",
+          "properties"
+        ]
+      },
+      "ParcelFeatureCollectionDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "FeatureCollection"
+            ],
+            "example": "FeatureCollection"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParcelFeatureDto"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "features"
+        ]
+      }
+    }
+  }
 }

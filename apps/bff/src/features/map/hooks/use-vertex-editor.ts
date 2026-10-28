@@ -53,8 +53,8 @@ export function useVertexEditor(projectId: string, parcel: ParcelDto | undefined
       }
       apply(candidate);
       const geometry = toMultiPolygon(candidate);
-      preview(parcel.id, { geometry });
-      updateParcel.mutate({ parcelId: parcel.id, patch: { geometry } });
+      preview(parcel.id, { geometry } as any);
+      updateParcel.mutate({ parcelId: parcel.id, patch: { geometry } as any });
     },
     [parcel, apply, reset, preview, updateParcel],
   );

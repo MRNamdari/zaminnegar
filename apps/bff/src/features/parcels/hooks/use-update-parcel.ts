@@ -11,7 +11,7 @@ import { parcelKeys } from '../query-keys';
 
 interface UpdateParcelVariables {
   parcelId: string;
-  patch: UpdateParcelDto;
+  patch: Partial<UpdateParcelDto>;
 }
 
 /**
@@ -23,7 +23,7 @@ export function useUpdateParcel(projectId: string) {
   const listKey = parcelKeys.list(projectId);
   return useMutation({
     mutationKey: [...parcelKeys.mutations, 'update'],
-    mutationFn: async ({ parcelId, patch }: UpdateParcelVariables) => unwrapActionResult(await updateParcelAction(projectId, parcelId, patch)),
+    mutationFn: async ({ parcelId, patch }: UpdateParcelVariables) => unwrapActionResult(await updateParcelAction(projectId, parcelId, patch as UpdateParcelDto)),
     onSuccess: (saved, { patch }) => {
       queryClient.setQueryData<ParcelDto[]>(listKey, (list) =>
         list?.map((parcel) => (parcel.id === saved.id ? { ...parcel, areaM2: saved.areaM2, updatedAt: saved.updatedAt } : parcel)),
@@ -38,9 +38,9 @@ export function useUpdateParcel(projectId: string) {
 export function useParcelPreview(projectId: string) {
   const queryClient = useQueryClient();
   return useCallback(
-    (parcelId: string, patch: UpdateParcelDto) =>
+    (parcelId: string, patch: Partial<UpdateParcelDto>) =>
       queryClient.setQueryData<ParcelDto[]>(parcelKeys.list(projectId), (list) =>
-        list?.map((parcel) => (parcel.id === parcelId ? applyParcelPatch(parcel, patch) : parcel)),
+        list?.map((parcel) => (parcel.id === parcelId ? applyParcelPatch(parcel, patch as UpdateParcelDto) : parcel)),
       ),
     [queryClient, projectId],
   );

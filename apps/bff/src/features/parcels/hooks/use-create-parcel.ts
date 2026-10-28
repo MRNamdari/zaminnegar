@@ -18,7 +18,14 @@ export function useCreateParcel(projectId: string) {
     mutationFn: async (geometry: MultiPolygonDto) => {
       const existing = queryClient.getQueryData<ParcelDto[]>(parcelKeys.list(projectId)) ?? [];
       return unwrapActionResult(
-        await createParcelAction(projectId, { name: nextParcelName(existing), geometry, fillColor: nextParcelColor(existing) }),
+        await createParcelAction(projectId, {
+          name: nextParcelName(existing),
+          geometry,
+          fillColor: nextParcelColor(existing),
+          fillOpacity: 0.35,
+          strokeColor: '#1b2a24',
+          strokeWidth: 2,
+        }),
       );
     },
     onSuccess: (parcel) => {

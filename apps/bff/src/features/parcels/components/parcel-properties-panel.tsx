@@ -1,6 +1,7 @@
 'use client';
 
 import { StateMessage } from '@/components/ui/state-message';
+import { ParcelOwnershipPanel } from '@/features/owners/components/parcel-ownership-panel';
 import { useWorkspace } from '@/features/workspace/context/workspace-context';
 import { formatNumber } from '@/lib/utils/format';
 import { fa } from '@/messages/fa';
@@ -28,6 +29,7 @@ export function ParcelPropertiesPanel() {
               <strong>{formatNumber(parcel.areaM2 / 10_000)}</strong> {fa.properties.hectares}
             </dd>
           </dl>
+          <ParcelOwnershipPanel parcelId={parcel.id} />
           <p className="text-xs text-ink-soft">{fa.properties.areaDisclaimer}</p>
         </>
       ) : (

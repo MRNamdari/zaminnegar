@@ -8,7 +8,7 @@ export const SOURCE_IDS = {
 
 export const PARCEL_FILL_LAYER_ID = 'parcels-fill';
 
-const isSelected = ['==', ['get', 'selected'], 1] as const;
+const isSelected = ['==', ['get', 'selected'], 1] as any;
 
 /** Semi-transparent fill so the imagery stays visible; color and opacity come from each feature. */
 export const parcelFillLayer: LayerProps = {
@@ -24,7 +24,7 @@ export const parcelHaloLayer: LayerProps = {
   filter: isSelected,
   layout: { 'line-join': 'round' },
   paint: { 'line-color': '#ffffff', 'line-opacity': 0.9, 'line-width': ['+', ['get', 'strokeWidth'], 6] },
-};
+} as any;
 
 /** Parcel outline; the selected parcel is drawn thicker and in saffron. */
 export const parcelLineLayer: LayerProps = {
@@ -42,7 +42,7 @@ export const draftFillLayer: LayerProps = {
   type: 'fill',
   filter: ['==', ['geometry-type'], 'Polygon'],
   paint: { 'fill-color': '#e0a419', 'fill-opacity': 0.2 },
-};
+} as any;
 
 export const draftLineLayer: LayerProps = {
   id: 'draft-line',
@@ -50,7 +50,7 @@ export const draftLineLayer: LayerProps = {
   filter: ['==', ['geometry-type'], 'LineString'],
   layout: { 'line-join': 'round', 'line-cap': 'round' },
   paint: { 'line-color': '#e0a419', 'line-width': 3, 'line-dasharray': [2, 1.2] },
-};
+} as any;
 
 /** Draft vertices; the first one is larger because clicking it closes the polygon. */
 export const draftPointLayer: LayerProps = {
