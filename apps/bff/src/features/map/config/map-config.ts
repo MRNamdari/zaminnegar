@@ -5,7 +5,7 @@ import type { ImageryConfig, MapConfig, Position } from '../types';
 const ESRI: ImageryConfig = {
   tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
   tileSize: 256,
-  maxzoom: 17,
+  maxzoom: 18,
   attribution: 'Imagery © Esri, Maxar, Earthstar Geographics, and the GIS User Community',
 };
 
