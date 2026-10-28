@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
+import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { BaseRepository } from '../../../common/database/base.repository';
 import { handleDatabaseError } from '../../../common/database/handle-database-error';
 import { PARCELS_TABLE } from '../../parcels/parcels.constants';
@@ -55,6 +56,10 @@ export class RegionsRepository extends BaseRepository<RegionEntity> {
     }
   }
 
+  async findById(id: string, manager?: EntityManager): Promise<IRegion | null> {
+    return this.getRepository(manager).findOneBy({ id });
+  }
+
   /** @returns The region with aggregates, or `null` when it does not exist. */
   async findByIdWithStats(
     id: string,
@@ -77,6 +82,29 @@ export class RegionsRepository extends BaseRepository<RegionEntity> {
       `${STATS_SELECT} ORDER BY p.updated_at DESC, p.id LIMIT $1 OFFSET $2`,
       [limit, offset],
     );
+  }
+
+  async update(
+    id: string,
+    patch: Partial<Pick<IRegion, 'name' | 'description' | 'territory'>>,
+    manager?: EntityManager,
+  ): Promise<boolean> {
+    try {
+      const result = await this.getRepository(manager).update(
+        { id },
+        patch as QueryDeepPartialEntity<RegionEntity>,
+      );
+      return (result.affected ?? 0) > 0;
+    } catch (error) {
+      return handleDatabaseError(error, {
+        [REGION_CONSTRAINTS.uniqueName]: () => new RegionNameAlreadyExistsError(patch.name ?? ''),
+      });
+    }
+  }
+
+  async delete(id: string, manager?: EntityManager): Promise<boolean> {
+    const result = await this.getRepository(manager).delete({ id });
+    return (result.affected ?? 0) > 0;
   }
 
   /** Total number of regions. */

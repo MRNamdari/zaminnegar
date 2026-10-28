@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
+import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { BaseRepository } from '../../../common/database/base.repository';
 import { handleDatabaseError } from '../../../common/database/handle-database-error';
 import { BLOCK_CONSTRAINTS, BLOCKS_TABLE } from '../blocks.constants';
@@ -44,6 +45,30 @@ export class BlocksRepository extends BaseRepository<BlockEntity> {
 
   async countByRegionId(regionId: string, manager?: EntityManager): Promise<number> {
     return this.getRepository(manager).count({ where: { regionId } });
+  }
+
+  async update(
+    regionId: string,
+    blockId: string,
+    patch: Partial<Pick<IBlock, 'name' | 'description'>>,
+    manager?: EntityManager,
+  ): Promise<boolean> {
+    try {
+      const result = await this.getRepository(manager).update(
+        { id: blockId, regionId },
+        patch as QueryDeepPartialEntity<BlockEntity>,
+      );
+      return (result.affected ?? 0) > 0;
+    } catch (error) {
+      return handleDatabaseError(error, {
+        [BLOCK_CONSTRAINTS.uniqueRegionName]: () => new BlockNameAlreadyExistsError(patch.name ?? ''),
+      });
+    }
+  }
+
+  async delete(regionId: string, blockId: string, manager?: EntityManager): Promise<boolean> {
+    const result = await this.getRepository(manager).delete({ id: blockId, regionId });
+    return (result.affected ?? 0) > 0;
   }
 
   async count(manager?: EntityManager): Promise<number> {

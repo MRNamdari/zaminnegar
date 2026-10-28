@@ -1,13 +1,16 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiConflictResponse, ApiCreatedResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { ApiUuidParam } from '../../common/decorators/api-uuid-param.decorator';
-import { CreateBlockDto } from './dto/create-block.dto';
+import { CreateBlockCommand } from './commands/create-block/create-block.command';
+import { DeleteBlockCommand } from './commands/delete-block/delete-block.command';
+import { UpdateBlockCommand } from './commands/update-block/update-block.command';
 import { BlockDto } from './dto/block.dto';
 import { BlockListDto } from './dto/block-list.dto';
+import { CreateBlockDto } from './dto/create-block.dto';
 import { ListBlocksQueryDto } from './dto/list-blocks-query.dto';
-import { CreateBlockCommand } from './commands/create-block/create-block.command';
+import { UpdateBlockDto } from './dto/update-block.dto';
 import { GetBlockQuery } from './queries/get-block/get-block.query';
 import { ListBlocksQuery } from './queries/list-blocks/list-blocks.query';
 
@@ -50,5 +53,35 @@ export class BlocksController {
     @Param('blockId', ParseUUIDPipe) blockId: string,
   ): Promise<BlockDto> {
     return BlockDto.fromBlock((await this.queryBus.execute(new GetBlockQuery(regionId, blockId))) as any);
+  }
+
+  @Patch(':blockId')
+  @ApiOperation({ summary: 'Update a block' })
+  @ApiUuidParam('regionId', 'Region id.', '5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11')
+  @ApiUuidParam('blockId', 'Block id.', '4c6e6459-fda9-4c71-bb9c-8bb66efc0701')
+  @ApiOkResponse({ description: 'The updated block.', type: BlockDto })
+  @ApiConflictResponse({ description: 'Another block in the region already uses this name.' })
+  @ApiErrorResponses(400, 404, 409)
+  async update(
+    @Param('regionId', ParseUUIDPipe) regionId: string,
+    @Param('blockId', ParseUUIDPipe) blockId: string,
+    @Body() body: UpdateBlockDto,
+  ): Promise<BlockDto> {
+    return BlockDto.fromBlock(
+      (await this.commandBus.execute(new UpdateBlockCommand(regionId, blockId, body))) as any,
+    );
+  }
+
+  @Delete(':blockId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a block' })
+  @ApiUuidParam('regionId', 'Region id.', '5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11')
+  @ApiUuidParam('blockId', 'Block id.', '4c6e6459-fda9-4c71-bb9c-8bb66efc0701')
+  @ApiErrorResponses(400, 404)
+  async remove(
+    @Param('regionId', ParseUUIDPipe) regionId: string,
+    @Param('blockId', ParseUUIDPipe) blockId: string,
+  ): Promise<void> {
+    await this.commandBus.execute(new DeleteBlockCommand(regionId, blockId));
   }
 }

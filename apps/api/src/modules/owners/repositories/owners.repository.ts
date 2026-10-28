@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
+import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { BaseRepository } from '../../../common/database/base.repository';
 import { handleDatabaseError } from '../../../common/database/handle-database-error';
 import { OWNER_CONSTRAINTS } from '../owners.constants';
@@ -35,6 +36,29 @@ export class OwnersRepository extends BaseRepository<OwnerEntity> {
       take: limit,
       skip: offset,
     });
+  }
+
+  async update(
+    id: string,
+    patch: Partial<Pick<IOwner, 'name' | 'phone' | 'email' | 'notes'>>,
+    manager?: EntityManager,
+  ): Promise<boolean> {
+    try {
+      const result = await this.getRepository(manager).update(
+        { id },
+        patch as QueryDeepPartialEntity<OwnerEntity>,
+      );
+      return (result.affected ?? 0) > 0;
+    } catch (error) {
+      return handleDatabaseError(error, {
+        [OWNER_CONSTRAINTS.uniqueName]: () => new OwnerNameAlreadyExistsError(patch.name ?? ''),
+      });
+    }
+  }
+
+  async delete(id: string, manager?: EntityManager): Promise<boolean> {
+    const result = await this.getRepository(manager).delete({ id });
+    return (result.affected ?? 0) > 0;
   }
 
   async count(manager?: EntityManager): Promise<number> {

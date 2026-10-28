@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
+import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { BaseRepository } from '../../../common/database/base.repository';
 import { handleDatabaseError } from '../../../common/database/handle-database-error';
 import { ParcelOwnerEntity } from '../entities/parcel-owner.entity';
@@ -38,8 +39,34 @@ export class ParcelOwnersRepository extends BaseRepository<ParcelOwnerEntity> {
     });
   }
 
+  async findAllByOwnerId(ownerId: string, limit: number, offset: number, manager?: EntityManager): Promise<IParcelOwner[]> {
+    return this.getRepository(manager).find({
+      where: { ownerId },
+      order: { createdAt: 'ASC', parcelId: 'ASC' },
+      take: limit,
+      skip: offset,
+    });
+  }
+
   async countByParcelId(parcelId: string, manager?: EntityManager): Promise<number> {
     return this.getRepository(manager).count({ where: { parcelId } });
+  }
+
+  async countByOwnerId(ownerId: string, manager?: EntityManager): Promise<number> {
+    return this.getRepository(manager).count({ where: { ownerId } });
+  }
+
+  async update(
+    parcelId: string,
+    ownerId: string,
+    patch: Partial<Pick<IParcelOwner, 'share'>>,
+    manager?: EntityManager,
+  ): Promise<boolean> {
+    const result = await this.getRepository(manager).update(
+      { parcelId, ownerId },
+      patch as QueryDeepPartialEntity<ParcelOwnerEntity>,
+    );
+    return (result.affected ?? 0) > 0;
   }
 
   async delete(parcelId: string, ownerId: string, manager?: EntityManager): Promise<void> {

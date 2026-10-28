@@ -1,11 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -20,10 +22,13 @@ import {
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { ApiUuidParam } from '../../common/decorators/api-uuid-param.decorator';
 import { CreateRegionCommand } from './commands/create-region/create-region.command';
+import { DeleteRegionCommand } from './commands/delete-region/delete-region.command';
+import { UpdateRegionCommand } from './commands/update-region/update-region.command';
 import { CreateRegionDto } from './dto/create-region.dto';
 import { ListRegionsQueryDto } from './dto/list-regions-query.dto';
 import { RegionListDto } from './dto/region-list.dto';
 import { RegionDto } from './dto/region.dto';
+import { UpdateRegionDto } from './dto/update-region.dto';
 import { GetRegionQuery } from './queries/get-region/get-region.query';
 import { ListRegionsQuery } from './queries/list-regions/list-regions.query';
 
@@ -89,5 +94,29 @@ export class RegionsController {
     return RegionDto.fromRegion(
       await this.queryBus.execute(new GetRegionQuery(regionId)),
     );
+  }
+
+  @Patch(':regionId')
+  @ApiOperation({ summary: 'Update a region' })
+  @ApiUuidParam('regionId', 'Region id.', '5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11')
+  @ApiOkResponse({ description: 'The updated region.', type: RegionDto })
+  @ApiConflictResponse({ description: 'Another region already uses this name.' })
+  @ApiErrorResponses(400, 404, 409)
+  async update(
+    @Param('regionId', ParseUUIDPipe) regionId: string,
+    @Body() body: UpdateRegionDto,
+  ): Promise<RegionDto> {
+    return RegionDto.fromRegion(
+      await this.commandBus.execute(new UpdateRegionCommand(regionId, body)),
+    );
+  }
+
+  @Delete(':regionId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a region' })
+  @ApiUuidParam('regionId', 'Region id.', '5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11')
+  @ApiErrorResponses(400, 404)
+  async remove(@Param('regionId', ParseUUIDPipe) regionId: string): Promise<void> {
+    await this.commandBus.execute(new DeleteRegionCommand(regionId));
   }
 }
