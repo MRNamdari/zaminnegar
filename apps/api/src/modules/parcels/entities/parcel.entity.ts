@@ -1,8 +1,12 @@
 import {
-  Check, Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn,
+  Check, Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn,
 } from 'typeorm';
 import { SRID_WGS84 } from '../../../common/geometry/geometry.constants';
 import type { IMultiPolygon } from '../../../common/geometry/interfaces/multi-polygon.interface';
+import { BlockEntity } from '../../blocks/entities/block.entity';
+import type { IBlock } from '../../blocks/interfaces/block.interface';
+import { ParcelOwnerEntity } from '../../owners/entities/parcel-owner.entity';
+import type { IParcelOwner } from '../../owners/interfaces/owner.interface';
 import { ProjectEntity } from '../../projects/entities/project.entity';
 import type { IProject } from '../../projects/interfaces/project.interface';
 import type { IParcel } from '../interfaces/parcel.interface';
@@ -26,6 +30,9 @@ export class ParcelEntity implements IParcel {
 
   @Column({ name: 'project_id', type: 'uuid' })
   projectId!: string;
+
+  @Column({ name: 'block_id', type: 'uuid', nullable: true })
+  blockId?: string | null;
 
   @Column({ name: 'name', type: 'varchar', length: PARCEL_LIMITS.nameMaxLength })
   name!: string;
@@ -70,4 +77,11 @@ export class ParcelEntity implements IParcel {
   @ManyToOne(() => ProjectEntity, (project) => project.parcels, { onDelete: 'CASCADE', nullable: false })
   @JoinColumn({ name: 'project_id', foreignKeyConstraintName: PARCEL_CONSTRAINTS.foreignKeyProject })
   project?: IProject;
+
+  @ManyToOne(() => BlockEntity, (block) => block.parcels, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'block_id', foreignKeyConstraintName: 'fk_parcels_block_id' })
+  block?: IBlock;
+
+  @OneToMany(() => ParcelOwnerEntity, (parcelOwner) => parcelOwner.parcel)
+  owners?: IParcelOwner[];
 }

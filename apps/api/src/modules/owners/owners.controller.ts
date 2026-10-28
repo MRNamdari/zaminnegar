@@ -1,0 +1,50 @@
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { ApiConflictResponse, ApiCreatedResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
+import { ApiUuidParam } from '../../common/decorators/api-uuid-param.decorator';
+import { CreateOwnerCommand } from './commands/create-owner/create-owner.command';
+import { CreateOwnerDto } from './dto/create-owner.dto';
+import { OwnerDto } from './dto/owner.dto';
+import { OwnerListDto } from './dto/owner-list.dto';
+import { ListOwnersQueryDto } from './dto/list-owners-query.dto';
+import { GetOwnerQuery } from './queries/get-owner/get-owner.query';
+import { ListOwnersQuery } from './queries/list-owners/list-owners.query';
+
+/** REST endpoints for owners: `/api/v1/owners`. */
+@Controller({ path: 'owners', version: '1' })
+export class OwnersController {
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create an owner' })
+  @ApiCreatedResponse({ description: 'The created owner.', type: OwnerDto })
+  @ApiConflictResponse({ description: 'An owner with this name already exists.' })
+  @ApiErrorResponses(400, 409)
+  async create(@Body() body: CreateOwnerDto): Promise<OwnerDto> {
+    const owner = await this.commandBus.execute(new CreateOwnerCommand(body.name, body.phone ?? null, body.email ?? null, body.notes ?? null));
+    return OwnerDto.fromOwner(owner);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'List owners' })
+  @ApiOkResponse({ description: 'One page of owners.', type: OwnerListDto })
+  @ApiErrorResponses(400)
+  async list(@Query() query: ListOwnersQueryDto): Promise<OwnerListDto> {
+    const { items, total } = await this.queryBus.execute(new ListOwnersQuery(query.limit, query.offset));
+    return { items: items.map(OwnerDto.fromOwner), total, limit: query.limit, offset: query.offset };
+  }
+
+  @Get(':ownerId')
+  @ApiOperation({ summary: 'Get an owner' })
+  @ApiUuidParam('ownerId', 'Owner id.', 'b6f0f4b9-b615-4d33-a4d2-70fb4f37af2a')
+  @ApiOkResponse({ description: 'The owner.', type: OwnerDto })
+  @ApiErrorResponses(400, 404)
+  async get(@Param('ownerId', ParseUUIDPipe) ownerId: string): Promise<OwnerDto> {
+    return OwnerDto.fromOwner(await this.queryBus.execute(new GetOwnerQuery(ownerId)));
+  }
+}
