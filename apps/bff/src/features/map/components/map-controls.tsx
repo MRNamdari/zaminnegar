@@ -35,7 +35,7 @@ export function MapControls({ config }: { config: MapConfig }) {
   ];
 
   return (
-    <div className="absolute start-3 bottom-8 z-10 grid gap-1.5">
+    <div className="absolute inset-s-3 bottom-8 z-10 grid gap-1.5">
       {controls.map(({ label, icon: Icon, run }) => (
         <Button key={label} variant="outline" size="icon" aria-label={label} title={label} className="bg-panel/95 shadow" onClick={run}>
           <Icon className="size-4" />

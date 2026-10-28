@@ -11,8 +11,8 @@ const envSchema = z.object({
   MAP_DEFAULT_CENTER: z
     .string()
     .regex(/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/, 'expected "longitude,latitude"')
-    .default('49.6,37.3'),
-  MAP_DEFAULT_ZOOM: z.coerce.number().min(0).max(22).default(10),
+    .default('59.680400, 36.214805'),
+  MAP_DEFAULT_ZOOM: z.coerce.number().min(0).max(22).default(13.5),
   GEOCODER_URL: z.url().default('https://nominatim.openstreetmap.org'),
   GEOCODER_USER_AGENT: z.string().default('zaminnegar-bff/1.0'),
 });
