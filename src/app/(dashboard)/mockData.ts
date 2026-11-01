@@ -1,4 +1,5 @@
 import {BlockStatus, type Block} from "@/app/components/dashboard/blocks/BlocksTable";
+import { Owner, OwnerStatus } from "../components/dashboard/owners/OwnersTable";
 
 export const mockBlocks: Block[] = [
   {
@@ -179,5 +180,30 @@ export const mockBlocks: Block[] = [
     region: "شمال",
     parcelCount: 24,
     status: BlockStatus.FINAL,
+  },
+];
+
+
+export const initialOwners: Owner[] = [
+  {
+    id: "1",
+    name: "علی رضایی",
+    parcelCount: 12,
+    totalArea: 3.5,
+    status: OwnerStatus.ACTIVE,
+  },
+  {
+    id: "2",
+    name: "محمد احمدی",
+    parcelCount: 8,
+    totalArea: 2.4,
+    status: OwnerStatus.ACTIVE,
+  },
+  {
+    id: "3",
+    name: "حسین کریمی",
+    parcelCount: 5,
+    totalArea: 1.8,
+    status: OwnerStatus.INACTIVE,
   },
 ];

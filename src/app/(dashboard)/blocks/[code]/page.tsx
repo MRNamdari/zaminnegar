@@ -1,9 +1,7 @@
 import { notFound } from "next/navigation";
-import { mockBlocks } from "@/app/(dashboard)/blocks";
-// import { BlockStatusMap } from "@/app/components/dashboard/blocks/BlocksTable";
+import { mockBlocks } from "@/app/(dashboard)/mockData";
 import { BackButton } from "@/app/components/dashboard/Backbutton";
 import BlockInformation from "@/app/components/dashboard/blocks/BlocksInformation";
-
 
 interface Props {
   params: Promise<{ code: string }>;
