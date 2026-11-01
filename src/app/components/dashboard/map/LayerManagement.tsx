@@ -5,6 +5,278 @@ import { IParcel } from "@/app/features/parcels/interface";
 import { IRegion } from "@/app/features/regions/interface";
 import { useEffect, useState } from "react";
 import { GoChevronDown } from "react-icons/go";
+import { HiOutlineCheck } from "react-icons/hi";
+
+const regionMockData: IRegion[] = [
+  {
+    id: "region-001",
+    name: "منطقه شالیزاری شمال",
+    description: "منطقه کشاورزی شمال شامل چندین بلوک و قطعه شالیزاری",
+    territory: {
+      type: "MultiPolygon",
+      coordinates: [
+        [
+          [
+            [49.5821, 37.2801],
+            [49.5865, 37.2801],
+            [49.5865, 37.2835],
+            [49.5821, 37.2835],
+            [49.5821, 37.2801],
+          ],
+        ],
+        [
+          [
+            [49.588, 37.281],
+            [49.59, 37.281],
+            [49.59, 37.283],
+            [49.588, 37.283],
+            [49.588, 37.281],
+          ],
+        ],
+      ],
+    },
+    areaM2: "1254000",
+    createdAt: new Date("2026-01-15T08:30:00Z"),
+    updatedAt: new Date("2026-03-20T14:45:00Z"),
+    blocks: [],
+  },
+];
+
+const blockMockData: IBlock[] = [
+  {
+    id: "block-001",
+    regionId: "region-001",
+    name: "بلوک شمالی",
+    description: "بلوک کشاورزی شمالی",
+    territory: {
+      type: "MultiPolygon",
+      coordinates: [
+        [
+          [
+            [49.5821, 37.282],
+            [49.5843, 37.282],
+            [49.5843, 37.2835],
+            [49.5821, 37.2835],
+            [49.5821, 37.282],
+          ],
+        ],
+      ],
+    },
+    areaM2: "1854000",
+    createdAt: new Date("2026-01-16"),
+    updatedAt: new Date("2026-02-10"),
+    parcels: [],
+  },
+  {
+    id: "block-002",
+    regionId: "region-001",
+    name: "بلوک جنوبی",
+    description: "بلوک کشاورزی جنوبی",
+    territory: {
+      type: "MultiPolygon",
+      coordinates: [
+        [
+          [
+            [49.5821, 37.2801],
+            [49.5843, 37.2801],
+            [49.5843, 37.282],
+            [49.5821, 37.282],
+            [49.5821, 37.2801],
+          ],
+        ],
+      ],
+    },
+    areaM2: "1854000",
+    createdAt: new Date("2026-01-17"),
+    updatedAt: new Date("2026-02-15"),
+    parcels: [],
+  },
+  {
+    id: "block-003",
+    regionId: "region-002",
+    name: "بلوک مرکزی",
+    description: "بلوک کشاورزی مرکزی",
+    territory: {
+      type: "MultiPolygon",
+      coordinates: [
+        [
+          [
+            [49.59, 37.275],
+            [49.5925, 37.275],
+            [49.5925, 37.277],
+            [49.59, 37.277],
+            [49.59, 37.275],
+          ],
+        ],
+      ],
+    },
+    areaM2: "1854000",
+    createdAt: new Date("2026-02-01"),
+    updatedAt: new Date("2026-04-12"),
+    parcels: [],
+  },
+];
+const parcelMockData: IParcel[] = [
+  {
+    id: "parcel-001",
+    projectId: "project-001",
+    blockId: "block-001",
+    name: "قطعه شماره ۱",
+    geometry: {
+      type: "MultiPolygon",
+      coordinates: [
+        [
+          [
+            [49.5821, 37.282],
+            [49.583, 37.282],
+            [49.583, 37.2828],
+            [49.5821, 37.2828],
+            [49.5821, 37.282],
+          ],
+        ],
+      ],
+    },
+    fillColor: "#22c55e",
+    fillOpacity: 0.4,
+    strokeColor: "#15803d",
+    strokeWidth: 2,
+    notes: "زمین شالیزاری با کشت برنج",
+    areaM2: "8500",
+    createdAt: new Date("2026-01-20"),
+    updatedAt: new Date("2026-02-15"),
+    owners: [],
+  },
+  {
+    id: "parcel-002",
+    projectId: "project-001",
+    blockId: "block-001",
+    name: "قطعه شماره ۲",
+    geometry: {
+      type: "MultiPolygon",
+      coordinates: [
+        [
+          [
+            [49.583, 37.282],
+            [49.584, 37.282],
+            [49.584, 37.2828],
+            [49.583, 37.2828],
+            [49.583, 37.282],
+          ],
+        ],
+      ],
+    },
+    fillColor: "#3b82f6",
+    fillOpacity: 0.4,
+    strokeColor: "#1d4ed8",
+    strokeWidth: 2,
+    notes: "زمین کشاورزی در بخش شمالی بلوک",
+    areaM2: "9200",
+    createdAt: new Date("2026-01-22"),
+    updatedAt: new Date("2026-02-18"),
+    owners: [],
+  },
+  {
+    id: "parcel-003",
+    projectId: "project-001",
+    blockId: "block-002",
+    name: "قطعه شماره ۳",
+    geometry: {
+      type: "MultiPolygon",
+      coordinates: [
+        [
+          [
+            [49.5821, 37.2801],
+            [49.5831, 37.2801],
+            [49.5831, 37.281],
+            [49.5821, 37.281],
+            [49.5821, 37.2801],
+          ],
+        ],
+      ],
+    },
+    fillColor: "#f59e0b",
+    fillOpacity: 0.4,
+    strokeColor: "#b45309",
+    strokeWidth: 2,
+    notes: "قطعه دارای سیستم آبیاری مستقل",
+    areaM2: "7800",
+    createdAt: new Date("2026-02-01"),
+    updatedAt: new Date("2026-03-10"),
+    owners: [],
+  },
+  {
+    id: "parcel-004",
+    projectId: "project-001",
+    blockId: null,
+    name: "قطعه مستقل شماره ۴",
+    geometry: {
+      type: "MultiPolygon",
+      coordinates: [
+        [
+          [
+            [49.59, 37.275],
+            [49.591, 37.275],
+            [49.591, 37.276],
+            [49.59, 37.276],
+            [49.59, 37.275],
+          ],
+        ],
+      ],
+    },
+    fillColor: "#a855f7",
+    fillOpacity: 0.4,
+    strokeColor: "#7e22ce",
+    strokeWidth: 2,
+    notes: null,
+    areaM2: "9800",
+    createdAt: new Date("2026-02-10"),
+    updatedAt: new Date("2026-03-15"),
+    owners: [],
+  },
+];
+const ownerMockData: IOwner[] = [
+  {
+    id: "owner-001",
+    name: "علی رضایی",
+    phone: "09123456789",
+    email: "ali.rezaei@example.com",
+    notes: "مالک زمین‌های کشاورزی شمال منطقه",
+    createdAt: new Date("2026-01-10"),
+    updatedAt: new Date("2026-02-15"),
+    parcels: [],
+  },
+  {
+    id: "owner-002",
+    name: "محمد احمدی",
+    phone: "09123456780",
+    email: "mohammad.ahmadi@example.com",
+    notes: "مالک چند قطعه شالیزاری",
+    createdAt: new Date("2026-01-12"),
+    updatedAt: new Date("2026-02-20"),
+    parcels: [],
+  },
+  {
+    id: "owner-003",
+    name: "حسین کریمی",
+    phone: "09123456781",
+    email: null,
+    notes: "مالک زمین‌های بخش جنوبی",
+    createdAt: new Date("2026-01-15"),
+    updatedAt: new Date("2026-03-01"),
+    parcels: [],
+  },
+  {
+    id: "owner-004",
+    name: "رضا محمدی",
+    phone: null,
+    email: "reza.mohammadi@example.com",
+    notes: null,
+    createdAt: new Date("2026-02-01"),
+    updatedAt: new Date("2026-02-01"),
+    parcels: [],
+  },
+];
+
 export default function LayerManagement() {
   const [isOpen, setIsOpen] = useState({
     region: true,
@@ -17,296 +289,31 @@ export default function LayerManagement() {
       <h3 className="border-b border-border text-xs pb-2 block">
         مدیریت لایه ها
       </h3>
-
-      <div className="feature_wrapper mt-3">
+      <div>
         <Layer<IRegion>
-          color="#7eff1d"
-          data={[
-            {
-              id: "region-001",
-              name: "منطقه شالیزاری شمال",
-              description: "منطقه کشاورزی شمال شامل چندین بلوک و قطعه شالیزاری",
-              territory: {
-                type: "MultiPolygon",
-                coordinates: [
-                  [
-                    [
-                      [49.5821, 37.2801],
-                      [49.5865, 37.2801],
-                      [49.5865, 37.2835],
-                      [49.5821, 37.2835],
-                      [49.5821, 37.2801],
-                    ],
-                  ],
-                  [
-                    [
-                      [49.588, 37.281],
-                      [49.59, 37.281],
-                      [49.59, 37.283],
-                      [49.588, 37.283],
-                      [49.588, 37.281],
-                    ],
-                  ],
-                ],
-              },
-              areaM2: "1254000",
-              createdAt: new Date("2026-01-15T08:30:00Z"),
-              updatedAt: new Date("2026-03-20T14:45:00Z"),
-              blocks: [],
-            },
-          ]}
+          colors={{ icon: "--map-green", input: "--map-green-hover" }}
+          data={regionMockData}
           label="مناطق"
           onChange={(region, chk) => {}}
           defaultOpen={isOpen.region}
         />
         <Layer<IBlock>
-          color="#2b7fff"
-          data={[
-            {
-              id: "block-001",
-              regionId: "region-001",
-              name: "بلوک شمالی",
-              description: "بلوک کشاورزی شمالی",
-              territory: {
-                type: "MultiPolygon",
-                coordinates: [
-                  [
-                    [
-                      [49.5821, 37.282],
-                      [49.5843, 37.282],
-                      [49.5843, 37.2835],
-                      [49.5821, 37.2835],
-                      [49.5821, 37.282],
-                    ],
-                  ],
-                ],
-              },
-              areaM2: "1854000",
-              createdAt: new Date("2026-01-16"),
-              updatedAt: new Date("2026-02-10"),
-              parcels: [],
-            },
-            {
-              id: "block-002",
-              regionId: "region-001",
-              name: "بلوک جنوبی",
-              description: "بلوک کشاورزی جنوبی",
-              territory: {
-                type: "MultiPolygon",
-                coordinates: [
-                  [
-                    [
-                      [49.5821, 37.2801],
-                      [49.5843, 37.2801],
-                      [49.5843, 37.282],
-                      [49.5821, 37.282],
-                      [49.5821, 37.2801],
-                    ],
-                  ],
-                ],
-              },
-              areaM2: "1854000",
-              createdAt: new Date("2026-01-17"),
-              updatedAt: new Date("2026-02-15"),
-              parcels: [],
-            },
-            {
-              id: "block-003",
-              regionId: "region-002",
-              name: "بلوک مرکزی",
-              description: "بلوک کشاورزی مرکزی",
-              territory: {
-                type: "MultiPolygon",
-                coordinates: [
-                  [
-                    [
-                      [49.59, 37.275],
-                      [49.5925, 37.275],
-                      [49.5925, 37.277],
-                      [49.59, 37.277],
-                      [49.59, 37.275],
-                    ],
-                  ],
-                ],
-              },
-              areaM2: "1854000",
-              createdAt: new Date("2026-02-01"),
-              updatedAt: new Date("2026-04-12"),
-              parcels: [],
-            },
-          ]}
+          colors={{ icon: "--map-blue", input: "--map-blue-hover" }}
+          data={blockMockData}
           label="بلوک‌ها"
           onChange={(block, chk) => {}}
           defaultOpen={isOpen.blocks}
         />
         <Layer<IParcel>
-          color="#ffce0a"
-          data={[
-            {
-              id: "parcel-001",
-              projectId: "project-001",
-              blockId: "block-001",
-              name: "قطعه شماره ۱",
-              geometry: {
-                type: "MultiPolygon",
-                coordinates: [
-                  [
-                    [
-                      [49.5821, 37.282],
-                      [49.583, 37.282],
-                      [49.583, 37.2828],
-                      [49.5821, 37.2828],
-                      [49.5821, 37.282],
-                    ],
-                  ],
-                ],
-              },
-              fillColor: "#22c55e",
-              fillOpacity: 0.4,
-              strokeColor: "#15803d",
-              strokeWidth: 2,
-              notes: "زمین شالیزاری با کشت برنج",
-              areaM2: "8500",
-              createdAt: new Date("2026-01-20"),
-              updatedAt: new Date("2026-02-15"),
-              owners: [],
-            },
-            {
-              id: "parcel-002",
-              projectId: "project-001",
-              blockId: "block-001",
-              name: "قطعه شماره ۲",
-              geometry: {
-                type: "MultiPolygon",
-                coordinates: [
-                  [
-                    [
-                      [49.583, 37.282],
-                      [49.584, 37.282],
-                      [49.584, 37.2828],
-                      [49.583, 37.2828],
-                      [49.583, 37.282],
-                    ],
-                  ],
-                ],
-              },
-              fillColor: "#3b82f6",
-              fillOpacity: 0.4,
-              strokeColor: "#1d4ed8",
-              strokeWidth: 2,
-              notes: "زمین کشاورزی در بخش شمالی بلوک",
-              areaM2: "9200",
-              createdAt: new Date("2026-01-22"),
-              updatedAt: new Date("2026-02-18"),
-              owners: [],
-            },
-            {
-              id: "parcel-003",
-              projectId: "project-001",
-              blockId: "block-002",
-              name: "قطعه شماره ۳",
-              geometry: {
-                type: "MultiPolygon",
-                coordinates: [
-                  [
-                    [
-                      [49.5821, 37.2801],
-                      [49.5831, 37.2801],
-                      [49.5831, 37.281],
-                      [49.5821, 37.281],
-                      [49.5821, 37.2801],
-                    ],
-                  ],
-                ],
-              },
-              fillColor: "#f59e0b",
-              fillOpacity: 0.4,
-              strokeColor: "#b45309",
-              strokeWidth: 2,
-              notes: "قطعه دارای سیستم آبیاری مستقل",
-              areaM2: "7800",
-              createdAt: new Date("2026-02-01"),
-              updatedAt: new Date("2026-03-10"),
-              owners: [],
-            },
-            {
-              id: "parcel-004",
-              projectId: "project-001",
-              blockId: null,
-              name: "قطعه مستقل شماره ۴",
-              geometry: {
-                type: "MultiPolygon",
-                coordinates: [
-                  [
-                    [
-                      [49.59, 37.275],
-                      [49.591, 37.275],
-                      [49.591, 37.276],
-                      [49.59, 37.276],
-                      [49.59, 37.275],
-                    ],
-                  ],
-                ],
-              },
-              fillColor: "#a855f7",
-              fillOpacity: 0.4,
-              strokeColor: "#7e22ce",
-              strokeWidth: 2,
-              notes: null,
-              areaM2: "9800",
-              createdAt: new Date("2026-02-10"),
-              updatedAt: new Date("2026-03-15"),
-              owners: [],
-            },
-          ]}
+          colors={{ icon: "--map-yellow", input: "--map-yellow-hover" }}
+          data={parcelMockData}
           label="قطعه‌ها"
           onChange={(parcel, chk) => {}}
           defaultOpen={isOpen.parcels}
         />
         <Layer<IOwner>
-          color="#5e00d9"
-          data={[
-            {
-              id: "owner-001",
-              name: "علی رضایی",
-              phone: "09123456789",
-              email: "ali.rezaei@example.com",
-              notes: "مالک زمین‌های کشاورزی شمال منطقه",
-              createdAt: new Date("2026-01-10"),
-              updatedAt: new Date("2026-02-15"),
-              parcels: [],
-            },
-            {
-              id: "owner-002",
-              name: "محمد احمدی",
-              phone: "09123456780",
-              email: "mohammad.ahmadi@example.com",
-              notes: "مالک چند قطعه شالیزاری",
-              createdAt: new Date("2026-01-12"),
-              updatedAt: new Date("2026-02-20"),
-              parcels: [],
-            },
-            {
-              id: "owner-003",
-              name: "حسین کریمی",
-              phone: "09123456781",
-              email: null,
-              notes: "مالک زمین‌های بخش جنوبی",
-              createdAt: new Date("2026-01-15"),
-              updatedAt: new Date("2026-03-01"),
-              parcels: [],
-            },
-            {
-              id: "owner-004",
-              name: "رضا محمدی",
-              phone: null,
-              email: "reza.mohammadi@example.com",
-              notes: null,
-              createdAt: new Date("2026-02-01"),
-              updatedAt: new Date("2026-02-01"),
-              parcels: [],
-            },
-          ]}
+          colors={{ icon: "--map-purple", input: "--map-purple-hover" }}
+          data={ownerMockData}
           label="مالکین"
           onChange={(owner, chk) => {}}
           defaultOpen={isOpen.owners}
@@ -319,7 +326,7 @@ export default function LayerManagement() {
 interface LayerProps<T> {
   defaultOpen?: boolean;
   onChange(layerData: T, checked: boolean): void;
-  color: string;
+  colors: { icon: string; input: string };
   label: string;
   data: T[];
 }
@@ -343,7 +350,7 @@ function Layer<T extends { name: string }>(props: LayerProps<T>) {
           }`}
         />
         <h4 className="text-xs font-medium">{props.label}</h4>
-        <PolygonIcon fillColor={props.color} />
+        <PolygonIcon fillColor={`var(${props.colors.icon})`} />
       </div>
       <div
         className={`${isClose ? "absolute opacity-0 invisible" : "opacity-100 visible"} w-full flex flex-col gap-3 mb-3 pr-1`}
@@ -351,15 +358,22 @@ function Layer<T extends { name: string }>(props: LayerProps<T>) {
         {props.data.map((item, key) => (
           <label
             key={key}
-            className="flex items-center justify-end cursor-pointer gap-3 text-xs"
+            className="flex items-center justify-end cursor-pointer gap-3 text-xs select-none"
           >
             <span>{item.name}</span>
-            <input
-              type="checkbox"
-              onChange={(e) => props.onChange(item, e.target.checked)}
-              style={{ "--bg-color-chk": props.color } as React.CSSProperties}
-              className={`appearance-none w-3.5 h-3.5 border border-slate-600 rounded-sm cursor-pointer transition-colors duration-200  checked:bg-(--bg-color-chk)`}
-            />
+            <div className="relative">
+              <input
+                type="checkbox"
+                onChange={(e) => props.onChange(item, e.target.checked)}
+                style={
+                  {
+                    "--input": `var(${props.colors.input})`,
+                  } as React.CSSProperties
+                }
+                className={`peer appearance-none w-4 h-4 border border-border checked:border-0 rounded-sm cursor-pointer transition-colors duration-200  checked:bg-(--input)`}
+              />
+              <HiOutlineCheck className="peer-checked:block hidden absolute inset-x-0.5 inset-y-0.5 text-background" />
+            </div>
           </label>
         ))}
       </div>
