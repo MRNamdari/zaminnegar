@@ -368,7 +368,7 @@ function Layer<T extends { name: string }>(props: LayerProps<T>) {
 }
 
 export const PolygonIcon = ({
-  fillColor = "white",
+  fillColor = "",
   className = "",
   width = "20px",
 }: {
