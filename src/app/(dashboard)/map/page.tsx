@@ -13,7 +13,9 @@ export default function MapPage() {
         <DetailsLayer />
       </div>
       <div className="col-span-7 h-full border-e border-border grid grid-rows-12">
-        <MapEditor />
+        <div className="row-span-9 min-h-0">
+          <MapEditor />
+        </div>
         <div className="row-span-3 grid grid-cols-12 gap-2 p-2">
           <SelectedParcelsOwnersTable
             data={
@@ -61,7 +63,7 @@ export default function MapPage() {
             onRowClick={console.log}
           />
           <div className="col-span-4 border border-border rounded-lg">
-            <SelectedParcels/>
+            <SelectedParcels />
           </div>
         </div>
       </div>
