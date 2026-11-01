@@ -1,4 +1,3 @@
-// import MainLogo from "../../../public/zaminnegar-logo.png";
 import Image from "next/image";
 import { CgSearch } from "react-icons/cg";
 export default function DashboardHeader() {
@@ -21,14 +20,14 @@ export default function DashboardHeader() {
             جستجو
           </label>
 
-          <div className="min-w-0 flex-1">
+          <search className="min-w-0 flex-1">
             <input
               type="search"
               id="simple-search"
               placeholder="جستجوی منطقه یا بلوک..."
               className="block w-full rounded-lg border border-border bg-surface py-2.5 px-3 text-sm text-foreground outline-none transition placeholder:text-foreground-muted focus:ring-2 focus:ring-action-primary-hover/20"
             />
-          </div>
+          </search>
 
           <button
             type="submit"
