@@ -31,6 +31,7 @@ export function LevelSelector() {
       >
         <LuLayers size={18} />
       </button>
+<<<<<<< HEAD
       <div
         id={popoverId}
         popover="auto"
@@ -44,10 +45,16 @@ export function LevelSelector() {
         className="rounded-xl bg-surface p-1.5 text-sm"
       >
         <div className="flex flex-col gap-1.5">
+=======
+
+      {open && (
+        <div className="absolute left-16 top-3 z-30 flex w-36 flex-col gap-1.5 rounded-xl bg-[#0e1726]/95 p-1.5 text-sm text-slate-200 ring-1 ring-white/10">
+>>>>>>> 9b29d75 (refactor: re-imlpement map editor)
           {levels.map((level) => (
             <button
               key={level}
               type="button"
+<<<<<<< HEAD
               aria-disabled={state.activeLevel === level}
               onClick={() => {
                 actions.setActiveLevel(level);
@@ -58,6 +65,18 @@ export function LevelSelector() {
             >
               <span
                 className="h-4 w-4 rounded-sm"
+=======
+              onClick={() => {
+                actions.setActiveLevel(level);
+                setOpen(false);
+              }}
+              className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-right hover:bg-white/10 ${
+                state.activeLevel === level ? "bg-white/10" : ""
+              }`}
+            >
+              <span
+                className="h-3 w-3 rounded-sm"
+>>>>>>> 9b29d75 (refactor: re-imlpement map editor)
                 style={{
                   background: `var(${LEVELS[level].color})`,
                 }}
@@ -66,7 +85,11 @@ export function LevelSelector() {
             </button>
           ))}
         </div>
+<<<<<<< HEAD
       </div>
+=======
+      )}
+>>>>>>> 9b29d75 (refactor: re-imlpement map editor)
     </>
   );
 }

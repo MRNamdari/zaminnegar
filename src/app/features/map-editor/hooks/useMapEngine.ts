@@ -47,7 +47,10 @@ interface Options {
   activeLevel: Level;
   onFeaturesChange: (data: AreaCollection, emit: boolean) => void;
   onSelectedChange: (id: string | null) => void;
+<<<<<<< HEAD
   onFinish: TerraDrawEventListeners["finish"];
+=======
+>>>>>>> 9b29d75 (refactor: re-imlpement map editor)
   onBearingChange: (bearing: number) => void;
   onReady: (engine: MapEngine | null) => void;
   resetBearing: () => void;
@@ -67,7 +70,10 @@ export function useMapEngine({
   activeLevel,
   onFeaturesChange,
   onSelectedChange,
+<<<<<<< HEAD
   onFinish,
+=======
+>>>>>>> 9b29d75 (refactor: re-imlpement map editor)
   onBearingChange,
   onReady,
   resetBearing,
@@ -93,7 +99,10 @@ export function useMapEngine({
     onBearingChange,
     onReady,
     resetBearing,
+<<<<<<< HEAD
     onFinish,
+=======
+>>>>>>> 9b29d75 (refactor: re-imlpement map editor)
   });
 
   useEffect(() => {
@@ -103,7 +112,10 @@ export function useMapEngine({
       onBearingChange,
       onReady,
       resetBearing,
+<<<<<<< HEAD
       onFinish,
+=======
+>>>>>>> 9b29d75 (refactor: re-imlpement map editor)
     };
     activeLevelRef.current = activeLevel;
     initialDataRef.current = initialData;
@@ -446,7 +458,11 @@ export function useMapEngine({
 
     draw.on("finish", (id, context) => {
       const key = String(id);
+<<<<<<< HEAD
       onFinish(id, context);
+=======
+
+>>>>>>> 9b29d75 (refactor: re-imlpement map editor)
       if (context.action === "draw" && !metaRef.current.has(key)) {
         const level = activeLevelRef.current;
 
@@ -461,7 +477,12 @@ export function useMapEngine({
 
         sync(true);
 
+<<<<<<< HEAD
         setTool("select");
+=======
+        draw.setMode("select");
+        map.doubleClickZoom.enable();
+>>>>>>> 9b29d75 (refactor: re-imlpement map editor)
         draw.selectFeature(id);
       } else {
         sync(true);
