@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -89,7 +88,7 @@ export interface DialogProps {
  * - Native focus restoration.
  * - Mobile bottom-sheet layout.
  * - Accessible title and description.
- *  
+ *
  * @example
  * ```tsx
  * <Dialog
@@ -140,9 +139,7 @@ export function Dialog({
   /**
    * Handles the native cancel event, normally triggered by Escape.
    */
-  const handleCancel = (
-    event: SyntheticEvent<HTMLDialogElement>,
-  ) => {
+  const handleCancel = (event: SyntheticEvent<HTMLDialogElement>) => {
     if (!closeOnEscape) {
       event.preventDefault();
       return;
@@ -161,13 +158,8 @@ export function Dialog({
   /**
    * Handles clicks directly on the dialog backdrop.
    */
-  const handleBackdropClick = (
-    event: MouseEvent<HTMLDialogElement>,
-  ) => {
-    if (
-      closeOnBackdropClick &&
-      event.target === event.currentTarget
-    ) {
+  const handleBackdropClick = (event: MouseEvent<HTMLDialogElement>) => {
+    if (closeOnBackdropClick && event.target === event.currentTarget) {
       onOpenChange(false);
     }
   };
@@ -176,18 +168,14 @@ export function Dialog({
     onOpenChange(false);
   };
 
-  const accessibleName = title
-    ? undefined
-    : ariaLabel || "Dialog";
+  const accessibleName = title ? undefined : ariaLabel || "Dialog";
 
   return (
     <dialog
       ref={dialogRef}
       aria-modal="true"
       aria-labelledby={title ? titleId : undefined}
-      aria-describedby={
-        description ? descriptionId : undefined
-      }
+      aria-describedby={description ? descriptionId : undefined}
       aria-label={accessibleName}
       onCancel={handleCancel}
       onClose={handleClose}
@@ -198,10 +186,8 @@ export function Dialog({
         max-h-[calc(100dvh-env(safe-area-inset-top)-1rem)]
         overflow-y-auto overscroll-contain
         rounded-t-2xl border-0
-        bg-(--primary-color) p-5 text-gray-900 shadow-2xl
-
-        backdrop:bg-black/50
-        backdrop:backdrop-blur-sm
+        bg-surface-raised p-5 
+        text-foreground shadow-2xl
 
         sm:m-auto sm:w-[calc(100%-2rem)]
         sm:max-w-lg sm:rounded-2xl sm:p-6
@@ -216,7 +202,7 @@ export function Dialog({
             {title && (
               <h2
                 id={titleId}
-                className="text-lg font-semibold"
+                className="text-lg text-foreground font-semibold"
               >
                 {title}
               </h2>
@@ -225,7 +211,7 @@ export function Dialog({
             {description && (
               <p
                 id={descriptionId}
-                className="mt-1 text-sm leading-6 text-gray-600"
+                className="mt-1 text-sm leading-6 text-foreground-secondary"
               >
                 {description}
               </p>
@@ -240,12 +226,15 @@ export function Dialog({
               className="
                 inline-flex size-11 shrink-0 items-center
                 justify-center rounded-full
-                text-gray-500 transition-colors
-                hover:bg-slate-500 hover:text-gray-900
+                text-foreground
+                hover:text-foreground-hover
+                transition-colors
+                hover:bg-surface-raised-hover
                 focus-visible:outline-none
                 focus-visible:ring-2
-                focus-visible:ring-blue-600
+                focus-visible:ring-action-primary-hover
                 focus-visible:ring-offset-2
+                cursor-pointer
               "
             >
               <AiOutlineClose />
