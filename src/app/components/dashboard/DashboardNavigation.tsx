@@ -28,22 +28,22 @@ export default function DashboardNavigation() {
           <Link
             aria-selected={pathName.includes(item.href)}
             className={`
+              group
               w-full min-w-11 p-3
               flex items-center justify-between not-lg:justify-center
               rounded-lg 
               transition-colors duration-300 ease-in-out
-              not-dark:aria-selected:text-background
+              aria-selected:text-white
               aria-selected:bg-action-primary
               aria-selected:font-bold
               hover:bg-background-hover
               text-sm 
-              text-text-1 00
               `}
             key={key}
             href={item.href}
           >
             <span className="not-lg:hidden">{item.label}</span>
-            <item.icon className="text-xl stroke-[0.5] shrink-0 " />
+            <item.icon className="text-xl stroke-[0.5] shrink-0 group-aria-selected:stroke-[1.5]" />
           </Link>
         ))}
       </ul>
