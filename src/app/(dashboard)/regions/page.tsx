@@ -5,8 +5,8 @@ import RegionsTable, {
   RegionStatus,
 } from "@/app/components/dashboard/regions/RegionsTable";
 import { useState } from "react";
-import { AiOutlinePlus, AiOutlineSearch } from "react-icons/ai";
-
+import { AiOutlinePlus } from "react-icons/ai";
+import { CgSearch } from "react-icons/cg";
 const regionMockData = [
   {
     id: "sdfsdf",
@@ -152,28 +152,27 @@ export default function RegionsPage() {
               جست و جو منطقه
             </label>
 
-            <search className="min-w-0 w-full flex-1">
+            <search className="min-w-0 w-full rounded-lg flex flex-1 border border-border bg-surface focus-within:ring-2 focus-within:ring-action-primary-hover/20">
               <input
                 type="search"
                 id="simple-search"
                 placeholder="جست و جوی منطقه..."
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
-                className="block w-full py-2.5 px-3 text-sm text-slate-200 outline-none transition placeholder:text-slate-300"
+                className="w-full py-2.5 px-3 text-sm text-foreground border-0  outline-none transition placeholder:text-foreground-muted "
               />
+              <button
+                type="submit"
+                aria-label="جستجو"
+                className="flex h-10 w-10 shrink-0 items-center justify-center text-white transition duration-300 focus:outline-none cursor-pointer"
+              >
+                <CgSearch />
+              </button>
             </search>
-
-            <button
-              type="submit"
-              aria-label="جستجو"
-              className="flex h-10 w-10 shrink-0 items-center justify-center text-white transition duration-300 focus:outline-none focus:ring-4 focus:ring-blue-500/30 cursor-pointer"
-            >
-              <AiOutlineSearch />
-            </button>
           </form>
           <button
             onClick={() => setIsAddingRegion(true)}
-            className="min-w-fit flex gap-2 items-center bg-info-500 transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
+            className="min-w-fit flex gap-2 items-center bg-action-primary transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
           >
             <AiOutlinePlus />
             <span className="text-sm">افزودن منطقه</span>
