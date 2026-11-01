@@ -12,7 +12,7 @@ export default function MapPage() {
       <div className="col-span-3 h-full overflow-y-auto scrollbar-gutter-stable border-e border-border">
         <DetailsLayer />
       </div>
-      <div className="col-span-7 h-full border-e border-border grid grid-rows-12">
+      <div className="col-span-7 h-full border-e border-border grid grid-rows-[1fr_auto]">
         <div className="row-span-9 min-h-0">
           <MapEditor />
         </div>
@@ -20,42 +20,42 @@ export default function MapPage() {
           <SelectedParcelsOwnersTable
             data={
               [
-                // {
-                //   parcel: { areaM2: "8000", name: "P450" },
-                //   block: { name: "B516" },
-                //   owner: { name: "نوید نورزاد" },
-                //   region: {name: "R65"}
-                // },
-                // {
-                //   parcel: { areaM2: "8000", name: "P450" },
-                //   block: { name: "B516" },
-                //   owner: { name: "نوید نورزاد" },
-                //   region: {name: "R65"}
-                // },
-                // {
-                //   parcel: { areaM2: "8000", name: "P450" },
-                //   block: { name: "B516" },
-                //   owner: { name: "نوید نورزاد" },
-                //   region: {name: "R65"}
-                // },
-                // {
-                //   parcel: { areaM2: "8000", name: "P450" },
-                //   block: { name: "B516" },
-                //   owner: { name: "نوید نورزاد" },
-                //   region: {name: "R65"}
-                // },
-                // {
-                //   parcel: { areaM2: "8000", name: "P450" },
-                //   block: { name: "B516" },
-                //   owner: { name: "نوید نورزاد" },
-                //   region: {name: "R65"}
-                // },
-                // {
-                //   parcel: { areaM2: "8000", name: "P450" },
-                //   block: { name: "B516" },
-                //   owner: { name: "نوید نورزاد" },
-                //   region: {name: "R65"}
-                // },
+                {
+                  parcel: { areaM2: "8000", name: "P450" },
+                  block: { name: "B516" },
+                  owner: { name: "نوید نورزاد" },
+                  region: {name: "R65"}
+                },
+                {
+                  parcel: { areaM2: "8000", name: "P450" },
+                  block: { name: "B516" },
+                  owner: { name: "نوید نورزاد" },
+                  region: {name: "R65"}
+                },
+                {
+                  parcel: { areaM2: "8000", name: "P450" },
+                  block: { name: "B516" },
+                  owner: { name: "نوید نورزاد" },
+                  region: {name: "R65"}
+                },
+                {
+                  parcel: { areaM2: "8000", name: "P450" },
+                  block: { name: "B516" },
+                  owner: { name: "نوید نورزاد" },
+                  region: {name: "R65"}
+                },
+                {
+                  parcel: { areaM2: "8000", name: "P450" },
+                  block: { name: "B516" },
+                  owner: { name: "نوید نورزاد" },
+                  region: {name: "R65"}
+                },
+                {
+                  parcel: { areaM2: "8000", name: "P450" },
+                  block: { name: "B516" },
+                  owner: { name: "نوید نورزاد" },
+                  region: {name: "R65"}
+                },
               ]
             }
             onDelete={console.log}

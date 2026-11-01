@@ -28,7 +28,6 @@ import {
 
 import {
   FiEdit2,
-  FiTrash2,
   FiArrowUp,
   FiArrowDown,
   FiEye,
@@ -133,32 +132,20 @@ export default function SelectedParcelsOwnersTable({
                 event.stopPropagation();
                 onEdit(row.original);
               }}
-              className="rounded hover:text-mist-400 transition duration-300 cursor-pointer"
+              className="isolate cursor-pointer rounded-full p-4 hover:text-blue-600 hover:bg-surface-raised-hover transition duration-300"
             >
-              <FiEdit2 size={14} />
-            </button>
-
-            <button
-              type="button"
-              aria-label={`Delete ${row.original.parcel.name}`}
-              onClick={(event) => {
-                event.stopPropagation();
-                onDelete(row.original);
-              }}
-              className="rounded hover:text-mist-400 transition duration-300 cursor-pointer"
-            >
-              <FiTrash2 size={14} />
+              <FiEdit2 size={17} />
             </button>
             <button
               type="button"
-              aria-label={`Delete ${row.original.parcel.name}`}
+              aria-label={`Edit ${row.original.parcel.name}`}
               onClick={(event) => {
                 event.stopPropagation();
-                onDelete(row.original);
+                onEdit(row.original);
               }}
-              className="rounded hover:text-mist-400 transition duration-300 cursor-pointer"
+              className="isolate cursor-pointer rounded-full p-4 hover:text-blue-600 hover:bg-surface-raised-hover transition duration-300"
             >
-              <FiEye size={14} />
+              <FiEye size={17} />
             </button>
           </div>
         ),
@@ -180,7 +167,7 @@ export default function SelectedParcelsOwnersTable({
     <div className="overflow-x-auto rounded-lg border border-border col-span-8">
       <div className="max-h-36.5 overflow-y-auto scrollbar-gutter-stable">
         <div
-          className="grid sticky top-0 z-10 bg-(--primary-color) text-left text-xs border-b border-b-slate-200/10"
+          className="grid sticky top-0 z-10 bg-background text-left text-xs border-b border-b-slate-200/10"
           style={{
             gridTemplateColumns: `repeat(${columns.length}, minmax(max-content, 1fr))`,
           }}
@@ -210,7 +197,7 @@ export default function SelectedParcelsOwnersTable({
           )}
         </div>
 
-        <div>
+        <div className="min-h-full">
           {rows.length === 0 ? (
             <div className="px-4 py-2 text-center text-gray-500">
               مالکیت یافت نشد
@@ -237,7 +224,7 @@ export default function SelectedParcelsOwnersTable({
                 }}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <div key={cell.id} className="px-4 py-2.5 text-right text-xs">
+                  <div key={cell.id} className="px-4 py-1.5 text-right text-xs flex flex-col justify-center">
                     <table.FlexRender cell={cell} />
                   </div>
                 ))}
