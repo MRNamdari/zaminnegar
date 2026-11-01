@@ -1,8 +1,414 @@
+"use client";
+
+import OwnersTable, {
+  Owner,
+  OwnerStatus,
+} from "@/app/components/dashboard/owners/OwnersTable";
+
+import { useState } from "react";
+import { AiOutlinePlus } from "react-icons/ai";
+import { Dialog } from "@/app/components/Dialog";
+import { IoChevronDown } from "react-icons/io5";
+import { toPersianNumber } from "@/app/util";
+import { initialOwners } from "../mockData";
+import { useRouter } from "next/navigation";
 
 export default function OwnersPage() {
+  const router = useRouter();
+  const [searchValue, setSearchValue] = useState("");
+  const [owners, setOwners] = useState<Owner[]>(initialOwners);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editedOwner, setEditedOwner] = useState<Owner | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newOwner, setNewOwner] = useState<Omit<Owner, "id">>({
+    name: "",
+    parcelCount: 0,
+    totalArea: 0,
+    status: OwnerStatus.ACTIVE,
+  });
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedOwner, setSelectedOwner] = useState<Owner | null>(null);
+
+  const handleEdit = (owner: Owner) => {
+    setEditedOwner({ ...owner });
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdate = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!editedOwner) return;
+
+    setOwners((prevOwners) =>
+      prevOwners.map((owner) =>
+        owner.id === editedOwner.id ? editedOwner : owner,
+      ),
+    );
+
+    setIsEditModalOpen(false);
+    setEditedOwner(null);
+  };
+
+  const handleAddOwner = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const newOwnerData: Owner = {
+      id: crypto.randomUUID(),
+      ...newOwner,
+    };
+
+    setOwners((prevOwners) => [...prevOwners, newOwnerData]);
+
+    setNewOwner({
+      name: "",
+      parcelCount: 0,
+      totalArea: 0,
+      status: OwnerStatus.ACTIVE,
+    });
+
+    setIsAddModalOpen(false);
+  };
+
+  const handleDelete = (owner: Owner) => {
+    setSelectedOwner(owner);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!selectedOwner) return;
+
+    setOwners((prevOwners) =>
+      prevOwners.filter((owner) => owner.id !== selectedOwner.id),
+    );
+
+    setIsDeleteModalOpen(false);
+    setSelectedOwner(null);
+  };
+
   return (
-    <div>
-      Owners Page
+    <div className="w-full h-full overflow-y-auto">
+      <div className="w-full max-w-4xl mx-auto flex flex-col gap-4 items-center pb-4 pt-6 pr-4">
+        <h2 className="w-full text-right text-3xl leading-loose font-extralight">
+          مالکین
+        </h2>
+        <div className="block-header w-full flex gap-4 justify-between items-center">
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="flex w-full items-center gap-2 rounded-lg border border-border bg-[#504e4e52]"
+          >
+            <label htmlFor="simple-search" className="sr-only">
+              جستجو
+            </label>
+
+            <search className="min-w-0 w-full flex-1">
+              <input
+                type="search"
+                id="simple-search"
+                placeholder="جستجوی مالک..."
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                className="block w-full py-2.5 px-3 text-sm text-slate-200 outline-none transition placeholder:text-slate-300"
+              />
+            </search>
+
+            <button
+              type="submit"
+              aria-label="جستجو"
+              className="flex h-10 w-10 shrink-0 items-center justify-center text-white transition duration-300 focus:outline-none focus:ring-4 focus:ring-blue-500/30 cursor-pointer"
+            >
+              <svg
+                className="h-5 w-5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
+                />
+              </svg>
+            </button>
+          </form>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="min-w-fit flex gap-2 items-center bg-blue-500 hover:bg-blue-600 transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
+          >
+            <AiOutlinePlus />
+            <span className="text-sm">افزودن مالک</span>
+          </button>
+        </div>
+        <OwnersTable
+          data={owners}
+          searchValue={searchValue}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onRowClick={(owners) => {
+            router.push(`/owners/${encodeURIComponent(owners.id)}`);
+          }}
+        />
+      </div>
+      <Dialog
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        title="ویرایش مالک"
+        description="اطلاعات مالک را ویرایش کنید"
+        className="text-white"
+      >
+        {editedOwner && (
+          <form onSubmit={handleUpdate} className="flex flex-col gap-4 mt-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm">نام مالک</label>
+
+              <input
+                type="text"
+                value={editedOwner.name}
+                onChange={(e) =>
+                  setEditedOwner({
+                    ...editedOwner,
+                    name: e.target.value,
+                  })
+                }
+                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm">تعداد قطعات</label>
+
+              <input
+                disabled
+                type="text"
+                min="0"
+                value={toPersianNumber(editedOwner.parcelCount)}
+                onChange={(e) =>
+                  setEditedOwner({
+                    ...editedOwner,
+                    parcelCount: Number(e.target.value),
+                  })
+                }
+                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm">مساحت کل (هکتار)</label>
+
+              <input
+                disabled
+                type="text"
+                min="0"
+                step="0.1"
+                value={toPersianNumber(editedOwner.totalArea)}
+                onChange={(e) =>
+                  setEditedOwner({
+                    ...editedOwner,
+                    totalArea: Number(e.target.value),
+                  })
+                }
+                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm">وضعیت</label>
+
+              <div className="relative">
+                <select
+                  value={editedOwner.status}
+                  onChange={(e) =>
+                    setEditedOwner({
+                      ...editedOwner,
+                      status: e.target.value as OwnerStatus,
+                    })
+                  }
+                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none appearance-none"
+                >
+                  <option value={OwnerStatus.ACTIVE}>فعال</option>
+                  <option value={OwnerStatus.INACTIVE}>غیرفعال</option>
+                </select>
+
+                <IoChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 mt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setEditedOwner(null);
+                }}
+                className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
+              >
+                انصراف
+              </button>
+
+              <button
+                type="submit"
+                className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
+              >
+                ذخیره تغییرات
+              </button>
+            </div>
+          </form>
+        )}
+      </Dialog>
+      <Dialog
+        open={isAddModalOpen}
+        onOpenChange={setIsAddModalOpen}
+        title="افزودن مالک"
+        description="اطلاعات مالک جدید را وارد کنید"
+        className="text-white"
+      >
+        <form onSubmit={handleAddOwner} className="flex flex-col gap-4 mt-4">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm">نام مالک</label>
+
+            <input
+              type="text"
+              required
+              value={newOwner.name}
+              onChange={(e) =>
+                setNewOwner({
+                  ...newOwner,
+                  name: e.target.value,
+                })
+              }
+              placeholder="نام و نام خانوادگی"
+              className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm">تعداد قطعات</label>
+
+            <input
+              disabled
+              type="text"
+              min="0"
+              required
+              value={toPersianNumber(newOwner.parcelCount)}
+              onChange={(e) =>
+                setNewOwner({
+                  ...newOwner,
+                  parcelCount: Number(e.target.value),
+                })
+              }
+              className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm">مساحت کل (هکتار)</label>
+
+            <input
+              disabled
+              type="text"
+              min="0"
+              step="0.1"
+              required
+              value={toPersianNumber(newOwner.totalArea)}
+              onChange={(e) =>
+                setNewOwner({
+                  ...newOwner,
+                  totalArea: Number(e.target.value),
+                })
+              }
+              className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm">وضعیت</label>
+
+            <div className="relative">
+              <select
+                value={newOwner.status}
+                onChange={(e) =>
+                  setNewOwner({
+                    ...newOwner,
+                    status: e.target.value as OwnerStatus,
+                  })
+                }
+                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none appearance-none"
+              >
+                <option value={OwnerStatus.ACTIVE}>فعال</option>
+                <option value={OwnerStatus.INACTIVE}>غیرفعال</option>
+              </select>
+
+              <IoChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none" />
+            </div>
+          </div>
+          <div className="flex items-center gap-3 mt-4">
+            <button
+              type="button"
+              onClick={() => {
+                setIsAddModalOpen(false);
+                setNewOwner({
+                  name: "",
+                  parcelCount: 0,
+                  totalArea: 0,
+                  status: OwnerStatus.ACTIVE,
+                });
+              }}
+              className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
+            >
+              انصراف
+            </button>
+
+            <button
+              type="submit"
+              className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
+            >
+              افزودن مالک
+            </button>
+          </div>
+        </form>
+      </Dialog>
+      <Dialog
+        open={isDeleteModalOpen}
+        onOpenChange={(open) => {
+          setIsDeleteModalOpen(open);
+
+          if (!open) {
+            setSelectedOwner(null);
+          }
+        }}
+        title="حذف مالک"
+        description="آیا از حذف این مالک اطمینان دارید؟"
+        className="text-white"
+      >
+        {selectedOwner && (
+          <div className="flex flex-col gap-5 mt-4">
+            <p className="text-sm text-slate-300">
+              آیا مطمئن هستید که می‌خواهید مالک{" "}
+              <span className="text-white font-semibold mx-1">
+                {" "}
+                {selectedOwner.name}{" "}
+              </span>{" "}
+              را حذف کنید؟
+            </p>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setSelectedOwner(null);
+                }}
+                className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
+              >
+                انصراف
+              </button>
+
+              <button
+                type="button"
+                onClick={confirmDelete}
+                className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
+              >
+                حذف مالک
+              </button>
+            </div>
+          </div>
+        )}
+      </Dialog>
     </div>
-  )
+  );
 }
