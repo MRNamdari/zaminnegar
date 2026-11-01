@@ -1,6 +1,6 @@
 // import MainLogo from "../../../public/zaminnegar-logo.png";
 import Image from "next/image";
-
+import { CgSearch } from "react-icons/cg";
 export default function DashboardHeader() {
   const userName = "مدیر";
   return (
@@ -26,30 +26,16 @@ export default function DashboardHeader() {
               type="search"
               id="simple-search"
               placeholder="جستجوی منطقه یا بلوک..."
-              className="block w-full rounded-lg border border-border bg-[#504e4e52] py-2.5 px-3 text-sm text-slate-200 outline-none transition placeholder:text-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+              className="block w-full rounded-lg border border-border bg-surface py-2.5 px-3 text-sm text-foreground outline-none transition placeholder:text-foreground-muted focus:ring-2 focus:ring-action-primary-hover/20"
             />
           </div>
 
           <button
             type="submit"
             aria-label="جستجو"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-action-primary text-foreground transition duration-300 hover:bg-action-primary-hover focus:outline-none focus:ring-4 focus:ring-blue-500/30"
+            className="flex p-2 shrink-0 items-center justify-center rounded-lg bg-action-primary text-white transition duration-300 hover:bg-action-primary-hover focus:outline-none focus:ring-2 focus:ring-action-primary-hover/20"
           >
-            <svg
-              className="h-5 w-5"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
-              />
-            </svg>
+            <CgSearch fontSize={24} />
           </button>
         </form>
       </nav>
