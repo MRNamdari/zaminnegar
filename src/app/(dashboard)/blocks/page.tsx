@@ -10,7 +10,7 @@ import {
   type Block,
 } from "@/app/components/dashboard/blocks/BlocksTable";
 import { useRouter } from "next/navigation";
-import { mockBlocks } from "@/app/(dashboard)/blocks";
+import { mockBlocks } from "@/app/(dashboard)/mockData";
 
 export default function BlockPage() {
   const [blocks, setBlocks] = useState<Block[]>(mockBlocks);
@@ -21,6 +21,7 @@ export default function BlockPage() {
   const [valueStatus, setValueStatus] = useState<BlockStatus | "">("");
   const [alt, setAlt] = useState("");
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const router = useRouter();
 
   const handleAddBlock = () => {
@@ -86,9 +87,18 @@ export default function BlockPage() {
   };
 
   const handleDelete = (block: Block) => {
+    setSelectedBlock(block);
+    setIsDeleteModalOpen(true);
+  };
+  const confirmDelete = () => {
+    if (!selectedBlock) return;
+
     setBlocks((prevBlocks) =>
-      prevBlocks.filter((item) => item.code !== block.code),
+      prevBlocks.filter((item) => item.code !== selectedBlock.code),
     );
+
+    setIsDeleteModalOpen(false);
+    setSelectedBlock(null);
   };
   return (
     <div className="w-full h-full overflow-y-auto">
@@ -178,13 +188,16 @@ export default function BlockPage() {
           onSubmit={(e) => e.preventDefault()}
           className="flex flex-col gap-4"
         >
-          <input
-            value={nameBlock}
-            onChange={(e) => setNameBlock(e.target.value)}
-            type="text"
-            placeholder="کد بلوک"
-            className="w-full p-3 rounded-lg bg-slate-700 text-white border-border outline-none"
-          />
+          <div className="flex flex-col gap-2">
+            <label className="text-sm">کد بلوک</label>
+            <input
+              value={nameBlock}
+              onChange={(e) => setNameBlock(e.target.value)}
+              type="text"
+              placeholder="کد بلوک"
+              className="w-full p-2.5 rounded-lg bg-slate-700 text-white border-border outline-none"
+            />
+          </div>
           <div className="relative">
             <select
               value={nameRegion}
@@ -232,6 +245,52 @@ export default function BlockPage() {
         >
           {selectedBlock ? "ذخیره تغییرات" : "ثبت بلوک"}
         </button>
+      </Dialog>
+      <Dialog
+        open={isDeleteModalOpen}
+        onOpenChange={(open) => {
+          setIsDeleteModalOpen(open);
+
+          if (!open) {
+            setSelectedBlock(null);
+          }
+        }}
+        title="حذف بلوک"
+        description="آیا از حذف این بلوک اطمینان دارید؟"
+        className="text-white"
+      >
+        {selectedBlock && (
+          <div className="flex flex-col gap-5 mt-4">
+            <p className="text-sm text-slate-300">
+              آیا مطمئن هستید که می‌خواهید بلوک
+              <span className="text-white font-semibold mx-1">
+                {selectedBlock.code}
+              </span>
+              را حذف کنید؟
+            </p>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setSelectedBlock(null);
+                }}
+                className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
+              >
+                انصراف
+              </button>
+
+              <button
+                type="button"
+                onClick={confirmDelete}
+                className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
+              >
+                حذف بلوک
+              </button>
+            </div>
+          </div>
+        )}
       </Dialog>
     </div>
   );
