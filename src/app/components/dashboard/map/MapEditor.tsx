@@ -77,12 +77,12 @@ export interface MapEditorProps {
   className?: string;
 }
 
-const LEVELS: Record<Level, { label: string; color: HexColor }> = {
-  region: { label: "منطقه", color: "#22c55e" },
-  block: { label: "بلوک", color: "#3b82f6" },
-  parcel: { label: "قطعه", color: "#facc15" },
+const LEVELS: Record<Level, { label: string; color: string }> = {
+  region: { label: "منطقه", color: "--map-green" },
+  block: { label: "بلوک", color: "--map-blue" },
+  parcel: { label: "قطعه", color: "--map-yellow" },
 };
-const SELECTED_COLOR = "#a855f7";
+const SELECTED_COLOR = "--map-purple";
 
 // منبع تصاویر ماهواره‌ای. برای محصول نهایی شرایط استفاده را چک کنید
 // یا با MapTiler / Mapbox / تایل‌های خودتان عوض کنید.
@@ -118,9 +118,9 @@ const mapStyle: maplibregl.StyleSpecification = {
     },
   },
   layers: [
-    { id: "satellite", type: "raster", source: "satellite" },
+    // { id: "streets", type: "raster", source: "streets" },
+    { id: "satellite", type: "raster", source: "satellite" }
     // { id: "terrain", type: "hillshade", source: "terrain" },
-    // { id: "streets", type: "raster", source: "streets" }
   ],
 };
 
@@ -282,7 +282,7 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
     /* ---- نقشه + ابزار رسم ---- */
     useEffect(() => {
       if (!mapEl.current || mapRef.current) return;
-
+      const getCssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name) as HexColor;
       const map = new maplibregl.Map({
         container: mapEl.current,
         style: mapStyle,
@@ -321,8 +321,8 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
 
       // رنگ هر شکل بر اساس سطحش (منطقه/بلوک/قطعه)
       const colorOf = (f: { id?: string | number }): HexColor =>
-        LEVELS[metaRef.current.get(String(f.id))?.level ?? levelRef.current]
-          .color;
+        getCssVar(LEVELS[metaRef.current.get(String(f.id))?.level ?? levelRef.current]
+          .color);
       const polyStyles = {
         fillColor: "#facc15" as HexColor,
         fillOpacity: 0.3,
@@ -355,7 +355,7 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
             styles: {
               selectedPolygonColor: (feature) => {
                 const level = metaRef.current.get(String(feature.id))?.level;
-                if (!level) return SELECTED_COLOR;
+                if (!level) return getCssVar(SELECTED_COLOR);
                 switch (level) {
                   case "region":
                     return "#22c55e";
@@ -367,11 +367,11 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
               },
               
               selectedPolygonFillOpacity: 0.35,
-              selectedPolygonOutlineColor: SELECTED_COLOR,
+              selectedPolygonOutlineColor: getCssVar(SELECTED_COLOR),
               selectedPolygonOutlineWidth: 3,
               selectionPointColor: "#ffffff",
-              selectionPointOutlineColor: SELECTED_COLOR,
-              midPointColor: SELECTED_COLOR,
+              selectionPointOutlineColor: getCssVar(SELECTED_COLOR),
+              midPointColor: getCssVar(SELECTED_COLOR),
               midPointOutlineColor: "#ffffff",
             },
           }),
@@ -655,11 +655,7 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
     }, []);
 
     const btn = (active: boolean) =>
-      `flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
-        active
-          ? "bg-blue-600 text-white"
-          : "text-slate-300 hover:bg-white/10 hover:text-white"
-      }`;
+      `flex h-9 w-9 items-center justify-center rounded-lg transition-color aria-pressed:bg-(--level-color) aria-pressed:text-background hover:bg-white/10 hover:text-white`;
     const floatBtn =
       "flex h-9 w-9 items-center justify-center rounded-lg bg-[#0e1726]/95 text-slate-200 ring-1 ring-white/10 hover:bg-[#16233a]";
 
@@ -673,9 +669,13 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
         </div>
 
         {/* نوار ابزار */}
-        <div className="absolute left-3 top-3 z-10 flex flex-col gap-1 rounded-xl bg-[#0e1726]/95 p-1.5 ring-1 ring-white/10">
+        <div className="absolute left-3 top-3 z-10 flex flex-col gap-1 rounded-xl bg-[#0e1726]/95 p-1.5 ring-1 ring-white/10"
+        
+         style={{"--level-color": `var(${LEVELS[level].color})`} as React.CSSProperties}
+        >
           <button
             className={btn(tool === "select")}
+            aria-pressed={tool === "select"}
             onClick={() => chooseTool("select")}
             title="انتخاب و ویرایش"
           >
@@ -683,6 +683,7 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
           </button>
           <button
             className={btn(tool === "polygon")}
+            aria-pressed={tool === "polygon"}
             onClick={() => chooseTool("polygon")}
             title="کشیدن چندضلعی (کلیک روی نقطه شروع یا Enter برای پایان)"
           >
@@ -690,6 +691,7 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
           </button>
           <button
             className={btn(tool === "rectangle")}
+            aria-pressed={tool === "rectangle"}
             onClick={() => chooseTool("rectangle")}
             title="کشیدن مستطیل"
           >
@@ -704,6 +706,7 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
           </button>
           <button
             className={btn(levelMenu)}
+            aria-pressed={levelMenu}
             onClick={() => setLevelMenu((v) => !v)}
             title="سطح (منطقه / بلوک / قطعه)"
           >
@@ -714,7 +717,7 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
         {levelMenu && (
           <div
             dir="rtl"
-            className=" absolute left-16 top-3 z-10 w-36 rounded-xl bg-[#0e1726]/95 p-1.5 text-sm text-slate-200 ring-1 ring-white/10"
+            className=" absolute left-16 top-3 z-10 w-36 rounded-xl bg-[#0e1726]/95 p-1.5 text-sm text-slate-200 ring-1 ring-white/1 flex flex-col gap-1.5"
           >
             {(Object.keys(LEVELS) as Level[]).map((lv) => (
               <button
@@ -723,13 +726,13 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
                   setLevel(lv);
                   setLevelMenu(false);
                 }}
-                className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-right hover:bg-white/10 ${
+                className={`flex w-full items-center gap-2 transition duration-300 rounded-lg px-2.5 py-2 text-right hover:bg-white/10 ${
                   level === lv ? "bg-white/10" : ""
                 }`}
               >
                 <span
                   className="h-3 w-3 rounded-sm"
-                  style={{ background: LEVELS[lv].color }}
+                  style={{ background: `var(${LEVELS[lv].color})` }}
                 />
                 {LEVELS[lv].label}
               </button>
@@ -739,31 +742,25 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
 
         {/* کنترل‌های سمت راست */}
         <div className="absolute right-3 top-3 z-10 flex flex-col gap-2">
-          <button
-            className={`${floatBtn} text-xs font-semibold`}
-            onClick={() => setIs3D((v) => !v)}
-          >
-            3D
-          </button>
-          <button className={floatBtn} onClick={locate} title="موقعیت من">
+          <button className={`${floatBtn} transition duration-300`} onClick={locate} title="موقعیت من">
             <Icon d={ICONS.locate} />
           </button>
           <button
-            className={floatBtn}
+            className={`${floatBtn} transition duration-300`}
             onClick={() => mapRef.current?.zoomIn()}
             title="بزرگ‌نمایی"
           >
             <Icon d={ICONS.plus} />
           </button>
           <button
-            className={floatBtn}
+            className={`${floatBtn} transition duration-300`}
             onClick={() => mapRef.current?.zoomOut()}
             title="کوچک‌نمایی"
           >
             <Icon d={ICONS.minus} />
           </button>
           <button
-            className={`${floatBtn} rounded-full`}
+            className={`${floatBtn}transition duration-300 rounded-full`}
             onClick={() =>
               mapRef.current?.easeTo({ bearing: 0, pitch: is3D ? 60 : 0 })
             }
