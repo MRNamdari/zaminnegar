@@ -35,6 +35,7 @@ import {
   HexColor,
 } from "terra-draw";
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
+import { LuRedo2, LuUndo2 } from "react-icons/lu";
 
 /* ----------------------------- Types & config ----------------------------- */
 
@@ -119,7 +120,7 @@ const mapStyle: maplibregl.StyleSpecification = {
   },
   layers: [
     // { id: "streets", type: "raster", source: "streets" },
-    { id: "satellite", type: "raster", source: "satellite" }
+    { id: "satellite", type: "raster", source: "satellite" },
     // { id: "terrain", type: "hillshade", source: "terrain" },
   ],
 };
@@ -282,7 +283,10 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
     /* ---- نقشه + ابزار رسم ---- */
     useEffect(() => {
       if (!mapEl.current || mapRef.current) return;
-      const getCssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name) as HexColor;
+      const getCssVar = (name: string) =>
+        getComputedStyle(document.documentElement).getPropertyValue(
+          name,
+        ) as HexColor;
       const map = new maplibregl.Map({
         container: mapEl.current,
         style: mapStyle,
@@ -321,8 +325,10 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
 
       // رنگ هر شکل بر اساس سطحش (منطقه/بلوک/قطعه)
       const colorOf = (f: { id?: string | number }): HexColor =>
-        getCssVar(LEVELS[metaRef.current.get(String(f.id))?.level ?? levelRef.current]
-          .color);
+        getCssVar(
+          LEVELS[metaRef.current.get(String(f.id))?.level ?? levelRef.current]
+            .color,
+        );
       const polyStyles = {
         fillColor: "#facc15" as HexColor,
         fillOpacity: 0.3,
@@ -365,7 +371,7 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
                     return "#facc15";
                 }
               },
-              
+
               selectedPolygonFillOpacity: 0.35,
               selectedPolygonOutlineColor: getCssVar(SELECTED_COLOR),
               selectedPolygonOutlineWidth: 3,
@@ -376,7 +382,11 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
             },
           }),
           new TerraDrawPolygonMode({
-            styles: {...polyStyles, fillColor: (feature) => colorOf(feature), outlineColor: (feature) => colorOf(feature)},
+            styles: {
+              ...polyStyles,
+              fillColor: (feature) => colorOf(feature),
+              outlineColor: (feature) => colorOf(feature),
+            },
             keyEvents: { finish: "Enter", cancel: "Escape" },
           }),
           new TerraDrawRectangleMode({ styles: polyStyles }),
@@ -669,9 +679,13 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
         </div>
 
         {/* نوار ابزار */}
-        <div className="absolute left-3 top-3 z-10 flex flex-col gap-1 rounded-xl bg-[#0e1726]/95 p-1.5 ring-1 ring-white/10"
-        
-         style={{"--level-color": `var(${LEVELS[level].color})`} as React.CSSProperties}
+        <div
+          className="absolute left-3 top-3 z-10 flex flex-col gap-1 rounded-xl bg-[#0e1726]/95 p-1.5 ring-1 ring-white/10"
+          style={
+            {
+              "--level-color": `var(${LEVELS[level].color})`,
+            } as React.CSSProperties
+          }
         >
           <button
             className={btn(tool === "select")}
@@ -712,6 +726,24 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
           >
             <Icon d={ICONS.layers} />
           </button>
+          {/* Undo */}
+          <button
+            className={btn(levelMenu)}
+            aria-pressed={levelMenu}
+            onClick={() => drawRef.current?.undo()}
+            title="Undo"
+          >
+            <LuUndo2 />
+          </button>
+          {/* Redo */}
+          <button
+            className={btn(levelMenu)}
+            aria-pressed={levelMenu}
+            onClick={() => drawRef.current?.redo()}
+            title="Redo"
+          >
+            <LuRedo2 />
+          </button>
         </div>
 
         {levelMenu && (
@@ -742,7 +774,11 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
 
         {/* کنترل‌های سمت راست */}
         <div className="absolute right-3 top-3 z-10 flex flex-col gap-2">
-          <button className={`${floatBtn} transition duration-300`} onClick={locate} title="موقعیت من">
+          <button
+            className={`${floatBtn} transition duration-300`}
+            onClick={locate}
+            title="موقعیت من"
+          >
             <Icon d={ICONS.locate} />
           </button>
           <button
