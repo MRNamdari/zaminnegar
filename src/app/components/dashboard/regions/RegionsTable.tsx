@@ -66,8 +66,8 @@ const features = tableFeatures({
 });
 
 const statusStyles: Record<RegionStatus, string> = {
-  [RegionStatus.INACTIVE]: "bg-gray-100 text-gray-700",
-  [RegionStatus.ACTIVE]: "bg-green-200 text-green-700",
+  [RegionStatus.INACTIVE]: "bg-surface-muted text-foreground",
+  [RegionStatus.ACTIVE]: "bg-map-green text-surface",
 };
 
 export default function RegionsTable({
@@ -138,7 +138,7 @@ export default function RegionsTable({
 
           return (
             <span
-              className={`min-w-18 text-center rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${statusStyles[status]}`}
+              className={`min-w-18 text-center select-none rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${statusStyles[status]}`}
             >
               {RegionStatusMap.get(status)}
             </span>
@@ -158,7 +158,7 @@ export default function RegionsTable({
                 event.stopPropagation();
                 onEdit(row.original);
               }}
-              className="isolate cursor-pointer rounded p-2 text-blue-600 hover:bg-blue-900 transition duration-300"
+              className="isolate cursor-pointer rounded-full p-4 hover:text-blue-600 hover:bg-surface-raised transition duration-300"
             >
               <FiEdit2 size={17} />
             </button>
@@ -170,7 +170,7 @@ export default function RegionsTable({
                 event.stopPropagation();
                 onDelete(row.original);
               }}
-              className="isolate cursor-pointer rounded p-2 text-red-600 hover:bg-red-900 transition duration-300"
+              className="isolate cursor-pointer rounded-full p-4 hover:text-red-600 hover:bg-surface-raised transition duration-300"
             >
               <FiTrash2 size={17} />
             </button>
@@ -210,7 +210,7 @@ export default function RegionsTable({
     <div className="w-full space-y-4">
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-200/10">
+          <thead className="bg-surface-raised">
             {table.getHeaderGroups().map((group) => (
               <tr key={group.id}>
                 {group.headers.map((header) => (
@@ -268,7 +268,7 @@ export default function RegionsTable({
                   }}
                   tabIndex={0}
                   aria-label={`Open block ${row.original.name}`}
-                  className="border-t border-border hover:bg-slate-800 odd:bg-slate-950 focus-visible:outline-2 focus-visible:outline-blue-500"
+                  className="even:bg-surface transition hover:bg-surface-muted border-t border-border focus-visible:outline-2 "
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 text-right">
