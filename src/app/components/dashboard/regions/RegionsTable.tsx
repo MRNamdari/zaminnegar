@@ -293,12 +293,12 @@ export default function RegionsTable({
             aria-label="Previous page"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="rounded bg-blue-600 p-2 disabled:opacity-40 cursor-pointer"
+            className="rounded-full transition-colors ease-in-out bg-action-primary hover:bg-action-primary-hover disabled:bg-surface-muted p-2 cursor-pointer disabled:cursor-not-allowed"
           >
             <FiChevronRight />
           </button>
 
-          <span className="text-sm">
+          <span className="text-sm select-none">
             صفحه {toPersianNumber(table.state.pagination.pageIndex + 1)} از{" "}
             {toPersianNumber(Math.max(1, pageCount))}
           </span>
@@ -308,7 +308,7 @@ export default function RegionsTable({
             aria-label="Next page"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="rounded bg-blue-600 p-2 disabled:opacity-40 cursor-pointer"
+            className="rounded-full transition-colors ease-in-out bg-action-primary hover:bg-action-primary-hover disabled:bg-surface-muted p-2 cursor-pointer disabled:cursor-not-allowed"
           >
             <FiChevronLeft />
           </button>
