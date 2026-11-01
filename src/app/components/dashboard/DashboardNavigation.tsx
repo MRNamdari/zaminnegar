@@ -32,10 +32,10 @@ export default function DashboardNavigation() {
               flex items-center justify-between not-lg:justify-center
               rounded-lg 
               transition-colors duration-300 ease-in-out
-              aria-selected:bg-secondary-500
-              aria-selected:text-text-950
+              not-dark:aria-selected:text-background
+              aria-selected:bg-action-primary
               aria-selected:font-bold
-              hover:bg-secondary-500
+              hover:bg-background-hover
               text-sm 
               text-text-1 00
               `}
