@@ -236,8 +236,8 @@ const ICONS = {
 const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
   function MapEditor(
     {
-      center = [51.389, 35.689],
-      zoom = 15,
+      center = [59.679098, 36.211555],
+      zoom = 13.5,
       initialData,
       onChange,
       className = "",
@@ -268,7 +268,7 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
     const [tool, setTool] = useState<Tool>("select");
     const [level, setLevel] = useState<Level>("parcel");
     const [levelMenu, setLevelMenu] = useState(false);
-    const [is3D, setIs3D] = useState(true);
+    const [is3D, setIs3D] = useState(false);
     const [bearing, setBearing] = useState(0);
 
     useEffect(() => {
