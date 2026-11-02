@@ -4,13 +4,13 @@ import { BackButton } from "@/app/components/dashboard/Backbutton";
 import BlockInformation from "@/app/components/dashboard/blocks/BlocksInformation";
 
 interface Props {
-  params: Promise<{ code: string }>;
+  params: Promise<{ id: string }>;
 }
 
 export default async function BlockDetailsPage({ params }: Props) {
-  const { code } = await params;
+  const { id } = await params;
 
-  const block = mockBlocks.find((item) => item.code === code);
+  const block = mockBlocks.find((item) => item.id === id);
 
   if (!block) {
     notFound();
@@ -23,7 +23,7 @@ export default async function BlockDetailsPage({ params }: Props) {
           <div className="flex items-center">
             <div className="w-15 h-15 bg-emerald-700 py-3.5"></div>
             <h2 className="flex text-xl border-r border-slate-200/10 px-4 py-3.5 mr-5">
-              جزئیات بلوک {code}
+              جزئیات بلوک {id}
             </h2>
             <div className="bg-amber-200/30 text-amber-200 px-3 py-px rounded-sm">
               {block.region}
