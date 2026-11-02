@@ -251,7 +251,7 @@ export default function OwnersTable({
                   }}
                   tabIndex={0}
                   aria-label={`Open owner ${row.original.name}`}
-                  className="cursor-pointer border-t border-border hover:bg-slate-800 odd:bg-slate-950 focus-visible:outline-2 focus-visible:outline-blue-500 transition duration-300"
+                  className="even:bg-surface transition hover:bg-surface-muted border-t border-border focus-visible:outline-2 cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 text-right">
