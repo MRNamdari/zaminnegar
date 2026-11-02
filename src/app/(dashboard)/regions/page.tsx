@@ -193,7 +193,7 @@ export default function RegionsPage() {
           onOpenChange={(open) => setIsAddingRegion(open)}
           title="افزودن منطقه"
           description="اطلاعات منطقه جدید را وارد کنید"
-          className="text-white "
+          className="text-white"
         />
       </div>
     </div>
