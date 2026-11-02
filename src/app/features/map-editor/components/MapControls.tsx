@@ -14,7 +14,7 @@ export function MapControls() {
   };
 
   const buttonClass =
-    "flex h-9 w-9 items-center justify-center rounded-lg bg-[#0e1726]/95 text-slate-200 ring-1 ring-white/10 hover:bg-[#16233a]";
+    "flex h-9 w-9 items-center justify-center rounded-lg bg-surface-raised hover:bg-surface-raised-hover transition-colors cursor-pointer";
 
   return (
     <div className="absolute right-3 top-3 z-20 flex flex-col gap-2">

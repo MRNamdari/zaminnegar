@@ -12,6 +12,7 @@ import {
   TerraDrawSessionUndoRedo,
   TerraDrawUndoRedoKeyboardShortcuts,
   type HexColor,
+  type TerraDrawEventListeners,
 } from "terra-draw";
 
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
@@ -46,6 +47,7 @@ interface Options {
   activeLevel: Level;
   onFeaturesChange: (data: AreaCollection, emit: boolean) => void;
   onSelectedChange: (id: string | null) => void;
+  onFinish: TerraDrawEventListeners["finish"];
   onBearingChange: (bearing: number) => void;
   onReady: (engine: MapEngine | null) => void;
   resetBearing: () => void;
@@ -65,6 +67,7 @@ export function useMapEngine({
   activeLevel,
   onFeaturesChange,
   onSelectedChange,
+  onFinish,
   onBearingChange,
   onReady,
   resetBearing,
@@ -90,6 +93,7 @@ export function useMapEngine({
     onBearingChange,
     onReady,
     resetBearing,
+    onFinish,
   });
 
   useEffect(() => {
@@ -99,6 +103,7 @@ export function useMapEngine({
       onBearingChange,
       onReady,
       resetBearing,
+      onFinish,
     };
     activeLevelRef.current = activeLevel;
     initialDataRef.current = initialData;
@@ -441,7 +446,7 @@ export function useMapEngine({
 
     draw.on("finish", (id, context) => {
       const key = String(id);
-
+      onFinish(id, context);
       if (context.action === "draw" && !metaRef.current.has(key)) {
         const level = activeLevelRef.current;
 
@@ -456,8 +461,7 @@ export function useMapEngine({
 
         sync(true);
 
-        draw.setMode("select");
-        map.doubleClickZoom.enable();
+        setTool("select");
         draw.selectFeature(id);
       } else {
         sync(true);

@@ -1,14 +1,18 @@
 "use client";
 
-import { useCallback, useContext, useEffect, useRef } from "react";
+import { useCallback, useContext, useRef } from "react";
 
 import { MapEditorInternalContext } from "../context/MapEditorContext";
 
-import { useMapEditorState } from "../context/useMapEditor";
+import {
+  useMapEditorActions,
+  useMapEditorState,
+} from "../context/useMapEditor";
 
 import { useMapEngine } from "../hooks/useMapEngine";
 
-import type { AreaCollection, MapEngine, MapEditorProps } from "../types";
+import type { AreaCollection, MapEngine } from "../types";
+import { TerraDrawEventListeners } from "terra-draw";
 
 interface Props {
   center: [number, number];
@@ -32,6 +36,7 @@ export default function MapCanvas({
   }
 
   const { activeLevel } = useMapEditorState();
+  const actions = useMapEditorActions();
 
   const handleFeaturesChange = useCallback(
     (data: AreaCollection, emit: boolean) => {
@@ -61,6 +66,14 @@ export default function MapCanvas({
 
   const bearingCallbackRef = useRef<((bearing: number) => void) | null>(null);
 
+  const handleFinish = useCallback<TerraDrawEventListeners["finish"]>(
+    (feat, ctx) => {
+      console.log("Finish event triggered:", feat, ctx);
+      actions.setActiveTool("select");
+    },
+    [actions],
+  );
+
   useMapEngine({
     container: mapElement,
     miniContainer: miniContainer ?? { current: null },
@@ -71,6 +84,7 @@ export default function MapCanvas({
     onFeaturesChange: handleFeaturesChange,
     onSelectedChange: handleSelectionChange,
     onBearingChange: handleBearingChange,
+    onFinish: handleFinish,
     onReady: handleReady,
     resetBearing: () => {
       internal.setBearing(0);

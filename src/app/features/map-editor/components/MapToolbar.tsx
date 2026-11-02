@@ -13,6 +13,7 @@ import {
 import { useMapEditor } from "../context/useMapEditor";
 
 import { LevelSelector } from "./LevelSelector";
+import { LEVELS } from "../config/levels";
 
 const tools = [
   {
@@ -36,16 +37,19 @@ export function MapToolbar() {
   const { state, actions } = useMapEditor();
 
   const buttonClass = (active: boolean) =>
-    `flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-white/10 hover:text-white ${
-      active ? "bg-white/10 text-white" : "text-slate-300"
+    `flex h-9 w-9 items-center justify-center rounded-lg cursor-pointer transition-colors ${
+      active
+        ? "bg-(--level-color) hover:bg-(--level-color-hover) text-background group"
+        : "text-foreground hover:bg-surface-raised-hover"
     }`;
 
   return (
     <div
-      className="absolute left-3 top-3 z-20 flex flex-col gap-1 rounded-xl bg-[#0e1726]/95 p-1.5 ring-1 ring-white/10"
+      className="absolute left-3 top-3 z-20 flex flex-col gap-1 rounded-xl bg-surface-raised p-1.5"
       style={
         {
-          "--level-color": "var(--map-yellow)",
+          "--level-color": `var(${LEVELS[state.activeLevel].color})`,
+          "--level-color-hover": `var(${LEVELS[state.activeLevel].color}-hover)`,
         } as React.CSSProperties
       }
     >
@@ -58,7 +62,7 @@ export function MapToolbar() {
           onClick={() => actions.setActiveTool(id)}
           title={title}
         >
-          <Icon size={18} />
+          <Icon size={18} className="group-aria-pressed:stroke-3" />
         </button>
       ))}
 

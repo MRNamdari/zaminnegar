@@ -59,7 +59,7 @@ body {
 }
 
 .ui-dialog[open]::backdrop {
-  background-color: light-dark(rgb(0 0 0 / 50%),rgb(255 255 255 / 10%) );
+  background-color: light-dark(rgb(0 0 0 / 50%), rgb(255 255 255 / 10%));
   backdrop-filter: blur(4px);
 }
 
@@ -84,12 +84,43 @@ body {
 }
 
 /* =========================================
+   Popup animations
+   ========================================= */
+
+[popover] {
+  /* Animation */
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transform-origin: bottom left;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    overlay 180ms allow-discrete,
+    display 180ms allow-discrete;
+}
+
+/* Opening state */
+@starting-style {
+  [popover]:popover-open {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Closing state */
+[popover]:not(:popover-open) {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* =========================================
    Reduced motion accessibility
    ========================================= */
 
 @media (prefers-reduced-motion: reduce) {
   .ui-dialog,
-  .ui-dialog::backdrop {
+  .ui-dialog::backdrop,
+  [popover] {
     transition: none !important;
     animation: none !important;
   }

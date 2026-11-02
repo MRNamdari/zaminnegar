@@ -12,6 +12,7 @@ import { MapControls } from "./components/MapControls";
 import { ViewModeToggle } from "./components/ViewModeToggle";
 
 import type { MapEditorHandle, MapEditorProps } from "./types";
+import { MiniMap } from "./components/MiniMap";
 
 const DEFAULT_CENTER: [number, number] = [59.679098, 36.211555];
 
@@ -48,17 +49,16 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
 
         <MapControls />
 
-        <div className="absolute bottom-3 left-3 z-20 h-28 w-28 overflow-hidden rounded-xl ring-2 ring-[#0e1726]">
-          <div ref={miniContainerRef} className="h-full w-full" />
-
-          <span className="pointer-events-none absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500 ring-2 ring-white" />
-        </div>
+        <MiniMap ref={miniContainerRef} />
 
         <ViewModeToggle />
 
         {!state.isMapReady && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#0e1726]/50 text-sm text-white">
-            Loading map...
+          <div
+            dir="rtl"
+            className="absolute inset-0 z-30 flex items-center justify-center bg-[#0e1726]/50 text-sm font-semibold text-white"
+          >
+            {"در حال بارگذاری نقشه…"}
           </div>
         )}
       </div>

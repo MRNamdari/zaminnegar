@@ -2,15 +2,15 @@ import type { Level } from "../types";
 
 export const LEVELS: Record<Level, { label: string; color: string }> = {
   region: {
-    label: "Region",
+    label: "منطقه",
     color: "--map-green",
   },
   block: {
-    label: "Block",
+    label: "بلوک",
     color: "--map-blue",
   },
   parcel: {
-    label: "Parcel",
+    label: "قطعه",
     color: "--map-yellow",
   },
 };
