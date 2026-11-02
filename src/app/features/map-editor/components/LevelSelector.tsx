@@ -37,7 +37,7 @@ export function LevelSelector() {
         style={{
           position: "fixed",
           positionAnchor: `--level-selector-anchor`,
-          positionArea: "x-end span-top",
+          positionArea: "x-start span-top",
           positionTryFallbacks: "flip-block,flip-inline,flip-block flip-inline",
           inset: "0 1rem",
         }}
