@@ -96,7 +96,7 @@ export default function OwnersPage() {
   return (
     <div className="w-full h-full overflow-y-auto">
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-4 items-center pb-4 pt-6 pr-4">
-        <h2 className="w-full text-right text-3xl leading-loose font-extralight">
+        <h2 className="w-full text-right text-3xl leading-loose font-normal">
           مالکین
         </h2>
         <div className="block-header w-full flex gap-4 justify-between items-center">
@@ -128,7 +128,7 @@ export default function OwnersPage() {
           </form>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="min-w-fit flex gap-2 items-center bg-blue-500 hover:bg-blue-600 transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
+            className="min-w-fit flex gap-2 items-center bg-action-primary transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
           >
             <AiOutlinePlus className="text-white" />
             <span className="text-sm text-white">افزودن مالک</span>

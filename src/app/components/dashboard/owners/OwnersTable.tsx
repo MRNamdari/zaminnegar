@@ -27,6 +27,7 @@ import {
 } from "react-icons/fi";
 
 import { toPersianNumber } from "@/app/util";
+import Link from "next/link";
 
 export interface Owner {
   code?: string;
@@ -80,6 +81,16 @@ export default function OwnersTable({
         header: "نام مالک",
         sortingFn: "alphanumeric",
         filterFn: "includesString",
+        cell({ row }) {
+                  return (
+                    <Link
+                      className="w-full inline-block h-full text-blue-400 hover:underline underline-offset-4"
+                      href={{ pathname: `/owners/${row.original.id}` }}
+                    >
+                      {row.original.name}
+                    </Link>
+                  );
+                },
       },
       {
         accessorKey: "parcelCount",
@@ -105,7 +116,7 @@ export default function OwnersTable({
 
           return (
             <span
-              className={`min-w-18 text-center rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${status === "فعال" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+              className={`min-w-18 text-center select-none rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${status === "فعال" ? "bg-map-green text-surface" : "bg-surface-muted text-foreground"}`}
             >
               {status}
             </span>
@@ -125,7 +136,7 @@ export default function OwnersTable({
                 event.stopPropagation();
                 onEdit(row.original);
               }}
-              className="rounded p-2 text-blue-600 hover:bg-blue-900 transition duration-300 cursor-pointer"
+              className="isolate cursor-pointer rounded-full p-4 hover:text-blue-600 hover:bg-surface-raised transition duration-300"
             >
               <FiEdit2 size={17} />
             </button>
@@ -137,7 +148,7 @@ export default function OwnersTable({
                 event.stopPropagation();
                 onDelete(row.original);
               }}
-              className="rounded p-2 text-red-600 hover:bg-red-900 transition duration-300 cursor-pointer"
+              className="isolate cursor-pointer rounded-full p-4 hover:text-red-600 hover:bg-surface-raised transition duration-300"
             >
               <FiTrash2 size={17} />
             </button>
@@ -179,14 +190,14 @@ export default function OwnersTable({
     <div className="w-full space-y-4">
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-200/10">
+          <thead className="bg-surface-raised">
             {table.getHeaderGroups().map((group) => (
               <tr key={group.id}>
                 {group.headers.map((header) => (
                   <th
                     key={header.id}
                     scope="col"
-                    className="px-4 py-3 font-light"
+                    className="px-4 py-3 font-semibold"
                   >
                     {header.isPlaceholder ? null : (
                       <button
@@ -216,7 +227,7 @@ export default function OwnersTable({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-10 text-center text-gray-500"
+                  className="px-4 py-10 text-center text-gray-300"
                 >
                   مالکی یافت نشد
                 </td>
@@ -237,7 +248,7 @@ export default function OwnersTable({
                   }}
                   tabIndex={0}
                   aria-label={`Open owner ${row.original.name}`}
-                  className="even:bg-surface transition hover:bg-surface-muted border-t border-border focus-visible:outline-2 cursor-pointer"
+                  className="even:bg-surface transition hover:bg-surface-muted border-t border-border focus-visible:outline-2"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 text-right">
@@ -262,12 +273,12 @@ export default function OwnersTable({
             aria-label="Previous page"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="rounded bg-blue-500 hover:bg-blue-600 p-2 disabled:opacity-40 cursor-pointer transition duration-300"
+            className="rounded-full transition-colors ease-in-out bg-action-primary hover:bg-action-primary-hover disabled:bg-surface-muted p-2 cursor-pointer disabled:cursor-not-allowed"
           >
             <FiChevronRight />
           </button>
 
-          <span className="text-sm">
+          <span className="text-sm select-none">
             صفحه {toPersianNumber(table.state.pagination.pageIndex + 1)} از{" "}
             {toPersianNumber(Math.max(1, pageCount))}
           </span>
@@ -277,7 +288,7 @@ export default function OwnersTable({
             aria-label="Next page"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="rounded bg-blue-500 hover:bg-blue-600 p-2 disabled:opacity-40 cursor-pointer transition duration-300"
+            className="rounded-full transition-colors ease-in-out bg-action-primary hover:bg-action-primary-hover disabled:bg-surface-muted p-2 cursor-pointer disabled:cursor-not-allowed"
           >
             <FiChevronLeft />
           </button>
