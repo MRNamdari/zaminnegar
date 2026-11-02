@@ -48,9 +48,13 @@ interface Options {
   onFeaturesChange: (data: AreaCollection, emit: boolean) => void;
   onSelectedChange: (id: string | null) => void;
 <<<<<<< HEAD
+<<<<<<< HEAD
   onFinish: TerraDrawEventListeners["finish"];
 =======
 >>>>>>> 9b29d75 (refactor: re-imlpement map editor)
+=======
+  onFinish: TerraDrawEventListeners["finish"];
+>>>>>>> 07d86ce (style: format map editor and global styles)
   onBearingChange: (bearing: number) => void;
   onReady: (engine: MapEngine | null) => void;
   resetBearing: () => void;
@@ -71,9 +75,13 @@ export function useMapEngine({
   onFeaturesChange,
   onSelectedChange,
 <<<<<<< HEAD
+<<<<<<< HEAD
   onFinish,
 =======
 >>>>>>> 9b29d75 (refactor: re-imlpement map editor)
+=======
+  onFinish,
+>>>>>>> 07d86ce (style: format map editor and global styles)
   onBearingChange,
   onReady,
   resetBearing,
@@ -100,9 +108,13 @@ export function useMapEngine({
     onReady,
     resetBearing,
 <<<<<<< HEAD
+<<<<<<< HEAD
     onFinish,
 =======
 >>>>>>> 9b29d75 (refactor: re-imlpement map editor)
+=======
+    onFinish,
+>>>>>>> 07d86ce (style: format map editor and global styles)
   });
 
   useEffect(() => {
@@ -113,9 +125,13 @@ export function useMapEngine({
       onReady,
       resetBearing,
 <<<<<<< HEAD
+<<<<<<< HEAD
       onFinish,
 =======
 >>>>>>> 9b29d75 (refactor: re-imlpement map editor)
+=======
+      onFinish,
+>>>>>>> 07d86ce (style: format map editor and global styles)
     };
     activeLevelRef.current = activeLevel;
     initialDataRef.current = initialData;
@@ -459,10 +475,14 @@ export function useMapEngine({
     draw.on("finish", (id, context) => {
       const key = String(id);
 <<<<<<< HEAD
+<<<<<<< HEAD
       onFinish(id, context);
 =======
 
 >>>>>>> 9b29d75 (refactor: re-imlpement map editor)
+=======
+      onFinish(id, context);
+>>>>>>> 07d86ce (style: format map editor and global styles)
       if (context.action === "draw" && !metaRef.current.has(key)) {
         const level = activeLevelRef.current;
 
@@ -478,11 +498,15 @@ export function useMapEngine({
         sync(true);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         setTool("select");
 =======
         draw.setMode("select");
         map.doubleClickZoom.enable();
 >>>>>>> 9b29d75 (refactor: re-imlpement map editor)
+=======
+        setTool("select");
+>>>>>>> 07d86ce (style: format map editor and global styles)
         draw.selectFeature(id);
       } else {
         sync(true);
