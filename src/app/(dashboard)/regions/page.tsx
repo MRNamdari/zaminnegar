@@ -137,6 +137,9 @@ export default function RegionsPage() {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [searchValue, setSearchValue] = useState("");
   const [isAddingRegion, setIsAddingRegion] = useState(false);
+  const filteredRegions = regionMockData.filter((region) =>
+    region.name.toLowerCase().includes(searchValue.trim().toLowerCase()),
+  );
   return (
     <div className="w-full h-full overflow-y-auto">
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-4 items-center pb-4 pt-6 pr-4">
@@ -166,7 +169,7 @@ export default function RegionsPage() {
                 aria-label="جستجو"
                 className="flex h-10 w-10 shrink-0 items-center justify-center text-white transition duration-300 focus:outline-none cursor-pointer"
               >
-                <CgSearch />
+                <CgSearch className="text-action-primary text-lg" />
               </button>
             </search>
           </form>
@@ -174,12 +177,12 @@ export default function RegionsPage() {
             onClick={() => setIsAddingRegion(true)}
             className="min-w-fit flex gap-2 items-center bg-action-primary transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
           >
-            <AiOutlinePlus />
-            <span className="text-sm">افزودن منطقه</span>
+            <AiOutlinePlus className="text-white" />
+            <span className="text-sm text-white">افزودن منطقه</span>
           </button>
         </div>
         <RegionsTable
-          data={regionMockData as any}
+          data={filteredRegions as any}
           onDelete={console.log}
           onEdit={console.log}
           onRowClick={console.log}
@@ -188,6 +191,9 @@ export default function RegionsPage() {
         <AddRegionDialog
           open={isAddingRegion}
           onOpenChange={(open) => setIsAddingRegion(open)}
+          title="افزودن منطقه"
+          description="اطلاعات منطقه جدید را وارد کنید"
+          className="text-white "
         />
       </div>
     </div>
