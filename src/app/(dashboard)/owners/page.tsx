@@ -2,7 +2,6 @@
 
 import OwnersTable, {
   Owner,
-  OwnerStatus,
 } from "@/app/components/dashboard/owners/OwnersTable";
 
 import { useState } from "react";
@@ -23,9 +22,13 @@ export default function OwnersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newOwner, setNewOwner] = useState<Omit<Owner, "id">>({
     name: "",
+    nationalCode: "99999999999",
+    phoneNumber: "09999999999",
+    fatherName: "",
     parcelCount: 0,
     totalArea: 0,
-    status: OwnerStatus.ACTIVE,
+    status: "فعال",
+    address: ""
   });
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedOwner, setSelectedOwner] = useState<Owner | null>(null);
@@ -62,9 +65,13 @@ export default function OwnersPage() {
 
     setNewOwner({
       name: "",
+      nationalCode: "99999999999",
+      phoneNumber: "09999999999",
+      fatherName: "",
       parcelCount: 0,
       totalArea: 0,
-      status: OwnerStatus.ACTIVE,
+      status: "فعال",
+      address: "",
     });
 
     setIsAddModalOpen(false);
@@ -205,13 +212,13 @@ export default function OwnersPage() {
                   onChange={(e) =>
                     setEditedOwner({
                       ...editedOwner,
-                      status: e.target.value as OwnerStatus,
+                      status: e.target.value,
                     })
                   }
                   className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none appearance-none"
                 >
-                  <option value={OwnerStatus.ACTIVE}>فعال</option>
-                  <option value={OwnerStatus.INACTIVE}>غیرفعال</option>
+                  <option value="فعال">فعال</option>
+                  <option value="غیر فعال">غیرفعال</option>
                 </select>
 
                 <IoChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none" />
@@ -310,13 +317,13 @@ export default function OwnersPage() {
                 onChange={(e) =>
                   setNewOwner({
                     ...newOwner,
-                    status: e.target.value as OwnerStatus,
+                    status: e.target.value,
                   })
                 }
                 className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none appearance-none"
               >
-                <option value={OwnerStatus.ACTIVE}>فعال</option>
-                <option value={OwnerStatus.INACTIVE}>غیرفعال</option>
+                <option value="فعال">فعال</option>
+                <option value="غیرفعال">غیرفعال</option>
               </select>
 
               <IoChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none" />
@@ -329,9 +336,13 @@ export default function OwnersPage() {
                 setIsAddModalOpen(false);
                 setNewOwner({
                   name: "",
+                  nationalCode: "99999999999",
+                  phoneNumber: "09999999999",
+                  fatherName: "",
                   parcelCount: 0,
                   totalArea: 0,
-                  status: OwnerStatus.ACTIVE,
+                  status: "فعال",
+                  address: "",
                 });
               }}
               className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"

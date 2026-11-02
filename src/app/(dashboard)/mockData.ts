@@ -1,5 +1,5 @@
 import {BlockStatus, type Block} from "@/app/components/dashboard/blocks/BlocksTable";
-import { Owner, OwnerStatus } from "../components/dashboard/owners/OwnersTable";
+import { Owner } from "../components/dashboard/owners/OwnersTable";
 
 export const mockBlocks: Block[] = [
   {
@@ -188,22 +188,34 @@ export const initialOwners: Owner[] = [
   {
     id: "1",
     name: "علی رضایی",
+    nationalCode: "93692581478",
+    phoneNumber: "09368257148",
+    fatherName: "سجاد",
     parcelCount: 12,
     totalArea: 3.5,
-    status: OwnerStatus.ACTIVE,
+    status: "فعال",
+    address: "مشهد، طرق، خیابان ولیعصر، ولیعصر 12، پلاک 25",
   },
   {
     id: "2",
     name: "محمد احمدی",
+    nationalCode: "98754612358",
+    phoneNumber: "09258645821",
+    fatherName: "عماد",
     parcelCount: 8,
     totalArea: 2.4,
-    status: OwnerStatus.ACTIVE,
+    status: "غیر فعال",
+    address: "مشهد، طرق، خیابان صاحب الزمان، صاحب الزمان 8، پلاک 158",
   },
   {
     id: "3",
     name: "حسین کریمی",
+    nationalCode: "98724153687",
+    phoneNumber: "09368745322",
+    fatherName: "اکبر",
     parcelCount: 5,
     totalArea: 1.8,
-    status: OwnerStatus.INACTIVE,
+    status: "فعال",
+    address: "مشهد، طرق، خیابان ساعی، ساعی 2، پلاک 5",
   },
 ];
