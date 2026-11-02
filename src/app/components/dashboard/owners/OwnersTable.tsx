@@ -28,25 +28,17 @@ import {
 
 import { toPersianNumber } from "@/app/util";
 
-export enum OwnerStatus {
-  ACTIVE = "active",
-  INACTIVE = "inactive",
-  FINAL = "FINAL",
-}
-
-export const OwnerStatusMap: Record<OwnerStatus, string> = {
-  [OwnerStatus.ACTIVE]: "فعال",
-  [OwnerStatus.INACTIVE]: "غیر فعال",
-  [OwnerStatus.FINAL]: ""
-};
-
 export interface Owner {
   code?: string;
   id: string;
   name: string;
+  fatherName: string;
+  nationalCode: string;
+  phoneNumber: string;
+  address: string;
   parcelCount: number;
   totalArea: number;
-  status: OwnerStatus;
+  status: string;
 }
 
 interface OwnersTableProps {
@@ -71,12 +63,6 @@ const features = tableFeatures({
   rowPaginationFeature,
   paginatedRowModel: createPaginatedRowModel(),
 });
-
-const statusStyles: Record<OwnerStatus, string> = {
-  active: "bg-green-100 text-green-700",
-  inactive: "bg-red-200 text-red-700",
-  [OwnerStatus.FINAL]: ""
-};
 
 export default function OwnersTable({
   data,
@@ -119,9 +105,9 @@ export default function OwnersTable({
 
           return (
             <span
-              className={`min-w-18 text-center rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${statusStyles[status]}`}
+              className={`min-w-18 text-center rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${status === "فعال" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
             >
-              {OwnerStatusMap[status]}
+              {status}
             </span>
           );
         },
