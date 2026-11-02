@@ -12,6 +12,7 @@ import { IoChevronDown } from "react-icons/io5";
 import { toPersianNumber } from "@/app/util";
 import { initialOwners } from "../mockData";
 import { useRouter } from "next/navigation";
+import { CgSearch } from "react-icons/cg";
 
 export default function OwnersPage() {
   const router = useRouter();
@@ -100,45 +101,30 @@ export default function OwnersPage() {
               جستجو
             </label>
 
-            <search className="min-w-0 w-full flex-1">
+            <search className="min-w-0 w-full rounded-lg flex flex-1 border border-border bg-surface focus-within:ring-2 focus-within:ring-action-primary-hover/20">
               <input
                 type="search"
                 id="simple-search"
-                placeholder="جستجوی مالک..."
+                placeholder="جست و جوی مالکین..."
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
-                className="block w-full py-2.5 px-3 text-sm text-slate-200 outline-none transition placeholder:text-slate-300"
+                className="w-full py-2.5 px-3 text-sm text-foreground border-0  outline-none transition placeholder:text-foreground-muted "
               />
-            </search>
-
-            <button
-              type="submit"
-              aria-label="جستجو"
-              className="flex h-10 w-10 shrink-0 items-center justify-center text-white transition duration-300 focus:outline-none focus:ring-4 focus:ring-blue-500/30 cursor-pointer"
-            >
-              <svg
-                className="h-5 w-5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
+              <button
+                type="submit"
+                aria-label="جستجو"
+                className="flex h-10 w-10 shrink-0 items-center justify-center text-white transition duration-300 focus:outline-none cursor-pointer"
               >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
-                />
-              </svg>
-            </button>
+                <CgSearch className="text-action-primary text-lg" />
+              </button>
+            </search>
           </form>
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="min-w-fit flex gap-2 items-center bg-blue-500 hover:bg-blue-600 transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
           >
-            <AiOutlinePlus />
-            <span className="text-sm">افزودن مالک</span>
+            <AiOutlinePlus className="text-white" />
+            <span className="text-sm text-white">افزودن مالک</span>
           </button>
         </div>
         <OwnersTable
