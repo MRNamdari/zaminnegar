@@ -13,6 +13,7 @@ export interface IParcel {
   strokeColor: string;
   strokeWidth: number;
   notes: string | null;
+  status: string;
   /** Geodesic area in square meters, computed by PostGIS (`ST_Area(geom::geography)`). */
   areaM2: string;
   createdAt: Date;
