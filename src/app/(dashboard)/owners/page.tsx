@@ -12,6 +12,8 @@ import { toPersianNumber } from "@/app/util";
 import { initialOwners } from "../mockData";
 import { useRouter } from "next/navigation";
 import { CgSearch } from "react-icons/cg";
+import CreateOwnerForm from "@/app/components/dashboard/owners/OwnersFormCreate";
+import { OwnerFormValues } from "@/app/components/dashboard/owners/schemas/OwnersCreate.schema";
 
 export default function OwnersPage() {
   const [searchValue, setSearchValue] = useState("");
@@ -52,26 +54,15 @@ export default function OwnersPage() {
     setEditedOwner(null);
   };
 
-  const handleAddOwner = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleAddOwner = (values: OwnerFormValues) => {
+    console.log("Owner Values:", values);
 
     const newOwnerData: Owner = {
-      id: crypto.randomUUID(),
-      ...newOwner,
+      id: String(owners.length + 1),
+      ...values,
     };
 
     setOwners((prevOwners) => [...prevOwners, newOwnerData]);
-
-    setNewOwner({
-      name: "",
-      nationalCode: "99999999999",
-      phoneNumber: "09999999999",
-      fatherName: "",
-      parcelCount: 0,
-      totalArea: 0,
-      status: "فعال",
-      address: "",
-    });
 
     setIsAddModalOpen(false);
   };
@@ -250,111 +241,10 @@ export default function OwnersPage() {
         description="اطلاعات مالک جدید را وارد کنید"
         className="text-white"
       >
-        <form onSubmit={handleAddOwner} className="flex flex-col gap-4 mt-4">
-          <div className="flex flex-col gap-2">
-            <label className="text-sm">نام مالک</label>
-
-            <input
-              type="text"
-              required
-              value={newOwner.name}
-              onChange={(e) =>
-                setNewOwner({
-                  ...newOwner,
-                  name: e.target.value,
-                })
-              }
-              placeholder="نام و نام خانوادگی"
-              className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm">تعداد قطعات</label>
-
-            <input
-              disabled
-              type="text"
-              min="0"
-              required
-              value={toPersianNumber(newOwner.parcelCount)}
-              onChange={(e) =>
-                setNewOwner({
-                  ...newOwner,
-                  parcelCount: Number(e.target.value),
-                })
-              }
-              className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm">مساحت کل (هکتار)</label>
-
-            <input
-              disabled
-              type="text"
-              min="0"
-              step="0.1"
-              required
-              value={toPersianNumber(newOwner.totalArea)}
-              onChange={(e) =>
-                setNewOwner({
-                  ...newOwner,
-                  totalArea: Number(e.target.value),
-                })
-              }
-              className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm">وضعیت</label>
-
-            <div className="relative">
-              <select
-                value={newOwner.status}
-                onChange={(e) =>
-                  setNewOwner({
-                    ...newOwner,
-                    status: e.target.value,
-                  })
-                }
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none appearance-none"
-              >
-                <option value="فعال">فعال</option>
-                <option value="غیرفعال">غیرفعال</option>
-              </select>
-
-              <IoChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none" />
-            </div>
-          </div>
-          <div className="flex items-center gap-3 mt-4">
-            <button
-              type="button"
-              onClick={() => {
-                setIsAddModalOpen(false);
-                setNewOwner({
-                  name: "",
-                  nationalCode: "99999999999",
-                  phoneNumber: "09999999999",
-                  fatherName: "",
-                  parcelCount: 0,
-                  totalArea: 0,
-                  status: "فعال",
-                  address: "",
-                });
-              }}
-              className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
-            >
-              انصراف
-            </button>
-
-            <button
-              type="submit"
-              className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
-            >
-              افزودن مالک
-            </button>
-          </div>
-        </form>
+        <CreateOwnerForm
+          onSubmit={handleAddOwner}
+          onCancel={() => setIsAddModalOpen(false)}
+        />
       </Dialog>
       <Dialog
         open={isDeleteModalOpen}
