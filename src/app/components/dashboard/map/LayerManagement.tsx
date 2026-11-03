@@ -4,7 +4,7 @@ import { IOwner } from "@/app/features/owners/interface";
 import { IParcel } from "@/app/features/parcels/interface";
 import { IRegion } from "@/app/features/regions/interface";
 import { useEffect, useState } from "react";
-import { GoChevronDown } from "react-icons/go";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import { HiOutlineCheck } from "react-icons/hi";
 
 const regionMockData: IRegion[] = [
@@ -344,11 +344,11 @@ function Layer<T extends { name: string }>(props: LayerProps<T>) {
         className="title_feature flex items-center justify-end py-3 gap-2 relative"
         onClick={() => setClose((prev) => !prev)}
       >
-        <GoChevronDown
-          className={`absolute right-1.5 transition-transform duration-300 ${
-            isClose ? "rotate-180" : ""
-          }`}
-        />
+        {isClose ? (
+          <FiEyeOff className="absolute right-1.5" stroke={`var(${props.colors.icon})`} />
+        ) : (
+          <FiEye className="absolute right-1.5" stroke={`var(${props.colors.icon})`} />
+        )}
         <h4 className="text-xs font-medium">{props.label}</h4>
         <PolygonIcon fillColor={`var(${props.colors.icon})`} />
       </div>
