@@ -47,9 +47,7 @@ export default function OwnersInformation({ owner }: OwnerInformationProps) {
 
           <div className="flex justify-between px-1 pt-4.5">
             <span className="text-sm">کد ملی:</span>
-            <span className="text-sm">
-              {faNum(ownerInfo.nationalCode)}
-            </span>
+            <span className="text-sm">{faNum(ownerInfo.nationalCode)}</span>
           </div>
         </div>
 
@@ -77,18 +75,16 @@ export default function OwnersInformation({ owner }: OwnerInformationProps) {
         <div className="w-1/3 max-h-full pr-2 flex flex-col justify-between">
           <div className="flex flex-col gap-2 justify-between px-1">
             <span className="text-sm">آدرس:</span>
-            <span className="text-sm">
-              {faNum(ownerInfo.address)}
-            </span>
+            <span className="text-sm">{faNum(ownerInfo.address)}</span>
           </div>
 
           <button
             type="button"
             onClick={handleEdit}
-            className="py-2 w-full mx-auto bg-action-primary hover:bg-action-primary-hover rounded-md cursor-pointer transition duration-300 flex justify-center items-center gap-2"
+            className="py-2.5 w-full mx-auto bg-action-primary rounded-md cursor-pointer transition duration-300 flex justify-center items-center gap-2"
           >
-            <FiEdit2 size={14} />
-            ویرایش اطلاعات
+            <FiEdit2 size={14} className="text-white" />
+            <span className="text-sm text-white">ویرایش اطلاعات</span>
           </button>
         </div>
       </div>
