@@ -136,7 +136,7 @@ export default function ParcelsTable({
         cell({row}) {
           return  <div className="flex gap-2">
           {row.original.owners?.map(po=>po.owner).map(o=><Link className=" h-full text-blue-400 hover:underline underline-offset-4" key={o?.id} href={{
-            pathname:`owners/${o?.id}`
+            pathname:`/owners/${o?.id}`
           }}>{o?.name}</Link>)}
           </div>
         },
