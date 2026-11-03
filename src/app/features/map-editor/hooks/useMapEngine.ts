@@ -1,12 +1,10 @@
 "use client";
 
 import { RefObject, useCallback, useEffect, useRef } from "react";
-
 import maplibregl from "maplibre-gl";
 import {
   TerraDraw,
   TerraDrawPolygonMode,
-  TerraDrawRectangleMode,
   TerraDrawSelectMode,
   TerraDrawModeUndoRedo,
   TerraDrawSessionUndoRedo,
@@ -14,23 +12,45 @@ import {
   type HexColor,
   type TerraDrawEventListeners,
 } from "terra-draw";
-
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
-
 import { mapStyle } from "../config/mapStyle";
 import { LEVELS, SELECTED_COLOR } from "../config/levels";
-
 import { findParent, formatFaNumber, ringAreaM2 } from "../services/geoUtils";
-
 import { MarkerManager } from "../services/markerManager";
-
 import type {
   AreaCollection,
   AreaFeature,
+  AreaProperties,
   Level,
   MapEngine,
   Tool,
 } from "../types";
+
+const VIEW_FLAGS = {
+  view: {
+    feature: {
+      draggable: false,
+      coordinates: {
+        draggable: false,
+        midpoints: false,
+        deletable: false,
+      },
+    },
+  },
+} as const;
+
+const EDIT_FLAGS = {
+  edit: {
+    feature: {
+      draggable: true,
+      coordinates: {
+        draggable: true,
+        midpoints: true,
+        deletable: true,
+      },
+    },
+  },
+} as const;
 
 interface Options {
   container: RefObject<HTMLDivElement | null>;
@@ -162,7 +182,9 @@ export function useMapEngine({
           id: item.id,
           level: item.meta.level,
           name: item.meta.name,
-          parentId: findParent(item.meta.level, item.ring, hierarchyItems),
+          mode: "view",
+          // parentId: findParent(item.meta.level, item.ring, hierarchyItems),
+          status: { selected: false, mode: "view" },
           areaHa: Math.round((ringAreaM2(item.ring) / 10000) * 1000) / 1000,
         },
       })),
@@ -207,7 +229,7 @@ export function useMapEngine({
 
     if (!id) {
       selectedRef.current = null;
-      draw.setMode("view");
+      draw.setMode("select");
       callbacksRef.current.onSelectedChange(null);
       return;
     }
@@ -218,7 +240,7 @@ export function useMapEngine({
 
     if (!exists) return;
 
-    draw.setMode("view");
+    draw.setMode("select");
     draw.selectFeature(id);
 
     selectedRef.current = id;
@@ -340,27 +362,10 @@ export function useMapEngine({
       adapter: new TerraDrawMapLibreGLAdapter({ map }),
       modes: [
         new TerraDrawSelectMode({
-          modeName: "edit",
+          modeName: "select",
           flags: {
-            polygon: {
-              feature: {
-                draggable: true,
-                coordinates: {
-                  midpoints: true,
-                  draggable: true,
-                  deletable: true,
-                },
-              },
-            },
-            rectangle: {
-              feature: {
-                draggable: true,
-                coordinates: {
-                  resizable: "opposite",
-                  draggable: false,
-                },
-              },
-            },
+            view: VIEW_FLAGS.view,
+            edit: EDIT_FLAGS.edit,
           },
           styles: {
             selectedPolygonColor: (feature) => {
@@ -382,50 +387,6 @@ export function useMapEngine({
           },
         }),
 
-        new TerraDrawSelectMode({
-          modeName: "view",
-          flags: {
-            polygon: {
-              feature: {
-                draggable: false,
-                coordinates: {
-                  midpoints: false,
-                  draggable: false,
-                  deletable: false,
-                },
-              },
-            },
-            rectangle: {
-              feature: {
-                draggable: false,
-                coordinates: {
-                  resizable: "opposite",
-                  draggable: false,
-                },
-              },
-            },
-          },
-          styles: {
-            selectedPolygonColor: (feature) => {
-              const level = metaRef.current.get(String(feature.id))?.level;
-
-              if (level === "region") return "#22c55e";
-              if (level === "block") return "#3b82f6";
-              if (level === "parcel") return "#facc15";
-
-              return getCssVar(SELECTED_COLOR);
-            },
-            selectedPolygonFillOpacity: 0.35,
-            selectedPolygonOutlineColor: getCssVar(SELECTED_COLOR),
-            selectedPolygonOutlineWidth: 3,
-            selectionPointOpacity: 0,
-            selectionPointOutlineOpacity: 0,
-            selectionPointOutlineColor: getCssVar(SELECTED_COLOR),
-            midPointOutlineOpacity: 0,
-            midPointOpacity: 0,
-          },
-        }),
-
         new TerraDrawPolygonMode({
           styles: {
             ...polyStyles,
@@ -436,10 +397,6 @@ export function useMapEngine({
             finish: "Enter",
             cancel: "Escape",
           },
-        }),
-
-        new TerraDrawRectangleMode({
-          styles: polyStyles,
         }),
       ],
       undoRedo: {
@@ -459,6 +416,25 @@ export function useMapEngine({
       const key = String(id);
       selectedRef.current = key;
       callbacksRef.current.onSelectedChange(key);
+
+      const featProps = draw.getSnapshotFeature(id)?.properties as
+        | AreaProperties
+        | undefined;
+      if (!featProps) return;
+
+      const mode = featProps.mode ?? featProps.status.mode ?? "view";
+      const nextStatus = { ...featProps.status, selected: true, mode };
+
+      draw.updateFeatureProperties(id, {
+        ...featProps,
+        mode,
+        status: nextStatus,
+      });
+
+      const nextFlags =
+        mode === "edit" ? { flags: EDIT_FLAGS } : { flags: VIEW_FLAGS };
+
+      draw.updateModeOptions("select", nextFlags);
     });
 
     draw.on("deselect", () => {
@@ -496,11 +472,15 @@ export function useMapEngine({
           name:
             `${LEVELS[level].label} ` +
             formatFaNumber(countersRef.current[level]),
+          // status: {
+          //   selected: true,
+          //   mode: "view",
+          // },
         });
 
         sync(true);
         setTool("select");
-        draw.setMode("view");
+        draw.setMode("select");
         map.doubleClickZoom.enable();
         draw.selectFeature(id);
       } else {
@@ -546,7 +526,7 @@ export function useMapEngine({
       });
 
       draw.start();
-      draw.setMode("view");
+      draw.setMode("select");
 
       const data = initialDataRef.current;
 
@@ -566,7 +546,12 @@ export function useMapEngine({
               ...rest,
               properties: {
                 ...feature.properties,
-                mode: "polygon",
+                mode: feature.properties.status?.mode ?? "view",
+                status: {
+                  ...feature.properties.status,
+                  selected: false,
+                  mode: feature.properties.status?.mode ?? "view",
+                },
               },
             };
           }) as never,
