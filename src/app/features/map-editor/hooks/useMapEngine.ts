@@ -17,15 +17,10 @@ import {
 
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
 
-import { mapStyle, TERRAIN_TILES } from "../config/mapStyle";
+import { mapStyle } from "../config/mapStyle";
 import { LEVELS, SELECTED_COLOR } from "../config/levels";
 
-import {
-  centroid,
-  findParent,
-  formatFaNumber,
-  ringAreaM2,
-} from "../services/geoUtils";
+import { findParent, formatFaNumber, ringAreaM2 } from "../services/geoUtils";
 
 import { MarkerManager } from "../services/markerManager";
 
@@ -34,7 +29,6 @@ import type {
   AreaFeature,
   Level,
   MapEngine,
-  MapEditorProps,
   Tool,
 } from "../types";
 
@@ -213,7 +207,7 @@ export function useMapEngine({
 
     if (!id) {
       selectedRef.current = null;
-      draw.setMode("select");
+      draw.setMode("view");
       callbacksRef.current.onSelectedChange(null);
       return;
     }
@@ -224,7 +218,7 @@ export function useMapEngine({
 
     if (!exists) return;
 
-    draw.setMode("select");
+    draw.setMode("view");
     draw.selectFeature(id);
 
     selectedRef.current = id;
@@ -346,6 +340,7 @@ export function useMapEngine({
       adapter: new TerraDrawMapLibreGLAdapter({ map }),
       modes: [
         new TerraDrawSelectMode({
+          modeName: "edit",
           flags: {
             polygon: {
               feature: {
@@ -384,6 +379,50 @@ export function useMapEngine({
             selectionPointOutlineColor: getCssVar(SELECTED_COLOR),
             midPointColor: getCssVar(SELECTED_COLOR),
             midPointOutlineColor: "#ffffff",
+          },
+        }),
+
+        new TerraDrawSelectMode({
+          modeName: "view",
+          flags: {
+            polygon: {
+              feature: {
+                draggable: false,
+                coordinates: {
+                  midpoints: false,
+                  draggable: false,
+                  deletable: false,
+                },
+              },
+            },
+            rectangle: {
+              feature: {
+                draggable: false,
+                coordinates: {
+                  resizable: "opposite",
+                  draggable: false,
+                },
+              },
+            },
+          },
+          styles: {
+            selectedPolygonColor: (feature) => {
+              const level = metaRef.current.get(String(feature.id))?.level;
+
+              if (level === "region") return "#22c55e";
+              if (level === "block") return "#3b82f6";
+              if (level === "parcel") return "#facc15";
+
+              return getCssVar(SELECTED_COLOR);
+            },
+            selectedPolygonFillOpacity: 0.35,
+            selectedPolygonOutlineColor: getCssVar(SELECTED_COLOR),
+            selectedPolygonOutlineWidth: 3,
+            selectionPointOpacity: 0,
+            selectionPointOutlineOpacity: 0,
+            selectionPointOutlineColor: getCssVar(SELECTED_COLOR),
+            midPointOutlineOpacity: 0,
+            midPointOpacity: 0,
           },
         }),
 
@@ -461,7 +500,7 @@ export function useMapEngine({
 
         sync(true);
         setTool("select");
-        draw.setMode("select");
+        draw.setMode("view");
         map.doubleClickZoom.enable();
         draw.selectFeature(id);
       } else {
@@ -507,7 +546,7 @@ export function useMapEngine({
       });
 
       draw.start();
-      draw.setMode("select");
+      draw.setMode("view");
 
       const data = initialDataRef.current;
 

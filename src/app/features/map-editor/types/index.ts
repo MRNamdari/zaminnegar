@@ -31,6 +31,10 @@ export interface MapEditorProps {
   center?: [number, number];
   zoom?: number;
   initialData?: AreaCollection;
+  controls?: boolean;
+  toolbar?: boolean;
+  viewModeToggle?: boolean;
+  miniMap?: boolean;
   onChange?: (data: AreaCollection) => void;
   className?: string;
 }

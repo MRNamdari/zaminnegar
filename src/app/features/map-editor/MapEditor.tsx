@@ -18,7 +18,16 @@ const DEFAULT_CENTER: [number, number] = [59.679098, 36.211555];
 
 const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
   function MapEditor(
-    { center = DEFAULT_CENTER, zoom = 13.5, initialData, className = "" },
+    {
+      center = DEFAULT_CENTER,
+      zoom = 13.5,
+      initialData,
+      className = "",
+      controls = true,
+      toolbar = true,
+      viewModeToggle = true,
+      miniMap = true,
+    },
     ref,
   ) {
     const { state, actions } = useMapEditor();
@@ -36,7 +45,7 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
     return (
       <div
         dir="ltr"
-        className={`relative h-full min-h-105 w-full overflow-hidden bg-[#0e1726] ${className}`}
+        className={`relative h-full min-h-105 w-full overflow-hidden ${className}`}
       >
         <MapCanvas
           center={center}
@@ -45,18 +54,18 @@ const MapEditor = forwardRef<MapEditorHandle, MapEditorProps>(
           miniContainer={miniContainerRef}
         />
 
-        <MapToolbar />
+        {toolbar && <MapToolbar />}
 
-        <MapControls />
+        {controls && <MapControls />}
 
-        <MiniMap ref={miniContainerRef} />
+        {miniMap && <MiniMap ref={miniContainerRef} />}
 
-        <ViewModeToggle />
+        {viewModeToggle && <ViewModeToggle />}
 
         {!state.isMapReady && (
           <div
             dir="rtl"
-            className="absolute inset-0 z-30 flex items-center justify-center bg-[#0e1726]/50 text-sm font-semibold text-white"
+            className="absolute inset-0 z-30 flex items-center justify-center bg-background-hover/50 text-sm font-semibold"
           >
             {"در حال بارگذاری نقشه…"}
           </div>
