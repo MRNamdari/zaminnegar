@@ -407,11 +407,11 @@ export default function Page() {
           searchValue={searchValue}
         />
         <AddParcelDialog
-          open={isAddingParcel}
-          onOpenChange={(open) => setIsAddingParcel(open)}
-          title="افزودن قطعه"
-          description="اطلاعات قطعه جدید را وارد کنید"
-          className="text-white"
+            open={isAddingParcel}
+            onOpenChange={(open)=> setIsAddingParcel(open)}
+            title="افزودن قطعه"
+            description="اطلاعات قطعه جدید را وارد کنید"
+            className="text-white"
         />
       </div>
     </div>
