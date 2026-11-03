@@ -36,18 +36,7 @@ export default function BlockPage() {
       return;
     }
 
-    const newBlock: Block = {
-      code: nameBlock.trim(),
-      region: nameRegion,
-      parcelCount: 0,
-      status: valueStatus,
-    };
-
-    setBlocks((prevBlocks) => [newBlock, ...prevBlocks]);
-    console.log("New Block:", blocks);
-    setNameBlock("");
-    setNameRegion("");
-    setValueStatus("");
+    router.push('/map')
 
     setIsOpen(false);
   };
@@ -184,53 +173,61 @@ export default function BlockPage() {
               className="w-full p-2.5 rounded-lg bg-slate-700 text-white border-border outline-none"
             />
           </div>
-          <div className="relative">
-            <select
-              value={nameRegion}
-              onChange={(e) => setNameRegion(e.target.value)}
-              name="status"
-              className="w-full p-2.5 rounded-lg bg-slate-700 text-white border-border outline-none appearance-none"
-            >
-              <option value="" disabled>
-                نام منطقه
-              </option>
-              <option value="شمال">شمال</option>
-              <option value="جنوب">جنوب</option>
-              <option value="شرق">شرق</option>
-              <option value="غرب">غرب</option>
-              <option value="مرکز">مرکز</option>
-            </select>
-            <IoChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none" />
+          <div>
+            <label className="block text-sm mb-2">نام منطقه</label>
+            <div className="relative">
+              <select
+                value={nameRegion}
+                onChange={(e) => setNameRegion(e.target.value)}
+                name="status"
+                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border-border outline-none appearance-none"
+              >
+                <option value="شمال">شمال</option>
+                <option value="جنوب">جنوب</option>
+                <option value="شرق">شرق</option>
+                <option value="غرب">غرب</option>
+                <option value="مرکز">مرکز</option>
+              </select>
+              <IoChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none" />
+            </div>
           </div>
-          <div className="relative">
-            <select
-              value={valueStatus}
-              onChange={(e) => setValueStatus(e.target.value as BlockStatus)}
-              name="status"
-              className="w-full p-2.5 rounded-lg bg-slate-700 text-white border-border outline-none appearance-none"
-            >
-              <option value="" disabled>
-                وضعیت
-              </option>
+          <div>
+            <label className="block text-sm mb-2">وضعیت</label>
+            <div className="relative">
+              <select
+                value={valueStatus}
+                onChange={(e) => setValueStatus(e.target.value as BlockStatus)}
+                name="status"
+                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border-border outline-none appearance-none"
+              >
+                {Object.values(BlockStatus).map((status) => (
+                  <option key={status} value={status}>
+                    {BlockStatusMap[status]}
+                  </option>
+                ))}
+              </select>
 
-              {Object.values(BlockStatus).map((status) => (
-                <option key={status} value={status}>
-                  {BlockStatusMap[status]}
-                </option>
-              ))}
-            </select>
-
-            <IoChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none" />
+              <IoChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none" />
+            </div>
           </div>
         </form>
         <p className="text-sm text-red-400 pt-4 pr-1">{alt}</p>
-        <button
-          type="button"
-          onClick={selectedBlock ? handleSaveEdit : handleAddBlock}
-          className="mt-4 bg-blue-500 px-4 py-2 rounded-lg cursor-pointer"
-        >
-          {selectedBlock ? "ذخیره تغییرات" : "ثبت بلوک"}
-        </button>
+        <div className="flex items-center gap-3 mt-4">
+          <button
+            type="button"
+            onClick={() => setIsOpen?.(false)}
+            className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
+          >
+            انصراف
+          </button>
+          <button
+            type="button"
+            onClick={selectedBlock ? handleSaveEdit : handleAddBlock}
+            className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
+          >
+            {selectedBlock ? "ذخیره تغییرات" : "برو به نقشه"}
+          </button>
+        </div>
       </Dialog>
       <Dialog
         open={isDeleteModalOpen}
