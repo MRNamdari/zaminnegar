@@ -144,7 +144,7 @@ export default function BlockPage() {
             }}
             className="min-w-fit flex gap-2 items-center bg-action-primary transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
           >
-            <AiOutlinePlus />
+            <AiOutlinePlus className="text-white" />
             <span className="text-sm text-white">افزودن بلوک</span>
           </button>
         </div>

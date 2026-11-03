@@ -25,7 +25,7 @@ export default async function BlockDetailsPage({ params }: Props) {
             <h2 className="flex text-xl border-r border-slate-200/10 px-4 py-3.5 mr-5">
               جزئیات بلوک {id}
             </h2>
-            <div className="bg-amber-200/30 text-amber-200 px-3 py-px rounded-sm">
+            <div className="bg-action-warning/90 text-surface px-3 py-px rounded-sm">
               {block.region}
             </div>
           </div>

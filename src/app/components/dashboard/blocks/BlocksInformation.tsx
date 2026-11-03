@@ -80,14 +80,14 @@ export default function BlockInformation({block} :BlockInformationProps) {
                 setEditedBlock(block);
                 setIsEditModalOpen(true);
               }}
-              className="w-1/2 p-3 bg-action-primary hover:bg-action-primary-hover rounded-md cursor-pointer transition duration-300 flex justify-center items-center gap-2"
+              className="w-1/2 p-3 bg-action-primary text-white rounded-md cursor-pointer transition duration-300 flex justify-center items-center gap-2"
             >
               <FiEdit2 size={14} />
               ویرایش
             </button>
             <button
               onClick={() => setIsDeleteModalOpen(true)}
-              className="w-1/2 p-3 bg-action-error hover:bg-action-error-hover rounded-md cursor-pointer transition duration-300 flex justify-center items-center gap-2"
+              className="w-1/2 p-3 bg-action-error text-white rounded-md cursor-pointer transition duration-300 flex justify-center items-center gap-2"
             >
               <FiTrash2 size={14} />
               حذف
