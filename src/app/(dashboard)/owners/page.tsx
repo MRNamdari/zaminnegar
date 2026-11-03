@@ -10,6 +10,7 @@ import { Dialog } from "@/app/components/Dialog";
 import { IoChevronDown } from "react-icons/io5";
 import { toPersianNumber } from "@/app/util";
 import { initialOwners } from "../mockData";
+import { useRouter } from "next/navigation";
 import { CgSearch } from "react-icons/cg";
 
 export default function OwnersPage() {

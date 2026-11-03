@@ -42,8 +42,8 @@
 
   /* GIS */
   --map-green: light-dark(#047857, #7eff1d);
-  --map-blue: light-dark( #60a5fa,#1dacd8);
-  --map-yellow: light-dark(#b45309, #facc15);
+  --map-blue: light-dark(#60a5fa, #1dacd8);
+  --map-yellow: light-dark(#d97706f2, #facc15);
   --map-purple: light-dark(#a78bfa, #5e00d9);
   --map-cyan: light-dark(#0e7490, #22d3ee);
   --map-orange: light-dark(#c2410c, #fb923c);
