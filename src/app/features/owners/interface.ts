@@ -8,6 +8,7 @@ export interface IOwner {
   notes?: string | null;
   createdAt: Date;
   updatedAt: Date;
+  percentParcel: number;
   parcels?: IParcelOwner[];
 }
 
