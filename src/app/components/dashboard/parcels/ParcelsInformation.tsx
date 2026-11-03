@@ -90,12 +90,17 @@ export default function ParcelsInformation({ parcel }: ParcelInformationProps) {
               <div key={o.ownerId} className="bg-surface-raised rounded-md p-4">
                 <div className="flex justify-between px-1 pb-3.5 border-b border-border">
                   <span className="text-sm">نام مالک:</span>
-                  <Link href={`/owners/${o.owner?.id}`} className="inline-block h-full text-blue-400 hover:underline underline-offset-4">{o.owner?.name}</Link>
+                  <Link
+                    href={`/owners/${o.owner?.id}`}
+                    className="inline-block h-full text-blue-400 hover:underline underline-offset-4"
+                  >
+                    {o.owner?.name}
+                  </Link>
                 </div>
 
                 <div className="flex justify-between px-1 pt-3.5">
                   <span className="text-sm">درصد سهم:</span>
-                  <span className="text-sm">{o.owner?.percentParcel}%</span>
+                  <span className="text-sm">{o.share}%</span>
                 </div>
               </div>
             ))}
