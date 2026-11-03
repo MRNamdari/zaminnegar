@@ -98,7 +98,7 @@ export default function ParcelsTable({
           return (
             <Link
               className="w-full inline-block h-full text-blue-400 hover:underline underline-offset-4"
-              href={{ pathname: `/Parcels/${row.original.id}` }}
+              href={{ pathname: `/parcels/${row.original.id}` }}
             >
               {row.original.name}
             </Link>
