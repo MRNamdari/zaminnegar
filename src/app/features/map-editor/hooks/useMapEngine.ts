@@ -25,32 +25,7 @@ import type {
   MapEngine,
   Tool,
 } from "../types";
-
-const VIEW_FLAGS = {
-  view: {
-    feature: {
-      draggable: false,
-      coordinates: {
-        draggable: false,
-        midpoints: false,
-        deletable: false,
-      },
-    },
-  },
-} as const;
-
-const EDIT_FLAGS = {
-  edit: {
-    feature: {
-      draggable: true,
-      coordinates: {
-        draggable: true,
-        midpoints: true,
-        deletable: true,
-      },
-    },
-  },
-} as const;
+import { polygon } from "@turf/turf";
 
 interface Options {
   container: RefObject<HTMLDivElement | null>;
@@ -66,6 +41,25 @@ interface Options {
   onReady: (engine: MapEngine | null) => void;
   resetBearing: () => void;
 }
+
+const SELECT_MODE_OPTIONS = (editable: boolean) => ({
+  flags: {
+    polygon: {
+      feature: {
+        draggable: editable,
+        rotateable: editable,
+        coordinates: {
+          deletable: editable,
+          draggable: editable,
+          midpoints: {
+            draggable: editable,
+          },
+          snappable: editable,
+        },
+      },
+    },
+  },
+});
 
 const emptyCollection = (): AreaCollection => ({
   type: "FeatureCollection",
@@ -184,7 +178,7 @@ export function useMapEngine({
           name: item.meta.name,
           mode: "view",
           // parentId: findParent(item.meta.level, item.ring, hierarchyItems),
-          status: { selected: false, mode: "view" },
+          state: { selected: false, mode: "view" },
           areaHa: Math.round((ringAreaM2(item.ring) / 10000) * 1000) / 1000,
         },
       })),
@@ -363,10 +357,7 @@ export function useMapEngine({
       modes: [
         new TerraDrawSelectMode({
           modeName: "select",
-          flags: {
-            view: VIEW_FLAGS.view,
-            edit: EDIT_FLAGS.edit,
-          },
+          ...SELECT_MODE_OPTIONS(false),
           styles: {
             selectedPolygonColor: (feature) => {
               const level = metaRef.current.get(String(feature.id))?.level;
@@ -416,25 +407,24 @@ export function useMapEngine({
       const key = String(id);
       selectedRef.current = key;
       callbacksRef.current.onSelectedChange(key);
-
       const featProps = draw.getSnapshotFeature(id)?.properties as
         | AreaProperties
         | undefined;
+
       if (!featProps) return;
 
-      const mode = featProps.mode ?? featProps.status.mode ?? "view";
-      const nextStatus = { ...featProps.status, selected: true, mode };
-
+      const nextStatus = { ...featProps.state, selected: true };
+      console.log(
+        "current feature state:",
+        featProps.state,
+        "next state:",
+        nextStatus,
+      );
       draw.updateFeatureProperties(id, {
-        ...featProps,
-        mode,
-        status: nextStatus,
+        state: nextStatus,
       });
-
-      const nextFlags =
-        mode === "edit" ? { flags: EDIT_FLAGS } : { flags: VIEW_FLAGS };
-
-      draw.updateModeOptions("select", nextFlags);
+      const editable = nextStatus.mode === "edit";
+      draw.updateModeOptions("select", SELECT_MODE_OPTIONS(editable));
     });
 
     draw.on("deselect", () => {
@@ -546,11 +536,11 @@ export function useMapEngine({
               ...rest,
               properties: {
                 ...feature.properties,
-                mode: feature.properties.status?.mode ?? "view",
+                mode: feature.properties.state?.mode ?? "view",
                 status: {
-                  ...feature.properties.status,
+                  ...feature.properties.state,
                   selected: false,
-                  mode: feature.properties.status?.mode ?? "view",
+                  mode: feature.properties.state?.mode ?? "view",
                 },
               },
             };
