@@ -148,7 +148,7 @@ export default function DetailsLayer() {
         <div className="block-header w-full flex gap-2 justify-between items-center">
           <form
             onSubmit={(e) => e.preventDefault()}
-            className="flex w-full items-center gap-2 rounded-lg border border-border bg-[#504e4e52]"
+            className="flex w-full items-center gap-2 rounded-lg border border-border bg-surface"
           >
             <label htmlFor="simple-search" className="sr-only">
               جستجو
@@ -161,14 +161,14 @@ export default function DetailsLayer() {
                 placeholder="جستجوی نام مالکان ..."
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
-                className="block w-full py-1.5 px-3 text-xs text-slate-200 outline-none transition placeholder:text-slate-300"
+                className="block w-full py-1.5 px-3 text-xs text-slate-200 outline-none transition placeholder:text-foreground"
               />
             </search>
 
             <button
               type="submit"
               aria-label="جستجو"
-              className="flex h-8 w-8 shrink-0 items-center justify-center text-white transition duration-300 focus:outline-none focus:ring-4 focus:ring-blue-500/30 cursor-pointer"
+              className="flex h-8 w-8 shrink-0 items-center justify-center text-foreground transition duration-300 focus:outline-none focus:ring-4 focus:ring-blue-500/30 cursor-pointer"
             >
               <svg
                 className="h-5 w-5"
