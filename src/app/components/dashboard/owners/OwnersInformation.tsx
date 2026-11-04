@@ -4,7 +4,6 @@ import { useState } from "react";
 import type { Owner } from "./OwnersTable";
 import { Dialog } from "@/app/components/Dialog";
 import { FiEdit2 } from "react-icons/fi";
-import { IoChevronDown } from "react-icons/io5";
 import { faNum, toPersianNumber } from "@/app/util";
 import OwnersFormUpdate from "./OwnersFormUpdate";
 
@@ -106,7 +105,9 @@ export default function OwnersInformation({ owner,  onUpdate }: OwnerInformation
             key={editedOwner.id}
             editedOwner={editedOwner}
             onSubmit={(updatedOwner) => {
+              setOwnerInfo(updatedOwner);
               onUpdate(updatedOwner);
+
               setIsOpen(false);
               setEditedOwner(null);
             }}
