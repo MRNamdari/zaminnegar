@@ -1,23 +1,11 @@
 "use client";
 
-export enum BlockStatus {
-  PROPOSED = "proposed",
-  DRAFT = "draft",
-  FINAL = "final",
-}
-
-export const BlockStatusMap: Record<BlockStatus, string> = {
-  [BlockStatus.PROPOSED]: "پیشنهادیه",
-  [BlockStatus.DRAFT]: "پیش‌نویس",
-  [BlockStatus.FINAL]: "نهایی",
-};
-
 export interface Block {
   id: string;
   code: string;
-  region: string;
+  region: "شمال" | "جنوب" | "شرق" | "غرب" | "مرکز";
   parcelCount: number;
-  status: BlockStatus;
+  status: "پیشنهادیه" | "پیش‌نویس" | "نهایی";
 }
 
 import { useMemo } from "react";
@@ -72,11 +60,6 @@ const features = tableFeatures({
   paginatedRowModel: createPaginatedRowModel(),
 });
 
-const statusStyles: Record<BlockStatus, string> = {
-  proposed: "bg-action-warning/90 text-surface",
-  draft: "bg-surface-muted text-foreground",
-  final: "bg-map-green text-surface",
-};
 
 export default function BlocksTable({
   data,
@@ -125,9 +108,15 @@ export default function BlocksTable({
 
           return (
             <span
-              className={`min-w-18 text-center rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${statusStyles[status]}`}
+              className={`min-w-18 text-center rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${
+                status === "نهایی"
+                  ? "bg-map-green text-surface"
+                  : status === "پیشنهادیه"
+                    ? "bg-action-warning/90 text-surface"
+                    : "bg-surface-muted text-foreground"
+              }`}
             >
-              {BlockStatusMap[status]}
+              {status}
             </span>
           );
         },
@@ -270,7 +259,7 @@ export default function BlocksTable({
             aria-label="Previous page"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="rounded bg-blue-500 hover:bg-blue-600 p-2 disabled:opacity-40 cursor-pointer transition duration-300"
+            className="rounded-full transition-colors ease-in-out bg-action-primary hover:bg-action-primary-hover disabled:bg-surface-muted p-2 cursor-pointer disabled:cursor-not-allowed"
           >
             <FiChevronRight />
           </button>
@@ -285,7 +274,7 @@ export default function BlocksTable({
             aria-label="Next page"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="rounded bg-blue-500 hover:bg-blue-600 p-2 disabled:opacity-40 cursor-pointer transition duration-300"
+            className="rounded-full transition-colors ease-in-out bg-action-primary hover:bg-action-primary-hover disabled:bg-surface-muted p-2 cursor-pointer disabled:cursor-not-allowed"
           >
             <FiChevronLeft />
           </button>
