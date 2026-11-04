@@ -10,4 +10,6 @@ const MiniMap = forwardRef<HTMLDivElement>((props, ref) => {
   );
 });
 
+MiniMap.displayName = "MiniMap";
+
 export { MiniMap };

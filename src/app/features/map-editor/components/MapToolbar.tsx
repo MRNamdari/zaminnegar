@@ -26,11 +26,6 @@ const tools = [
     icon: LuPen,
     title: "Draw polygon",
   },
-  {
-    id: "rectangle" as const,
-    icon: LuSquare,
-    title: "Draw rectangle",
-  },
 ];
 
 export function MapToolbar() {

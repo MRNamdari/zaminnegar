@@ -26,44 +26,46 @@ export default function MapPage() {
           </div>
           <div className="row-span-3 grid grid-cols-12 gap-2 p-2">
             <SelectedParcelsOwnersTable
-              data={[
-                {
-                  parcel: { areaM2: "8000", name: "P450" },
-                  block: { name: "B516" },
-                  owner: { name: "نوید نورزاد" },
-                  region: { name: "R65" },
-                },
-                {
-                  parcel: { areaM2: "8000", name: "P450" },
-                  block: { name: "B516" },
-                  owner: { name: "نوید نورزاد" },
-                  region: { name: "R65" },
-                },
-                {
-                  parcel: { areaM2: "8000", name: "P450" },
-                  block: { name: "B516" },
-                  owner: { name: "نوید نورزاد" },
-                  region: { name: "R65" },
-                },
-                {
-                  parcel: { areaM2: "8000", name: "P450" },
-                  block: { name: "B516" },
-                  owner: { name: "نوید نورزاد" },
-                  region: { name: "R65" },
-                },
-                {
-                  parcel: { areaM2: "8000", name: "P450" },
-                  block: { name: "B516" },
-                  owner: { name: "نوید نورزاد" },
-                  region: { name: "R65" },
-                },
-                {
-                  parcel: { areaM2: "8000", name: "P450" },
-                  block: { name: "B516" },
-                  owner: { name: "نوید نورزاد" },
-                  region: { name: "R65" },
-                },
-              ]}
+              data={
+                [
+                  {
+                    parcel: { areaM2: "8000", name: "P450" },
+                    block: { name: "B516" },
+                    owner: { name: "نوید نورزاد" },
+                    region: { name: "R65" },
+                  },
+                  {
+                    parcel: { areaM2: "8000", name: "P450" },
+                    block: { name: "B516" },
+                    owner: { name: "نوید نورزاد" },
+                    region: { name: "R65" },
+                  },
+                  {
+                    parcel: { areaM2: "8000", name: "P450" },
+                    block: { name: "B516" },
+                    owner: { name: "نوید نورزاد" },
+                    region: { name: "R65" },
+                  },
+                  {
+                    parcel: { areaM2: "8000", name: "P450" },
+                    block: { name: "B516" },
+                    owner: { name: "نوید نورزاد" },
+                    region: { name: "R65" },
+                  },
+                  {
+                    parcel: { areaM2: "8000", name: "P450" },
+                    block: { name: "B516" },
+                    owner: { name: "نوید نورزاد" },
+                    region: { name: "R65" },
+                  },
+                  {
+                    parcel: { areaM2: "8000", name: "P450" },
+                    block: { name: "B516" },
+                    owner: { name: "نوید نورزاد" },
+                    region: { name: "R65" },
+                  },
+                ] as any
+              }
               onDelete={console.log}
               onEdit={console.log}
               onRowClick={console.log}
@@ -145,7 +147,7 @@ const features: AreaCollection = {
         id: "75c56005-4102-476d-8739-1802ea5f20ed",
         level: "region",
         name: "منطقه ۲",
-        parentId: null,
+        status: { mode: "view", selected: true },
         areaHa: 3376.972,
       },
     },

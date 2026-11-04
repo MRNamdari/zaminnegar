@@ -103,6 +103,12 @@ export function MapEditorProvider({ children, onChange }: ProviderProps) {
     });
   }, []);
 
+  const updateFeature = useCallback(
+    (featureId: string, properties: Record<string, any>) =>
+      engineRef.current?.draw.updateFeatureProperties(featureId, properties),
+    [],
+  );
+
   const updateFeatures = useCallback(
     (features: AreaCollection, emit = true) => {
       dispatch({
@@ -212,11 +218,12 @@ export function MapEditorProvider({ children, onChange }: ProviderProps) {
   const internalValue = useMemo(
     () => ({
       registerEngine,
+      updateFeature,
       updateFeatures,
       setSelected,
       setBearing,
     }),
-    [registerEngine, updateFeatures, setSelected, setBearing],
+    [registerEngine, updateFeature, updateFeatures, setSelected, setBearing],
   );
 
   return (

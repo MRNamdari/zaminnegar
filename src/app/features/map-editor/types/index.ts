@@ -8,8 +8,9 @@ export interface AreaProperties {
   id: string;
   level: Level;
   name: string;
-  parentId: string | null;
+  mode?: "view" | "edit";
   areaHa: number;
+  status: { selected: boolean; mode: "view" | "edit" };
 }
 
 export interface AreaFeature {

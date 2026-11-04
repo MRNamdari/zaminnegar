@@ -34,6 +34,7 @@ import type { MapEngine } from "../types";
 
 export interface MapEditorInternal {
   registerEngine: (engine: MapEngine | null) => void;
+  updateFeature: (featureId: string, properties: Record<string, any>) => void;
   updateFeatures: (features: AreaCollection, emit?: boolean) => void;
   setSelected: (id: string | null) => void;
   setBearing: (bearing: number) => void;

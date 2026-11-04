@@ -1,10 +1,11 @@
 "use client";
 import { IBlock } from "@/app/features/blocks/interface";
+import { useMapEditor } from "@/app/features/map-editor";
 import { IOwner } from "@/app/features/owners/interface";
 import { IParcel } from "@/app/features/parcels/interface";
 import { IRegion } from "@/app/features/regions/interface";
 import { useEffect, useState } from "react";
-import { FiEye, FiEyeOff } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiLock, FiUnlock } from "react-icons/fi";
 import { HiOutlineCheck } from "react-icons/hi";
 
 const regionMockData: IRegion[] = [
@@ -233,7 +234,7 @@ const parcelMockData: IParcel[] = [
     updatedAt: new Date("2026-03-15"),
     owners: [],
   },
-];
+] as any;
 const ownerMockData: IOwner[] = [
   {
     id: "owner-001",
@@ -284,39 +285,57 @@ export default function LayerManagement() {
     parcels: true,
     owners: true,
   });
+  const map = useMapEditor();
+
   return (
     <aside className="py-3 pl-2 pr-3">
       <h3 className="border-b border-border text-xs pb-2 block">
         مدیریت لایه ها
       </h3>
-      <div>
+      <div className="select-none">
         <Layer<IRegion>
           colors={{ icon: "--map-green", input: "--map-green-hover" }}
           data={regionMockData}
           label="مناطق"
-          onChange={(region, chk) => {}}
-          defaultOpen={isOpen.region}
+          onChange={console.log}
+          defaults={
+            isOpen.region
+              ? regionMockData.map(() => ({ selected: true, mode: "view" }))
+              : regionMockData.map(() => ({ selected: false, mode: "view" }))
+          }
         />
         <Layer<IBlock>
           colors={{ icon: "--map-blue", input: "--map-blue-hover" }}
           data={blockMockData}
           label="بلوک‌ها"
-          onChange={(block, chk) => {}}
-          defaultOpen={isOpen.blocks}
+          onChange={() => {}}
+          defaults={
+            isOpen.blocks
+              ? blockMockData.map(() => ({ selected: true, mode: "view" }))
+              : blockMockData.map(() => ({ selected: false, mode: "view" }))
+          }
         />
         <Layer<IParcel>
           colors={{ icon: "--map-yellow", input: "--map-yellow-hover" }}
           data={parcelMockData}
           label="قطعه‌ها"
-          onChange={(parcel, chk) => {}}
-          defaultOpen={isOpen.parcels}
+          onChange={() => {}}
+          defaults={
+            isOpen.parcels
+              ? parcelMockData.map(() => ({ selected: true, mode: "view" }))
+              : parcelMockData.map(() => ({ selected: false, mode: "view" }))
+          }
         />
         <Layer<IOwner>
           colors={{ icon: "--map-purple", input: "--map-purple-hover" }}
           data={ownerMockData}
           label="مالکین"
-          onChange={(owner, chk) => {}}
-          defaultOpen={isOpen.owners}
+          onChange={() => {}}
+          defaults={
+            isOpen.owners
+              ? ownerMockData.map(() => ({ selected: true, mode: "view" }))
+              : ownerMockData.map(() => ({ selected: false, mode: "view" }))
+          }
         />
       </div>
     </aside>
@@ -324,8 +343,12 @@ export default function LayerManagement() {
 }
 
 interface LayerProps<T> {
-  defaultOpen?: boolean;
-  onChange(layerData: T, checked: boolean): void;
+  defaults?: { selected: boolean; mode: "edit" | "view" }[];
+  onChange(eventData: {
+    layerData: T;
+    selected: boolean;
+    mode: "edit" | "view";
+  }): void;
   colors: { icon: string; input: string };
   label: string;
   data: T[];
@@ -333,8 +356,24 @@ interface LayerProps<T> {
 
 function Layer<T extends { name: string }>(props: LayerProps<T>) {
   const [isClose, setClose] = useState<boolean>(
-    props.defaultOpen !== undefined ? !props.defaultOpen : false,
+    props.defaults?.[0]?.selected !== undefined
+      ? !props.defaults[0].selected
+      : false,
   );
+
+  function handleLayerChange(
+    event: React.ChangeEvent<HTMLInputElement>,
+    item: T,
+  ) {
+    const formElement = event.target.form;
+    if (!formElement) return;
+    const fd = new FormData(formElement);
+    props.onChange({
+      layerData: item,
+      mode: fd.get("mode") === "on" ? "view" : "edit",
+      selected: fd.get("selected") === "on" ? true : false,
+    });
+  }
 
   return (
     <div
@@ -345,9 +384,15 @@ function Layer<T extends { name: string }>(props: LayerProps<T>) {
         onClick={() => setClose((prev) => !prev)}
       >
         {isClose ? (
-          <FiEyeOff className="absolute right-1.5" stroke={`var(${props.colors.icon})`} />
+          <FiEyeOff
+            className="absolute right-1.5"
+            stroke={`var(${props.colors.icon})`}
+          />
         ) : (
-          <FiEye className="absolute right-1.5" stroke={`var(${props.colors.icon})`} />
+          <FiEye
+            className="absolute right-1.5"
+            stroke={`var(${props.colors.icon})`}
+          />
         )}
         <h4 className="text-xs font-medium">{props.label}</h4>
         <PolygonIcon fillColor={`var(${props.colors.icon})`} />
@@ -356,25 +401,39 @@ function Layer<T extends { name: string }>(props: LayerProps<T>) {
         className={`${isClose ? "absolute opacity-0 invisible" : "opacity-100 visible"} w-full flex flex-col gap-3 mb-3 pr-1`}
       >
         {props.data.map((item, key) => (
-          <label
-            key={key}
-            className="flex items-center justify-end cursor-pointer gap-3 text-xs select-none"
-          >
-            <span>{item.name}</span>
-            <div className="relative">
+          <form key={key} className="flex items-center ">
+            <label className="relative min-w-fit shrink-0 rounded-full transition-colors hover:bg-background-hover p-2">
               <input
+                name="mode"
                 type="checkbox"
-                onChange={(e) => props.onChange(item, e.target.checked)}
-                style={
-                  {
-                    "--input": `var(${props.colors.input})`,
-                  } as React.CSSProperties
-                }
-                className={`peer appearance-none w-4 h-4 border border-border checked:border-0 rounded-sm cursor-pointer transition-colors duration-200  checked:bg-(--input)`}
+                className="peer absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                onChange={(e) => {
+                  handleLayerChange(e, item);
+                }}
+                defaultChecked={props.defaults?.[key]?.mode === "view"}
               />
-              <HiOutlineCheck className="peer-checked:block hidden absolute inset-x-0.5 inset-y-0.5 text-background" />
-            </div>
-          </label>
+              <FiUnlock className="peer-checked:hidden text-border-strong" />
+              <FiLock className="peer-not-checked:hidden text-border-strong" />
+            </label>
+            <label className="w-full flex items-center justify-end cursor-pointer gap-3 text-xs select-none">
+              <span>{item.name}</span>
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  name="selected"
+                  onChange={(e) => handleLayerChange(e, item)}
+                  defaultChecked={props.defaults?.[key]?.selected}
+                  style={
+                    {
+                      "--input": `var(${props.colors.input})`,
+                    } as React.CSSProperties
+                  }
+                  className={`peer appearance-none w-4 h-4 border border-border checked:border-0 rounded-sm cursor-pointer transition-colors duration-200  checked:bg-(--input)`}
+                />
+                <HiOutlineCheck className="peer-checked:block hidden absolute inset-x-0.5 inset-y-0.5 text-background" />
+              </div>
+            </label>
+          </form>
         ))}
       </div>
     </div>
