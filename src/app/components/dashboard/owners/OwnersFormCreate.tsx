@@ -1,7 +1,10 @@
 "use client";
 
-import { useForm } from "@tanstack/react-form";
-import { createFormOwner, OwnerFormValues } from "@/app/components/dashboard/owners/schemas/OwnersCreate.schema";
+import { useAppForm } from "@/app/components/form/hooks/form";
+import {
+  createFormOwner,
+  OwnerFormValues,
+} from "@/app/components/dashboard/owners/schemas/OwnersCreate.schema";
 import { IoChevronDown } from "react-icons/io5";
 
 interface Props {
@@ -21,7 +24,7 @@ const initialValues: OwnerFormValues = {
 };
 
 export default function CreateOwnerForm({ onSubmit, onCancel }: Props) {
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: initialValues,
 
     validators: {
@@ -35,211 +38,183 @@ export default function CreateOwnerForm({ onSubmit, onCancel }: Props) {
   });
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit();
-      }}
-      className="flex flex-col gap-4 mt-4"
-    >
-      <div className="flex gap-2">
-        <form.Field name="name">
-          {(field) => (
-            <div className="w-1/2">
-              <label className="block text-sm mb-2">نام و نام‌خانوادگی</label>
-
-              <input
-                type="text"
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
+    <form.AppForm>
+      <form
+        noValidate
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          void form.handleSubmit();
+        }}
+        className="flex flex-col gap-4 mt-4"
+      >
+        {/* نام و نام پدر */}
+        <div className="flex gap-2">
+          <form.AppField
+            name="name"
+            validators={{
+              onBlur: createFormOwner.shape.name,
+            }}
+          >
+            {(field) => (
+              <field.TextField
+                label="نام و نام‌خانوادگی"
+                placeholder="نام و نام‌خانوادگی را وارد کنید"
+                required
               />
+            )}
+          </form.AppField>
 
-              {field.state.meta.errors.map((error, index) => (
-                <p key={index} className="text-action-error text-sm mt-1">
-                  {typeof error === "string" ? error : error?.message}
-                </p>
-              ))}
-            </div>
-          )}
-        </form.Field>
-
-        <form.Field name="fatherName">
-          {(field) => (
-            <div className="w-1/2">
-              <label className="block text-sm mb-2">نام پدر</label>
-
-              <input
-                type="text"
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
+          <form.AppField
+            name="fatherName"
+            validators={{
+              onBlur: createFormOwner.shape.fatherName,
+            }}
+          >
+            {(field) => (
+              <field.TextField
+                label="نام پدر"
+                placeholder="نام پدر را وارد کنید"
+                required
               />
-              {field.state.meta.errors.map((error, index) => (
-                <p key={index} className="text-action-error text-sm mt-1">
-                  {typeof error === "string" ? error : error?.message}
-                </p>
-              ))}
-            </div>
-          )}
-        </form.Field>
-      </div>
+            )}
+          </form.AppField>
+        </div>
 
-      <div className="flex gap-2">
-        <form.Field name="nationalCode">
-          {(field) => (
-            <div className="w-1/2">
-              <label className="block text-sm mb-2">کد ملی</label>
-
-              <input
-                type="text"
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
+        {/* کد ملی و شماره تماس */}
+        <div className="flex gap-2">
+          <form.AppField
+            name="nationalCode"
+            validators={{
+              onBlur: createFormOwner.shape.nationalCode,
+            }}
+          >
+            {(field) => (
+              <field.TextField
+                label="کد ملی"
+                placeholder="کد ملی را وارد کنید"
+                required
               />
-              {field.state.meta.errors.map((error, index) => (
-                <p key={index} className="text-action-error text-sm mt-1">
-                  {typeof error === "string" ? error : error?.message}
-                </p>
-              ))}
-            </div>
-          )}
-        </form.Field>
+            )}
+          </form.AppField>
 
-        <form.Field name="phoneNumber">
-          {(field) => (
-            <div className="w-1/2">
-              <label className="block text-sm mb-2">شماره تماس</label>
-
-              <input
-                type="tel"
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none text-right"
+          <form.AppField
+            name="phoneNumber"
+            validators={{
+              onBlur: createFormOwner.shape.phoneNumber,
+            }}
+          >
+            {(field) => (
+              <field.TextField
+                label="شماره تماس"
+                placeholder="شماره تماس را وارد کنید"
+                required
               />
-              {field.state.meta.errors.map((error, index) => (
-                <p key={index} className="text-action-error text-sm mt-1">
-                  {typeof error === "string" ? error : error?.message}
-                </p>
-              ))}
-            </div>
-          )}
-        </form.Field>
-      </div>
+            )}
+          </form.AppField>
+        </div>
 
-      <div className="flex gap-2">
-        <form.Field name="totalArea">
-          {(field) => (
-            <div className="w-1/2">
-              <label className="block text-sm mb-2">مساحت کل</label>
-
-              <input
+        {/* مساحت کل و تعداد قطعات */}
+        <div className="flex gap-2">
+          <form.AppField name="totalArea">
+            {(field) => (
+              <field.TextField
+                label="مساحت کل"
                 disabled
-                type="text"
-                value={field.state.value}
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
               />
-              {field.state.meta.errors.map((error, index) => (
-                <p key={index} className="text-action-error text-sm mt-1">
-                  {typeof error === "string" ? error : error?.message}
-                </p>
-              ))}
-            </div>
-          )}
-        </form.Field>
+            )}
+          </form.AppField>
 
-        <form.Field name="parcelCount">
-          {(field) => (
-            <div className="w-1/2">
-              <label className="block text-sm mb-2">تعداد قطعات</label>
-
-              <input
+          <form.AppField name="parcelCount">
+            {(field) => (
+              <field.TextField
+                label="تعداد قطعات"
                 disabled
-                type="text"
-                value={field.state.value}
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
               />
-              {field.state.meta.errors.map((error, index) => (
-                <p key={index} className="text-action-error text-sm mt-1">
-                  {typeof error === "string" ? error : error?.message}
-                </p>
-              ))}
+            )}
+          </form.AppField>
+        </div>
+
+        {/* وضعیت مالک */}
+        <form.AppField
+          name="status"
+          validators={{
+            onBlur: createFormOwner.shape.status,
+          }}
+        >
+          {(field) => (
+            <div>
+              <label className="block text-sm mb-2">
+                وضعیت مالک
+              </label>
+
+              <div className="relative">
+                <select
+                  value={field.state.value}
+                  onChange={(e) =>
+                    field.handleChange(
+                      e.target.value as "فعال" | "غیر فعال"
+                    )
+                  }
+                  onBlur={field.handleBlur}
+                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none appearance-none"
+                >
+                  <option value="فعال">فعال</option>
+                  <option value="غیر فعال">غیر فعال</option>
+                </select>
+
+                <IoChevronDown
+                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  size={18}
+                />
+
+                {field.state.meta.errors.map((error, index) => (
+                  <p
+                    key={index}
+                    className="text-action-error text-sm mt-1"
+                  >
+                    {typeof error === "string"
+                      ? error
+                      : error?.message}
+                  </p>
+                ))}
+              </div>
             </div>
           )}
-        </form.Field>
-      </div>
+        </form.AppField>
 
-      <form.Field name="status">
-        {(field) => (
-          <div>
-            <label className="block text-sm mb-2">وضعیت مالک</label>
-
-            <div className="relative">
-              <select
-                value={field.state.value}
-                onChange={(e) =>
-                  field.handleChange(e.target.value as "فعال" | "غیر فعال")
-                }
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none appearance-none"
-              >
-                <option value="فعال">فعال</option>
-                <option value="غیر فعال">غیر فعال</option>
-              </select>
-
-              <IoChevronDown
-                className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                size={18}
-              />
-              {field.state.meta.errors.map((error, index) => (
-                <p key={index} className="text-action-error text-sm mt-1">
-                  {String(error)}
-                </p>
-              ))}
-            </div>
-          </div>
-        )}
-      </form.Field>
-
-      <form.Field name="address">
-        {(field) => (
-          <div>
-            <label className="block text-sm mb-2">آدرس</label>
-
-            <textarea
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-              className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none resize-none"
+        {/* آدرس */}
+        <form.AppField
+          name="address"
+          validators={{
+            onBlur: createFormOwner.shape.address,
+          }}
+        >
+          {(field) => (
+            <field.TextareaField
+              label="آدرس"
+              placeholder="آدرس مالک را وارد کنید"
               rows={3}
             />
-            {field.state.meta.errors.map((error, index) => (
-              <p key={index} className="text-action-error text-sm mt-1">
-                {typeof error === "string" ? error : error?.message}
-              </p>
-            ))}
-          </div>
-        )}
-      </form.Field>
+          )}
+        </form.AppField>
 
-      <div className="flex gap-3 mt-2">
-        <button
-          type="button"
-          onClick={() => {
-            form.reset();
-            onCancel();
-          }}
-          className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
-        >
-          انصراف
-        </button>
+        {/* دکمه‌ها */}
+        <div className="flex items-center gap-3 mt-2">
+          <button
+            type="button"
+            onClick={() => {
+              form.reset();
+              onCancel();
+            }}
+            className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
+          >
+            انصراف
+          </button>
 
-        <button
-          type="submit"
-          className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
-        >
-          افزودن مالک
-        </button>
-      </div>
-    </form>
+          <form.SubmitButton label="افزودن مالک" />
+        </div>
+      </form>
+    </form.AppForm>
   );
-}
+} 
