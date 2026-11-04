@@ -218,7 +218,7 @@ export default function SelectedParcelsOwnersTable({
                 }}
                 tabIndex={0}
                 aria-label={`Open block ${row.original.parcel.name}`}
-                className="grid cursor-pointer border-t border-border hover:bg-slate-800 odd:bg-slate-950 focus-visible:outline-2 focus-visible:outline-blue-500 transition duration-300"
+                className="grid cursor-pointer border-t border-border bg-transparent hover:bg-surface-raised odd:bg-surface focus-visible:outline-2 focus-visible:outline-blue-500 transition duration-300"
                 style={{
                   gridTemplateColumns: `repeat(${columns.length}, minmax(max-content, 1fr))`,
                 }}
