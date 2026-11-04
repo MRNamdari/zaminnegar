@@ -117,69 +117,24 @@ export default function CreateOwnerForm({ onSubmit, onCancel }: Props) {
         {/* مساحت کل و تعداد قطعات */}
         <div className="flex gap-2">
           <form.AppField name="totalArea">
-            {(field) => (
-              <field.TextField
-                label="مساحت کل"
-                disabled
-              />
-            )}
+            {(field) => <field.TextField label="مساحت کل" disabled />}
           </form.AppField>
 
           <form.AppField name="parcelCount">
-            {(field) => (
-              <field.TextField
-                label="تعداد قطعات"
-                disabled
-              />
-            )}
+            {(field) => <field.TextField label="تعداد قطعات" disabled />}
           </form.AppField>
         </div>
 
         {/* وضعیت مالک */}
-        <form.AppField
-          name="status"
-          validators={{
-            onBlur: createFormOwner.shape.status,
-          }}
-        >
+        <form.AppField name="status">
           {(field) => (
-            <div>
-              <label className="block text-sm mb-2">
-                وضعیت مالک
-              </label>
-
-              <div className="relative">
-                <select
-                  value={field.state.value}
-                  onChange={(e) =>
-                    field.handleChange(
-                      e.target.value as "فعال" | "غیر فعال"
-                    )
-                  }
-                  onBlur={field.handleBlur}
-                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none appearance-none"
-                >
-                  <option value="فعال">فعال</option>
-                  <option value="غیر فعال">غیر فعال</option>
-                </select>
-
-                <IoChevronDown
-                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                  size={18}
-                />
-
-                {field.state.meta.errors.map((error, index) => (
-                  <p
-                    key={index}
-                    className="text-action-error text-sm mt-1"
-                  >
-                    {typeof error === "string"
-                      ? error
-                      : error?.message}
-                  </p>
-                ))}
-              </div>
-            </div>
+            <field.SelectField
+              label="وضعیت مالک"
+              options={[
+                { label: "فعال", value: "فعال" },
+                { label: "غیر فعال", value: "غیر فعال" },
+              ]}
+            />
           )}
         </form.AppField>
 
@@ -217,4 +172,4 @@ export default function CreateOwnerForm({ onSubmit, onCancel }: Props) {
       </form>
     </form.AppForm>
   );
-} 
+}
