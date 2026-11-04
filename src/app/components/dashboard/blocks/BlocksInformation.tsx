@@ -5,12 +5,13 @@ import { Block } from "./BlocksTable";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { Dialog } from "@/app/components/Dialog";
-import { IoChevronDown } from "react-icons/io5";
 import Link from "next/link";
 import { toPersianNumber } from "@/app/util";
 import ParcelsTable from "../parcels/ParcelsTable";
 import { parcelMockData } from "@/app/(dashboard)/parcels/ParcelMockData";
 import { MapEditor, MapEditorProvider } from "@/app/features/map-editor";
+import UpdateBlockForm from "./BlockFormUpdate";
+import { UpdateBlockFormValues } from "./schemas/BlockUpdate.schema";
 
 interface BlockInformationProps {
   block: Block;
@@ -20,13 +21,27 @@ export default function BlockInformation({block} :BlockInformationProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'info'|'parcels'>('info')
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [editedBlock, setEditedBlock] = useState<Block>(block);
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+    const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
+    const [currentBlock, setCurrentBlock] = useState<Block>(block);
 
-    const filteredParcels = parcelMockData.filter((parcel) =>
-      parcel.block?.id === editedBlock.id
+    const filteredParcels = parcelMockData.filter(
+      (parcel) => parcel.block?.id === block.id,
     );
-    console.log(filteredParcels);
+    
+      const handleUpdateBlock = (values: UpdateBlockFormValues) => {
+        const updatedBlock: Block = {
+          ...currentBlock,
+          code: values.blockCode,
+          region: values.blockAreaName,
+          status: values.blockStatus,
+        };
+
+        setCurrentBlock(updatedBlock);
+
+        setIsUpdateModalOpen(false);
+        setSelectedBlock(null);
+      };
 
   return (
     <div className="w-full  ">
@@ -50,7 +65,7 @@ export default function BlockInformation({block} :BlockInformationProps) {
             href={{
               pathname: `/map/`,
               query: {
-                block: editedBlock.code,
+                block: currentBlock.code,
               },
             }}
             className="w-1/3 py-2.5 border-b border-slate-200/10 rounded-t-md cursor-pointer text-center hover:bg-blue-500/20 transition duration-300"
@@ -67,17 +82,17 @@ export default function BlockInformation({block} :BlockInformationProps) {
               <div className=" bg-surface-raised rounded-md p-4">
                 <div className="flex justify-between px-1 pb-3.5 border-b border-border">
                   <span className="text-sm">کد بلوک:</span>
-                  <span className="text-sm">{editedBlock.code}</span>
+                  <span className="text-sm">{currentBlock.code}</span>
                 </div>
                 <div className="flex justify-between px-1 py-3.5 border-b border-border">
                   <span className="text-sm">تعداد قطعات:</span>
                   <span className="text-sm">
-                    {toPersianNumber(editedBlock.parcelCount)}
+                    {toPersianNumber(currentBlock.parcelCount)}
                   </span>
                 </div>
                 <div className="flex justify-between px-1 py-3.5 border-b border-border">
                   <span className="text-sm">منطقه:</span>
-                  <span className="text-sm">{editedBlock.region}</span>
+                  <span className="text-sm">{currentBlock.region}</span>
                 </div>
                 <div className="flex justify-between px-1 pt-3.5">
                   <span className="text-sm">مساحت:</span>
@@ -87,8 +102,8 @@ export default function BlockInformation({block} :BlockInformationProps) {
               <div className="flex justify-between gap-2">
                 <button
                   onClick={() => {
-                    setEditedBlock(block);
-                    setIsEditModalOpen(true);
+                    setSelectedBlock(currentBlock);
+                    setIsUpdateModalOpen(true);
                   }}
                   className="w-1/2 p-3 bg-action-primary text-white rounded-md cursor-pointer transition duration-300 flex justify-center items-center gap-2"
                 >
@@ -151,79 +166,22 @@ export default function BlockInformation({block} :BlockInformationProps) {
         </div>
       </Dialog>
       <Dialog
-        open={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
+        open={isUpdateModalOpen}
+        onOpenChange={setIsUpdateModalOpen}
         title="ویرایش بلوک"
-        description="اطلاعات بلوک را ویرایش کنید."
+        description="اطلاعات بلوک را ویرایش کنید"
         className="text-white"
       >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setIsEditModalOpen(false);
-          }}
-          className="flex flex-col gap-4"
-        >
-          <div className="flex flex-col gap-2">
-            <input
-              type="text"
-              placeholder="کد بلوک"
-              value={editedBlock.code}
-              onChange={(e) =>
-                setEditedBlock({
-                  ...editedBlock,
-                  code: e.target.value,
-                })
-              }
-              className="w-full p-3 rounded-lg bg-slate-700 text-white border-border outline-none"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <div className="relative">
-              <select
-                value={editedBlock.region}
-                onChange={(e) =>
-                  setEditedBlock({
-                    ...editedBlock,
-                    region: e.target.value,
-                  })
-                }
-                name="region"
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border-border outline-none appearance-none"
-              >
-                <option value="" disabled>
-                  نام منطقه
-                </option>
-
-                <option value="شمال">شمال</option>
-                <option value="جنوب">جنوب</option>
-                <option value="شرق">شرق</option>
-                <option value="غرب">غرب</option>
-                <option value="مرکز">مرکز</option>
-              </select>
-
-              <IoChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none" />
-            </div>
-          </div>
-
-          <div className="flex gap-3 mt-2">
-            <button
-              type="button"
-              onClick={() => setIsEditModalOpen(false)}
-              className="w-1/2 p-3 rounded-md bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
-            >
-              انصراف
-            </button>
-
-            <button
-              type="submit"
-              className="w-1/2 p-3 rounded-md bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
-            >
-              ذخیره تغییرات
-            </button>
-          </div>
-        </form>
+        {selectedBlock && (
+          <UpdateBlockForm
+            block={selectedBlock}
+            onSubmit={handleUpdateBlock}
+            onCancel={() => {
+              setIsUpdateModalOpen(false);
+              setSelectedBlock(null);
+            }}
+          />
+        )}
       </Dialog>
     </div>
   );

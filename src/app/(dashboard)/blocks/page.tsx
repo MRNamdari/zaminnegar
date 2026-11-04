@@ -3,77 +3,55 @@ import { AiOutlinePlus } from "react-icons/ai";
 import BlocksTable from "@/app/components/dashboard/blocks/BlocksTable";
 import { useState } from "react";
 import { Dialog } from "@/app/components/Dialog";
-import { IoChevronDown } from "react-icons/io5";
-import {
-  BlockStatus,
-  BlockStatusMap,
-  type Block,
-} from "@/app/components/dashboard/blocks/BlocksTable";
+import { type Block } from "@/app/components/dashboard/blocks/BlocksTable";
 import { useRouter } from "next/navigation";
 import { mockBlocks } from "@/app/(dashboard)/mockData";
 import { CgSearch } from "react-icons/cg";
+import CreateBlockForm from "@/app/components/dashboard/blocks/BlockFormCreate";
+import { BlockFormValue } from "@/app/components/dashboard/blocks/schemas/BlockCreate.schema";
+import UpdateBlockForm from "@/app/components/dashboard/blocks/BlockFormUpdate";
 
 export default function BlockPage() {
   const [blocks, setBlocks] = useState<Block[]>(mockBlocks);
   const [searchValue, setSearchValue] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const [nameBlock, setNameBlock] = useState("");
-  const [nameRegion, setNameRegion] = useState("");
-  const [valueStatus, setValueStatus] = useState<BlockStatus | "">("");
-  const [alt, setAlt] = useState("");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const router = useRouter();
 
-  const handleAddBlock = () => {
-    if (!nameBlock.trim() || !nameRegion || !valueStatus) {
-      setAlt("لطفاً تمام فیلدها را تکمیل کنید");
-      return;
+  const handleAddBlock = (values: BlockFormValue) => {
+    const newBlockData: any = {
+      id: String(blocks.length + 1),
+      ...values,
     }
-
-    if (blocks.some((block) => block.code === nameBlock.trim())) {
-      setAlt("کد این بلوک قبلاً ثبت شده است");
-      return;
-    }
-
-    router.push('/map')
-
-    setIsOpen(false);
+    setBlocks((prevOwners) => [...prevOwners, newBlockData]);
+    setIsAddModalOpen(false);
   };
 
   const handleEditBlock = (block: Block) => {
     setSelectedBlock(block);
-
-    setNameBlock(block.code);
-    setNameRegion(block.region);
-    setValueStatus(block.status);
-
-    setIsOpen(true);
+    setIsUpdateModalOpen(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleUpdateBlock = (values: BlockFormValue) => {
     if (!selectedBlock) return;
 
-    if (!nameBlock.trim() || !nameRegion || !valueStatus) {
-      setAlt("لطفاً تمام فیلدها را تکمیل کنید");
-      return;
-    }
+    const updatedBlock: Block = {
+      ...selectedBlock,
+      code: values.blockCode,
+      region: values.blockAreaName,
+      status: values.blockStatus,
+    };
 
     setBlocks((prevBlocks) =>
       prevBlocks.map((block) =>
-        block.code === selectedBlock.code
-          ? {
-              ...block,
-              code: nameBlock.trim(),
-              region: nameRegion,
-              status: valueStatus,
-            }
-          : block,
+        block.id === selectedBlock.id ? updatedBlock : block,
       ),
     );
 
+    setIsUpdateModalOpen(false);
     setSelectedBlock(null);
-    setIsOpen(false);
   };
 
   const handleDelete = (block: Block) => {
@@ -126,10 +104,7 @@ export default function BlockPage() {
           <button
             onClick={() => {
               setSelectedBlock(null);
-              setNameBlock("");
-              setNameRegion("");
-              setValueStatus("");
-              setIsOpen(true);
+              setIsAddModalOpen(true);
             }}
             className="min-w-fit flex gap-2 items-center bg-action-primary transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
           >
@@ -149,85 +124,34 @@ export default function BlockPage() {
       </div>
 
       <Dialog
-        open={isOpen}
-        onOpenChange={setIsOpen}
-        title={selectedBlock ? "ویرایش بلوک" : "افزودن بلوک جدید"}
-        description={
-          selectedBlock
-            ? "اطلاعات بلوک انتخاب‌شده را ویرایش کنید."
-            : "اطلاعات بلوک جدید را وارد کنید."
-        }
+        open={isAddModalOpen}
+        onOpenChange={setIsAddModalOpen}
+        title="افزودن بلوک"
+        description="اطلاعات بلوک جدید را وارد کنید"
         className="text-white"
       >
-        <form
-          onSubmit={(e) => e.preventDefault()}
-          className="flex flex-col gap-4"
-        >
-          <div className="flex flex-col gap-2">
-            <label className="text-sm">کد بلوک</label>
-            <input
-              value={nameBlock}
-              onChange={(e) => setNameBlock(e.target.value)}
-              type="text"
-              placeholder="کد بلوک"
-              className="w-full p-2.5 rounded-lg bg-slate-700 text-white border-border outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-sm mb-2">نام منطقه</label>
-            <div className="relative">
-              <select
-                value={nameRegion}
-                onChange={(e) => setNameRegion(e.target.value)}
-                name="status"
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border-border outline-none appearance-none"
-              >
-                <option value="شمال">شمال</option>
-                <option value="جنوب">جنوب</option>
-                <option value="شرق">شرق</option>
-                <option value="غرب">غرب</option>
-                <option value="مرکز">مرکز</option>
-              </select>
-              <IoChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm mb-2">وضعیت</label>
-            <div className="relative">
-              <select
-                value={valueStatus}
-                onChange={(e) => setValueStatus(e.target.value as BlockStatus)}
-                name="status"
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border-border outline-none appearance-none"
-              >
-                {Object.values(BlockStatus).map((status) => (
-                  <option key={status} value={status}>
-                    {BlockStatusMap[status]}
-                  </option>
-                ))}
-              </select>
-
-              <IoChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none" />
-            </div>
-          </div>
-        </form>
-        <p className="text-sm text-red-400 pt-4 pr-1">{alt}</p>
-        <div className="flex items-center gap-3 mt-4">
-          <button
-            type="button"
-            onClick={() => setIsOpen?.(false)}
-            className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
-          >
-            انصراف
-          </button>
-          <button
-            type="button"
-            onClick={selectedBlock ? handleSaveEdit : handleAddBlock}
-            className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
-          >
-            {selectedBlock ? "ذخیره تغییرات" : "برو به نقشه"}
-          </button>
-        </div>
+        <CreateBlockForm
+          onSubmit={handleAddBlock}
+          onCancel={() => setIsAddModalOpen(false)}
+        />
+      </Dialog>
+      <Dialog
+        open={isUpdateModalOpen}
+        onOpenChange={setIsUpdateModalOpen}
+        title="ویرایش بلوک"
+        description="اطلاعات بلوک را ویرایش کنید"
+        className="text-white"
+      >
+        {selectedBlock && (
+          <UpdateBlockForm
+            block={selectedBlock}
+            onSubmit={handleUpdateBlock}
+            onCancel={() => {
+              setIsUpdateModalOpen(false);
+              setSelectedBlock(null);
+            }}
+          />
+        )}
       </Dialog>
       <Dialog
         open={isDeleteModalOpen}
