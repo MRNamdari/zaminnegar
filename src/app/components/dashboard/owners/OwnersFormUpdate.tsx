@@ -164,38 +164,16 @@ export default function OwnersFormUpdate({
           </form.AppField>
         </div>
 
-        <form.AppField
-          name="status"
-          validators={{
-            onBlur: updateFormOwner.shape.status,
-          }}
-        >
+        {/* وضعیت مالک */}
+        <form.AppField name="status">
           {(field) => (
-            <div>
-              <label className="block text-sm mb-2">وضعیت مالک</label>
-
-              <div className="relative">
-                <select
-                  value={field.state.value}
-                  onChange={(e) =>
-                    field.handleChange(e.target.value as "فعال" | "غیر فعال")
-                  }
-                  onBlur={field.handleBlur}
-                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none appearance-none"
-                >
-                  <option value="فعال">فعال</option>
-                  <option value="غیر فعال">غیرفعال</option>
-                </select>
-
-                <IoChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none" />
-
-                {field.state.meta.errors.map((error, index) => (
-                  <p key={index} className="text-action-error text-sm mt-1">
-                    {typeof error === "string" ? error : error?.message}
-                  </p>
-                ))}
-              </div>
-            </div>
+            <field.SelectField
+              label="وضعیت مالک"
+              options={[
+                { label: "فعال", value: "فعال" },
+                { label: "غیر فعال", value: "غیر فعال" },
+              ]}
+            />
           )}
         </form.AppField>
 
