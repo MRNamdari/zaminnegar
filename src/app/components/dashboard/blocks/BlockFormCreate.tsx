@@ -55,87 +55,30 @@ export default function CreateBlockForm({ onSubmit, onCancel }: Props) {
             />
           )}
         </form.AppField>
-        <form.AppField
-          name="blockAreaName"
-          validators={{
-            onBlur: createFormBlock.shape.blockAreaName,
-          }}
-        >
+        <form.AppField name="blockAreaName">
           {(field) => (
-            <div>
-              <label className="block text-sm mb-2">نام منطقه</label>
-
-              <div className="relative">
-                <select
-                  value={field.state.value}
-                  onChange={(e) =>
-                    field.handleChange(
-                      e.target.value as BlockFormValue["blockAreaName"],
-                    )
-                  }
-                  onBlur={field.handleBlur}
-                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none appearance-none"
-                >
-                  <option value="">انتخاب منطقه</option>
-                  <option value="شمال">شمال</option>
-                  <option value="جنوب">جنوب</option>
-                  <option value="شرق">شرق</option>
-                  <option value="غرب">غرب</option>
-                  <option value="مرکز">مرکز</option>
-                </select>
-
-                <IoChevronDown
-                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                  size={18}
-                />
-
-                {field.state.meta.errors.map((error, index) => (
-                  <p key={index} className="text-action-error text-sm mt-1">
-                    {typeof error === "string" ? error : error?.message}
-                  </p>
-                ))}
-              </div>
-            </div>
+            <field.SelectField
+              label="نام منطقه"
+              options={[
+                { label: "مرکز", value: "مرکز" },
+                { label: "شمال", value: "شمال" },
+                { label: "جنوب", value: "جنوب" },
+                { label: "شرق", value: "شرق" },
+                { label: "غرب", value: "غرب" },
+              ]}
+            />
           )}
         </form.AppField>
-        <form.AppField
-          name="blockStatus"
-          validators={{
-            onBlur: createFormBlock.shape.blockStatus,
-          }}
-        >
+        <form.AppField name="blockStatus">
           {(field) => (
-            <div>
-              <label className="block text-sm mb-2">وضعیت بلوک</label>
-
-              <div className="relative">
-                <select
-                  value={field.state.value}
-                  onChange={(e) =>
-                    field.handleChange(
-                      e.target.value as "نهایی" | "پیشنهادیه" | "پیش‌نویس",
-                    )
-                  }
-                  onBlur={field.handleBlur}
-                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none appearance-none"
-                >
-                  <option value="نهایی">نهایی</option>
-                  <option value="پیشنهادیه">پیشنهادیه</option>
-                  <option value="پیش‌نویس">پیش‌نویس</option>
-                </select>
-
-                <IoChevronDown
-                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                  size={18}
-                />
-
-                {field.state.meta.errors.map((error, index) => (
-                  <p key={index} className="text-action-error text-sm mt-1">
-                    {typeof error === "string" ? error : error?.message}
-                  </p>
-                ))}
-              </div>
-            </div>
+            <field.SelectField
+              label="وضعیت بلوک"
+              options={[
+                { label: "نهایی", value: "نهایی" },
+                { label: "پیش‌نویس", value: "پیش‌نویس" },
+                { label: "پیشنهادیه", value: "پیشنهادیه" },
+              ]}
+            />
           )}
         </form.AppField>
         <div className="flex items-center gap-3 mt-2">
