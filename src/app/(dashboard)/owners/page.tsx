@@ -7,10 +7,7 @@ import OwnersTable, {
 import { useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import { Dialog } from "@/app/components/Dialog";
-import { IoChevronDown } from "react-icons/io5";
-import { toPersianNumber } from "@/app/util";
 import { initialOwners } from "../mockData";
-import { useRouter } from "next/navigation";
 import { CgSearch } from "react-icons/cg";
 import CreateOwnerForm from "@/app/components/dashboard/owners/OwnersFormCreate";
 import { OwnerFormValues } from "@/app/components/dashboard/owners/schemas/OwnersCreate.schema";
@@ -18,41 +15,10 @@ import { OwnerFormValues } from "@/app/components/dashboard/owners/schemas/Owner
 export default function OwnersPage() {
   const [searchValue, setSearchValue] = useState("");
   const [owners, setOwners] = useState<Owner[]>(initialOwners);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editedOwner, setEditedOwner] = useState<Owner | null>(null);
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newOwner, setNewOwner] = useState<Omit<Owner, "id">>({
-    name: "",
-    nationalCode: "99999999999",
-    phoneNumber: "09999999999",
-    fatherName: "",
-    parcelCount: 0,
-    totalArea: 0,
-    status: "فعال",
-    address: ""
-  });
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedOwner, setSelectedOwner] = useState<Owner | null>(null);
-
-  const handleEdit = (owner: Owner) => {
-    setEditedOwner({ ...owner });
-    setIsEditModalOpen(true);
-  };
-
-  const handleUpdate = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (!editedOwner) return;
-
-    setOwners((prevOwners) =>
-      prevOwners.map((owner) =>
-        owner.id === editedOwner.id ? editedOwner : owner,
-      ),
-    );
-
-    setIsEditModalOpen(false);
-    setEditedOwner(null);
-  };
 
   const handleAddOwner = (values: OwnerFormValues) => {
     console.log("Owner Values:", values);
@@ -62,8 +28,7 @@ export default function OwnersPage() {
       ...values,
     };
 
-    setOwners((prevOwners) => [...prevOwners, newOwnerData]);
-
+    setOwners((prevOwners) => [...prevOwners, newOwnerData]); 
     setIsAddModalOpen(false);
   };
 
@@ -89,6 +54,7 @@ export default function OwnersPage() {
         <h2 className="w-full text-right text-3xl leading-loose font-normal">
           مالکین
         </h2>
+
         <div className="block-header w-full flex gap-4 justify-between items-center">
           <form
             onSubmit={(e) => e.preventDefault()}
@@ -105,8 +71,9 @@ export default function OwnersPage() {
                 placeholder="جست و جوی مالکین..."
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
-                className="w-full py-2.5 px-3 text-sm text-foreground border-0  outline-none transition placeholder:text-foreground-muted "
+                className="w-full py-2.5 px-3 text-sm text-foreground border-0 outline-none transition placeholder:text-foreground-muted"
               />
+
               <button
                 type="submit"
                 aria-label="جستجو"
@@ -116,6 +83,7 @@ export default function OwnersPage() {
               </button>
             </search>
           </form>
+
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="min-w-fit flex gap-2 items-center bg-action-primary transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
@@ -124,116 +92,17 @@ export default function OwnersPage() {
             <span className="text-sm text-white">افزودن مالک</span>
           </button>
         </div>
+
         <OwnersTable
           data={owners}
           searchValue={searchValue}
-          onEdit={handleEdit}
+          onEdit={console.log}
           onDelete={handleDelete}
           onRowClick={console.log}
         />
       </div>
-      <Dialog
-        open={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
-        title="ویرایش مالک"
-        description="اطلاعات مالک را ویرایش کنید"
-        className="text-white"
-      >
-        {editedOwner && (
-          <form onSubmit={handleUpdate} className="flex flex-col gap-4 mt-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-sm">نام مالک</label>
 
-              <input
-                type="text"
-                value={editedOwner.name}
-                onChange={(e) =>
-                  setEditedOwner({
-                    ...editedOwner,
-                    name: e.target.value,
-                  })
-                }
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm">تعداد قطعات</label>
-
-              <input
-                disabled
-                type="text"
-                min="0"
-                value={toPersianNumber(editedOwner.parcelCount)}
-                onChange={(e) =>
-                  setEditedOwner({
-                    ...editedOwner,
-                    parcelCount: Number(e.target.value),
-                  })
-                }
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm">مساحت کل (هکتار)</label>
-
-              <input
-                disabled
-                type="text"
-                min="0"
-                step="0.1"
-                value={toPersianNumber(editedOwner.totalArea)}
-                onChange={(e) =>
-                  setEditedOwner({
-                    ...editedOwner,
-                    totalArea: Number(e.target.value),
-                  })
-                }
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm">وضعیت</label>
-
-              <div className="relative">
-                <select
-                  value={editedOwner.status}
-                  onChange={(e) =>
-                    setEditedOwner({
-                      ...editedOwner,
-                      status: e.target.value,
-                    })
-                  }
-                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none appearance-none"
-                >
-                  <option value="فعال">فعال</option>
-                  <option value="غیر فعال">غیرفعال</option>
-                </select>
-
-                <IoChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-lg pointer-events-none" />
-              </div>
-            </div>
-            <div className="flex items-center gap-3 mt-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsEditModalOpen(false);
-                  setEditedOwner(null);
-                }}
-                className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
-              >
-                انصراف
-              </button>
-
-              <button
-                type="submit"
-                className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
-              >
-                ذخیره تغییرات
-              </button>
-            </div>
-          </form>
-        )}
-      </Dialog>
+      {/* Add Owner Dialog */}
       <Dialog
         open={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}
@@ -246,6 +115,8 @@ export default function OwnersPage() {
           onCancel={() => setIsAddModalOpen(false)}
         />
       </Dialog>
+
+      {/* Delete Owner Dialog */}
       <Dialog
         open={isDeleteModalOpen}
         onOpenChange={(open) => {
@@ -264,8 +135,7 @@ export default function OwnersPage() {
             <p className="text-sm text-slate-300">
               آیا مطمئن هستید که می‌خواهید مالک{" "}
               <span className="text-white font-semibold mx-1">
-                {" "}
-                {selectedOwner.name}{" "}
+                {selectedOwner.name}
               </span>{" "}
               را حذف کنید؟
             </p>
