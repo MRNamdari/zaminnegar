@@ -39,7 +39,7 @@ export interface Owner {
   address: string;
   parcelCount: number;
   totalArea: number;
-  status: string;
+  status: "فعال" | "غیر فعال";
 }
 
 interface OwnersTableProps {
