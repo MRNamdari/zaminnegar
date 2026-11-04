@@ -11,14 +11,23 @@ import { initialOwners } from "../mockData";
 import { CgSearch } from "react-icons/cg";
 import CreateOwnerForm from "@/app/components/dashboard/owners/OwnersFormCreate";
 import { OwnerFormValues } from "@/app/components/dashboard/owners/schemas/OwnersCreate.schema";
+import OwnersFormUpdate from "@/app/components/dashboard/owners/OwnersFormUpdate";
 
-export default function OwnersPage() {
+interface OwnerInformationProps {
+  owner: Owner;
+  onUpdate: (owner: Owner) => void;
+}
+
+export default function OwnersPage({owner , onUpdate}: OwnerInformationProps) {
   const [searchValue, setSearchValue] = useState("");
   const [owners, setOwners] = useState<Owner[]>(initialOwners);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedOwner, setSelectedOwner] = useState<Owner | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [editedOwner, setEditedOwner] = useState<Owner | null>(null);
+  const [ownerInfo, setOwnerInfo] = useState<Owner>(owner);
 
   const handleAddOwner = (values: OwnerFormValues) => {
     console.log("Owner Values:", values);
@@ -47,6 +56,21 @@ export default function OwnersPage() {
     setIsDeleteModalOpen(false);
     setSelectedOwner(null);
   };
+
+  const handleUpdate = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!editedOwner) return;
+
+    setOwnerInfo(editedOwner);
+    setIsOpen(false);
+    setEditedOwner(null);
+  };
+
+  const handleEdit = (owner: Owner) => {
+  setEditedOwner(owner);
+  setIsOpen(true);
+};
 
   return (
     <div className="w-full h-full overflow-y-auto">
@@ -96,7 +120,7 @@ export default function OwnersPage() {
         <OwnersTable
           data={owners}
           searchValue={searchValue}
-          onEdit={console.log}
+          onEdit={handleEdit}
           onDelete={handleDelete}
           onRowClick={console.log}
         />
@@ -114,6 +138,39 @@ export default function OwnersPage() {
           onSubmit={handleAddOwner}
           onCancel={() => setIsAddModalOpen(false)}
         />
+      </Dialog>
+
+      {/* Edit Owner Dialog */}
+      <Dialog
+        open={isOpen}
+        onOpenChange={(open) => {
+          setIsOpen(open);
+          if (!open) setEditedOwner(null);
+        }}
+        title="ویرایش مالک"
+        description="اطلاعات مالک را ویرایش کنید"
+        className="text-white"
+      >
+        {editedOwner && (
+          <OwnersFormUpdate
+            key={editedOwner.id}
+            editedOwner={editedOwner}
+            onSubmit={(updatedOwner) => {
+              setOwners((prev) =>
+                prev.map((owner) =>
+                  owner.id === updatedOwner.id ? updatedOwner : owner,
+                ),
+              );
+
+              setIsOpen(false);
+              setEditedOwner(null);
+            }}
+            onCancel={() => {
+              setIsOpen(false);
+              setEditedOwner(null);
+            }}
+          />
+        )}
       </Dialog>
 
       {/* Delete Owner Dialog */}
