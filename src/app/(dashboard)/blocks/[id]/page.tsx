@@ -31,9 +31,8 @@ export default async function BlockDetailsPage({ params }: Props) {
           </div>
           <BackButton />
         </div>
-        <div className="flex gap-4 w-full">
+        <div className="flex flex-col gap-4 w-full">
           <BlockInformation block={block} />
-          <div className="bg-slate-200/5 w-1/2"></div>
         </div>
       </div>
     </div>

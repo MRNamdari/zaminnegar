@@ -8,6 +8,9 @@ import { Dialog } from "@/app/components/Dialog";
 import { IoChevronDown } from "react-icons/io5";
 import Link from "next/link";
 import { toPersianNumber } from "@/app/util";
+import ParcelsTable from "../parcels/ParcelsTable";
+import { parcelMockData } from "@/app/(dashboard)/parcels/ParcelMockData";
+import { MapEditor, MapEditorProvider } from "@/app/features/map-editor";
 
 interface BlockInformationProps {
   block: Block;
@@ -20,87 +23,110 @@ export default function BlockInformation({block} :BlockInformationProps) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editedBlock, setEditedBlock] = useState<Block>(block);
 
+    const filteredParcels = parcelMockData.filter((parcel) =>
+      parcel.block?.id === editedBlock.id
+    );
+    console.log(filteredParcels);
+
   return (
-    <div className="w-1/2">
-      <div className="w-full flex mb-2">
-        <button
-          onClick={() => setActiveTab("info")}
-          disabled={activeTab === "info"}
-          className="w-1/3 py-2.5 border-b border-slate-200/10 rounded-t-md cursor-pointer text-center hover:bg-blue-500/20 transition duration-300 disabled:border-b-blue-500 disabled:border-b-2"
-        >
-          اطلاعات کلی
-        </button>
-        <button
-          onClick={() => setActiveTab("parcels")}
-          disabled={activeTab === "parcels"}
-          className="w-1/3 py-2.5 border-b border-slate-200/10 rounded-t-md cursor-pointer text-center hover:bg-blue-500/20 transition duration-300 disabled:border-b-blue-500 disabled:border-b-2"
-        >
-          قطعات
-        </button>
-        <Link
-          href={{
-            pathname: `/map/`,
-            query: {
-              block: editedBlock.code,
-            },
-          }}
-          className="w-1/3 py-2.5 border-b border-slate-200/10 rounded-t-md cursor-pointer text-center hover:bg-blue-500/20 transition duration-300"
-        >
-          نقشه
-        </Link>
-      </div>
-      <div className="w-full">
-        <div
-          className="flex flex-col gap-3 aria-hidden:hidden"
-          aria-hidden={activeTab !== "info"}
-        >
-          <div className=" bg-surface-raised rounded-md p-4">
-            <div className="flex justify-between px-1 pb-3.5 border-b border-border">
-              <span className="text-sm">کد بلوک:</span>
-              <span className="text-sm">{editedBlock.code}</span>
+    <div className="w-full  ">
+      <MapEditorProvider>
+        <div className="w-full flex mb-2">
+          <button
+            onClick={() => setActiveTab("info")}
+            disabled={activeTab === "info"}
+            className="w-1/3 py-2.5 border-b border-slate-200/10 rounded-t-md cursor-pointer text-center hover:bg-blue-500/20 transition duration-300 disabled:border-b-blue-500 disabled:border-b-2"
+          >
+            اطلاعات کلی
+          </button>
+          <button
+            onClick={() => setActiveTab("parcels")}
+            disabled={activeTab === "parcels"}
+            className="w-1/3 py-2.5 border-b border-slate-200/10 rounded-t-md cursor-pointer text-center hover:bg-blue-500/20 transition duration-300 disabled:border-b-blue-500 disabled:border-b-2"
+          >
+            قطعات
+          </button>
+          <Link
+            href={{
+              pathname: `/map/`,
+              query: {
+                block: editedBlock.code,
+              },
+            }}
+            className="w-1/3 py-2.5 border-b border-slate-200/10 rounded-t-md cursor-pointer text-center hover:bg-blue-500/20 transition duration-300"
+          >
+            نقشه
+          </Link>
+        </div>
+        <div className="w-full">
+          <div
+            className="flex gap-3 aria-hidden:hidden"
+            aria-hidden={activeTab !== "info"}
+          >
+            <div className="flex flex-col gap-3 w-1/2">
+              <div className=" bg-surface-raised rounded-md p-4">
+                <div className="flex justify-between px-1 pb-3.5 border-b border-border">
+                  <span className="text-sm">کد بلوک:</span>
+                  <span className="text-sm">{editedBlock.code}</span>
+                </div>
+                <div className="flex justify-between px-1 py-3.5 border-b border-border">
+                  <span className="text-sm">تعداد قطعات:</span>
+                  <span className="text-sm">
+                    {toPersianNumber(editedBlock.parcelCount)}
+                  </span>
+                </div>
+                <div className="flex justify-between px-1 py-3.5 border-b border-border">
+                  <span className="text-sm">منطقه:</span>
+                  <span className="text-sm">{editedBlock.region}</span>
+                </div>
+                <div className="flex justify-between px-1 pt-3.5">
+                  <span className="text-sm">مساحت:</span>
+                  <span className="text-sm">{toPersianNumber(2.7)} هکتار</span>
+                </div>
+              </div>
+              <div className="flex justify-between gap-2">
+                <button
+                  onClick={() => {
+                    setEditedBlock(block);
+                    setIsEditModalOpen(true);
+                  }}
+                  className="w-1/2 p-3 bg-action-primary text-white rounded-md cursor-pointer transition duration-300 flex justify-center items-center gap-2"
+                >
+                  <FiEdit2 size={14} />
+                  ویرایش
+                </button>
+                <button
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="w-1/2 p-3 bg-action-error text-white rounded-md cursor-pointer transition duration-300 flex justify-center items-center gap-2"
+                >
+                  <FiTrash2 size={14} />
+                  حذف
+                </button>
+              </div>
             </div>
-            <div className="flex justify-between px-1 py-3.5 border-b border-border">
-              <span className="text-sm">تعداد قطعات:</span>
-              <span className="text-sm">
-                {toPersianNumber(editedBlock.parcelCount)}
-              </span>
-            </div>
-            <div className="flex justify-between px-1 py-3.5 border-b border-border">
-              <span className="text-sm">منطقه:</span>
-              <span className="text-sm">{editedBlock.region}</span>
-            </div>
-            <div className="flex justify-between px-1 pt-3.5">
-              <span className="text-sm">مساحت:</span>
-              <span className="text-sm">{toPersianNumber(2.7)} هکتار</span>
+            <div className="w-1/2 rounded-2xl overflow-hidden">
+              <MapEditor
+                controls={false}
+                toolbar={false}
+                miniMap={false}
+                viewModeToggle={false}
+              />
             </div>
           </div>
-          <div className="flex justify-between gap-2">
-            <button
-              onClick={() => {
-                setEditedBlock(block);
-                setIsEditModalOpen(true);
-              }}
-              className="w-1/2 p-3 bg-action-primary text-white rounded-md cursor-pointer transition duration-300 flex justify-center items-center gap-2"
-            >
-              <FiEdit2 size={14} />
-              ویرایش
-            </button>
-            <button
-              onClick={() => setIsDeleteModalOpen(true)}
-              className="w-1/2 p-3 bg-action-error text-white rounded-md cursor-pointer transition duration-300 flex justify-center items-center gap-2"
-            >
-              <FiTrash2 size={14} />
-              حذف
-            </button>
+          <div
+            aria-hidden={activeTab !== "parcels"}
+            className="aria-hidden:hidden"
+          >
+            <ParcelsTable
+              data={filteredParcels as any}
+              onDelete={console.log}
+              onEdit={console.log}
+              onRowClick={console.log}
+              searchValue={""}
+            />
           </div>
         </div>
-        <div
-          aria-hidden={activeTab !== "parcels"}
-          className="aria-hidden:hidden"
-        >
-          Parcels
-        </div>
-      </div>
+      </MapEditorProvider>
       <Dialog
         open={isDeleteModalOpen}
         onOpenChange={setIsDeleteModalOpen}
