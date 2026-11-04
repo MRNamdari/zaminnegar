@@ -24,7 +24,7 @@ export function NumberField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="block text-sm mb-2">
+      <label className="block text-foreground text-sm mb-2">
         {label}
         {required && <span className="text-red-400">*</span>}
       </label>
@@ -43,7 +43,7 @@ export function NumberField({
           )
         }
         placeholder={placeholder}
-        className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
+        className="w-full p-2.5 rounded-lg bg-surface text-foreground border border-border outline-none"
       />
 
       {errors.length > 0 && (
