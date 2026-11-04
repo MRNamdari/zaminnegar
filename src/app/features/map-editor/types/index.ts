@@ -10,7 +10,7 @@ export interface AreaProperties {
   name: string;
   mode?: "view" | "edit";
   areaHa: number;
-  status: { selected: boolean; mode: "view" | "edit" };
+  state: { selected: boolean; mode: "view" | "edit" };
 }
 
 export interface AreaFeature {
