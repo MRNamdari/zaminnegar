@@ -6,12 +6,14 @@ import { Dialog } from "@/app/components/Dialog";
 import { FiEdit2 } from "react-icons/fi";
 import { IoChevronDown } from "react-icons/io5";
 import { faNum, toPersianNumber } from "@/app/util";
+import OwnersFormUpdate from "./OwnersFormUpdate";
 
 interface OwnerInformationProps {
   owner: Owner;
+  onUpdate: (owner: Owner) => void;
 }
 
-export default function OwnersInformation({ owner }: OwnerInformationProps) {
+export default function OwnersInformation({ owner,  onUpdate }: OwnerInformationProps) {
   const [ownerInfo, setOwnerInfo] = useState<Owner>(owner);
   const [isOpen, setIsOpen] = useState(false);
   const [editedOwner, setEditedOwner] = useState<Owner | null>(null);
@@ -100,169 +102,19 @@ export default function OwnersInformation({ owner }: OwnerInformationProps) {
         className="text-white"
       >
         {editedOwner && (
-          <form onSubmit={handleUpdate} className="flex flex-col gap-4 mt-4">
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm mb-2">نام و نام‌خانوادگی</label>
-                <input
-                  type="text"
-                  value={editedOwner.name}
-                  onChange={(e) =>
-                    setEditedOwner({
-                      ...editedOwner,
-                      name: e.target.value,
-                    })
-                  }
-                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
-                  required
-                />
-              </div>
-
-              <div className="w-1/2">
-                <label className="block text-sm mb-2">نام پدر</label>
-                <input
-                  type="text"
-                  value={editedOwner.fatherName}
-                  onChange={(e) =>
-                    setEditedOwner({
-                      ...editedOwner,
-                      fatherName: e.target.value,
-                    })
-                  }
-                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
-                  required
-                />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm mb-2">کد ملی</label>
-                <input
-                  type="text"
-                  value={faNum(editedOwner.nationalCode)}
-                  onChange={(e) =>
-                    setEditedOwner({
-                      ...editedOwner,
-                      nationalCode: e.target.value,
-                    })
-                  }
-                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
-                  required
-                />
-              </div>
-
-              <div className="w-1/2">
-                <label className="block text-sm mb-2">شماره تماس</label>
-                <input
-                  type="tel"
-                  value={faNum(editedOwner.phoneNumber)}
-                  onChange={(e) =>
-                    setEditedOwner({
-                      ...editedOwner,
-                      phoneNumber: e.target.value,
-                    })
-                  }
-                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none text-right"
-                  required
-                />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm mb-2">مساحت کل</label>
-                <input
-                  disabled
-                  type="text"
-                  min="0"
-                  step="0.1"
-                  value={faNum(editedOwner.totalArea)}
-                  onChange={(e) =>
-                    setEditedOwner({
-                      ...editedOwner,
-                      totalArea: Number(e.target.value),
-                    })
-                  }
-                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
-                  required
-                />
-              </div>
-
-              <div className="w-1/2">
-                <label className="block text-sm mb-2">تعداد قطعات</label>
-                <input
-                  disabled
-                  type="text"
-                  min="0"
-                  value={faNum(editedOwner.parcelCount)}
-                  onChange={(e) =>
-                    setEditedOwner({
-                      ...editedOwner,
-                      parcelCount: Number(e.target.value),
-                    })
-                  }
-                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none"
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm mb-2">وضعیت مالک</label>
-
-              <div className="relative">
-                <select
-                  value={editedOwner.status}
-                  onChange={(e) =>
-                    setEditedOwner({
-                      ...editedOwner,
-                      status: e.target.value as Owner["status"],
-                    })
-                  }
-                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none appearance-none"
-                >
-                  <option value="فعال">فعال</option>
-                  <option value="غیر فعال">غیر فعال</option>
-                </select>
-
-                <IoChevronDown
-                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                  size={18}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm mb-2">آدرس</label>
-              <textarea
-                value={faNum(editedOwner.address)}
-                onChange={(e) =>
-                  setEditedOwner({
-                    ...editedOwner,
-                    address: e.target.value,
-                  })
-                }
-                className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-border outline-none resize-none"
-                rows={3}
-                required
-              />
-            </div>
-
-            <div className="flex gap-3 mt-2">
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
-              >
-                انصراف
-              </button>
-
-              <button
-                type="submit"
-                className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
-              >
-                ذخیره تغییرات
-              </button>
-            </div>
-          </form>
+          <OwnersFormUpdate
+            key={editedOwner.id}
+            editedOwner={editedOwner}
+            onSubmit={(updatedOwner) => {
+              onUpdate(updatedOwner);
+              setIsOpen(false);
+              setEditedOwner(null);
+            }}
+            onCancel={() => {
+              setIsOpen(false);
+              setEditedOwner(null);
+            }}
+          />
         )}
       </Dialog>
     </>
