@@ -7,6 +7,7 @@ interface TextFieldProps {
   placeholder?: string;
   type?: React.HTMLInputTypeAttribute;
   required?: boolean;
+  disabled?: boolean;
 }
 
 export function TextField({
@@ -14,6 +15,7 @@ export function TextField({
   placeholder,
   type = "text",
   required = false,
+  disabled = false,
 }: TextFieldProps) {
   const field = useFieldContext<string>();
   const errors = useSelector(field.store, (state) => state.meta.errors);
@@ -27,6 +29,7 @@ export function TextField({
         type={type}
         required={required}
         value={field.state.value}
+        disabled={disabled}
         onBlur={field.handleBlur}
         onChange={(e) => field.handleChange(e.target.value)}
         placeholder={placeholder}
