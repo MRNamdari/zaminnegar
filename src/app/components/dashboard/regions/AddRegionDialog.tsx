@@ -77,7 +77,7 @@ export function AddRegionDialog(props: Omit<DialogProps, "children">) {
               انصراف
             </button>
 
-            <form.SubmitButton label="برو به نقشه" />
+            <form.SubmitButton disabled={true} label="برو به نقشه" />
           </div>
         </form>
       </form.AppForm>
