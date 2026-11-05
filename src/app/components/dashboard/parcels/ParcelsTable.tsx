@@ -26,17 +26,7 @@ import { toPersianNumber } from "@/app/util";
 import { SvgPolygon } from "../SvgMultiPolygon";
 import Link from "next/link";
 
-export enum ParcelStatus {
-  ACTIVE = "active",
-  INACTIVE = "inactive",
-}
-
-const ParcelStatusMap = new Map<ParcelStatus, string>([
-  [ParcelStatus.ACTIVE, "فعال"],
-  [ParcelStatus.INACTIVE, "غیرفعال"],
-]);
-
-type Parcel = IParcel & { status: ParcelStatus };
+export type Parcel = IParcel;
 
 interface ParcelTableProps {
   data: Parcel[];
@@ -62,11 +52,6 @@ const features = tableFeatures({
   rowPaginationFeature,
   paginatedRowModel: createPaginatedRowModel(),
 });
-
-const statusStyles: Record<ParcelStatus, string> = {
-  [ParcelStatus.INACTIVE]: "bg-surface-muted text-foreground",
-  [ParcelStatus.ACTIVE]: "bg-map-green text-surface",
-};
 
 // start function page
 
@@ -122,23 +107,34 @@ export default function ParcelsTable({
         },
       },
       {
-        accessorKey: "blocks",
+        accessorKey: "block",
         header: "بلوک ها",
-        sortingFn: "basic",
-        cell({row}){
-            return row.original.block?.id   
-        }
+        cell({ row }) {
+          return row.original.block ?? "-";
+        },
       },
       {
         accessorKey: "owners",
         header: "مالکین",
         sortingFn: "basic",
-        cell({row}) {
-          return  <div className="flex gap-2">
-          {row.original.owners?.map(po=>po.owner).map(o=><Link className=" h-full text-blue-400 hover:underline underline-offset-4" key={o?.id} href={{
-            pathname:`/owners/${o?.id}`
-          }}>{o?.name}</Link>)}
-          </div>
+        cell({ row }) {
+          return (
+            <div className="flex gap-2">
+              {row.original.owners
+                ?.map((po) => po.owner)
+                .map((o) => (
+                  <Link
+                    className=" h-full text-blue-400 hover:underline underline-offset-4"
+                    key={o?.id}
+                    href={{
+                      pathname: `/owners/${o?.id}`,
+                    }}
+                  >
+                    {o?.name}
+                  </Link>
+                ))}
+            </div>
+          );
         },
       },
       {
@@ -149,9 +145,9 @@ export default function ParcelsTable({
 
           return (
             <span
-              className={`min-w-18 text-center select-none rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${statusStyles[status]}`}
+              className={`min-w-18 text-center select-none rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${status === "فعال" ? "bg-map-green text-surface" : "bg-surface-muted text-foreground"}`}
             >
-              {ParcelStatusMap.get(status)}
+              {status}
             </span>
           );
         },

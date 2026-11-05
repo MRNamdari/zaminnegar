@@ -13,12 +13,12 @@ export interface IParcel {
   strokeColor: string;
   strokeWidth: number;
   notes: string | null;
-  status: string;
+  status: "فعال" | "غیر فعال";
   /** Geodesic area in square meters, computed by PostGIS (`ST_Area(geom::geography)`). */
   areaM2: string;
   createdAt: Date;
   updatedAt: Date;
-  block?: IBlock;
+  block?: "بلوک 1" | "بلوک 2" | "بلوک 3" | "بلوک 4";
   owners?: IParcelOwner[];
 }
 

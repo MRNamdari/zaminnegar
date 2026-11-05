@@ -25,27 +25,9 @@ export const parcelMockData: IParcel[] = [
     areaM2: "1200",
     createdAt: new Date(),
     updatedAt: new Date(),
-    status: "active",
+    status: "فعال",
 
-    block: {
-      id: "1",
-      regionId: "1",
-      name: "بلوک شماره ۱",
-      description: "بلوک اصلی منطقه",
-      territory: {
-        type: "MultiPolygon",
-        coordinates: [[[
-          [49.58, 37.28],
-          [49.584, 37.28],
-          [49.584, 37.284],
-          [49.58, 37.284],
-          [49.58, 37.28],
-        ]]],
-      },
-      areaM2: "12000",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
+    block: "بلوک 1",
 
     owners: [
       {
@@ -125,7 +107,7 @@ export const parcelMockData: IParcel[] = [
   {
     id: "2",
     projectId: "project-1",
-    blockId: "1",
+    blockId: "2",
     name: "قطعه شماره 2",
     geometry: {
       type: "MultiPolygon",
@@ -145,27 +127,9 @@ export const parcelMockData: IParcel[] = [
     areaM2: "1100",
     createdAt: new Date(),
     updatedAt: new Date(),
-    status: "active",
+    status: "فعال",
 
-    block: {
-      id: "1",
-      regionId: "1",
-      name: "بلوک شماره ۱",
-      description: "بلوک اصلی منطقه",
-      territory: {
-        type: "MultiPolygon",
-        coordinates: [[[
-          [49.58, 37.28],
-          [49.584, 37.28],
-          [49.584, 37.284],
-          [49.58, 37.284],
-          [49.58, 37.28],
-        ]]],
-      },
-      areaM2: "12000",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
+    block: "بلوک 2",
 
     owners: [
       {
@@ -238,7 +202,7 @@ export const parcelMockData: IParcel[] = [
   {
     id: "3",
     projectId: "project-1",
-    blockId: "1",
+    blockId: "3",
     name: "قطعه شماره 3",
     geometry: {
       type: "MultiPolygon",
@@ -258,27 +222,9 @@ export const parcelMockData: IParcel[] = [
     areaM2: "1300",
     createdAt: new Date(),
     updatedAt: new Date(),
-    status: "active",
+    status: "فعال",
 
-    block: {
-      id: "1",
-      regionId: "1",
-      name: "بلوک شماره ۱",
-      description: "بلوک اصلی منطقه",
-      territory: {
-        type: "MultiPolygon",
-        coordinates: [[[
-          [49.58, 37.28],
-          [49.584, 37.28],
-          [49.584, 37.284],
-          [49.58, 37.284],
-          [49.58, 37.28],
-        ]]],
-      },
-      areaM2: "12000",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
+    block: "بلوک 3",
 
     owners: [
       {
@@ -344,7 +290,7 @@ export const parcelMockData: IParcel[] = [
   {
     id: "4",
     projectId: "project-1",
-    blockId: "1",
+    blockId: "4",
     name: "قطعه شماره 4",
     geometry: {
       type: "MultiPolygon",
@@ -364,27 +310,9 @@ export const parcelMockData: IParcel[] = [
     areaM2: "1400",
     createdAt: new Date(),
     updatedAt: new Date(),
-    status: "inactive",
+    status: "غیر فعال",
 
-    block: {
-      id: "1",
-      regionId: "1",
-      name: "بلوک شماره ۱",
-      description: "بلوک اصلی منطقه",
-      territory: {
-        type: "MultiPolygon",
-        coordinates: [[[
-          [49.58, 37.28],
-          [49.584, 37.28],
-          [49.584, 37.284],
-          [49.58, 37.284],
-          [49.58, 37.28],
-        ]]],
-      },
-      areaM2: "12000",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
+    block: "بلوک 4",
 
     owners: [
       {

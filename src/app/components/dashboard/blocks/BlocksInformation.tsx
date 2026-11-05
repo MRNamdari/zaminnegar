@@ -26,7 +26,7 @@ export default function BlockInformation({block} :BlockInformationProps) {
     const [currentBlock, setCurrentBlock] = useState<Block>(block);
 
     const filteredParcels = parcelMockData.filter(
-      (parcel) => parcel.block?.id === block.id,
+      (parcel) => parcel.blockId === block.id,
     );
     
       const handleUpdateBlock = (values: UpdateBlockFormValues) => {
