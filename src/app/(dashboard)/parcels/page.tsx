@@ -1,17 +1,23 @@
 "use client";
-import AddParcelDialog from "@/app/components/dashboard/parcels/AddParcelDialog";
+
 import ParcelsTable from "@/app/components/dashboard/parcels/ParcelsTable";
 import { useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import { CgSearch } from "react-icons/cg";
 import { parcelMockData } from "./ParcelMockData";
+import { Dialog } from "@/app/components/Dialog";
+import ParcelFormCreate from "@/app/components/dashboard/parcels/ParcelsFormCreate";
 
 export default function Page() {
   const [searchValue, setSearchValue] = useState("");
-  const [isAddingParcel, setIsAddingParcel] = useState(false);
   const filteredParcels = parcelMockData.filter((parcel) =>
     parcel.name.toLowerCase().includes(searchValue.trim().toLowerCase()),
   );
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const handleAddParcel = () => {
+    setIsAddModalOpen(true)
+  }
   return (
     <div className="w-full h-full overflow-y-auto">
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-4 items-center pb-4 pt-6 pr-4">
@@ -46,7 +52,7 @@ export default function Page() {
             </search>
           </form>
           <button
-            onClick={() => setIsAddingParcel(true)}
+            onClick={handleAddParcel}
             className="min-w-fit flex gap-2 items-center bg-action-primary transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
           >
             <AiOutlinePlus className="text-white" />
@@ -60,13 +66,19 @@ export default function Page() {
           onRowClick={console.log}
           searchValue={searchValue}
         />
-        <AddParcelDialog
-            open={isAddingParcel}
-            onOpenChange={(open)=> setIsAddingParcel(open)}
-            title="افزودن قطعه"
-            description="اطلاعات قطعه جدید را وارد کنید"
-            className="text-white"
-        />
+
+        <Dialog
+          open={isAddModalOpen}
+          onOpenChange={setIsAddModalOpen}
+          title="افزودن بلوک"
+          description="اطلاعات بلوک جدید را وارد کنید"
+          className="text-white"
+        >
+          <ParcelFormCreate
+            onSubmit={handleAddParcel}
+            onCancel={() => setIsAddModalOpen(false)}
+          />
+        </Dialog>
       </div>
     </div>
   );
