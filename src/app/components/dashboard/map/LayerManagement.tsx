@@ -1,6 +1,10 @@
 "use client";
 import { IBlock } from "@/app/features/blocks/interface";
-import { useMapEditor } from "@/app/features/map-editor";
+import {
+  AreaFeature,
+  useWorkspaceActions,
+  useWorkspaceState,
+} from "@/app/features/map-editor";
 import { IOwner } from "@/app/features/owners/interface";
 import { IParcel } from "@/app/features/parcels/interface";
 import { IRegion } from "@/app/features/regions/interface";
@@ -279,82 +283,115 @@ const ownerMockData: IOwner[] = [
 ];
 
 export default function LayerManagement() {
-  const [isOpen, setIsOpen] = useState({
-    region: true,
-    blocks: true,
-    parcels: true,
-    owners: true,
+  const { features, selectedFeatureId, visibleFeatureIds, editableFeatureIds } =
+    useWorkspaceState();
+  const actions = useWorkspaceActions();
+  features.features.map((f) => {
+    f.properties;
   });
-  const map = useMapEditor();
 
+  const { regions, blocks, parcels } = features.features.reduce(
+    (a, c) => {
+      switch (c.properties.level) {
+        case "region":
+          a.regions.push(c);
+        case "block":
+          a.blocks.push(c);
+        case "parcel":
+          a.parcels.push(c);
+      }
+      return a;
+    },
+    {
+      regions: [] as AreaFeature[],
+      blocks: [] as AreaFeature[],
+      parcels: [] as AreaFeature[],
+    },
+  );
+
+  const [visibleFeatures, setVisibleFeatures] = useState(visibleFeatureIds);
+  const [editableFeatures, setEditableFeatures] = useState(editableFeatureIds);
+
+  const handleLayerChange = ({
+    layerData,
+    mode,
+    selected,
+  }: {
+    layerData: AreaFeature;
+    selected: boolean;
+    mode: "edit" | "view";
+  }) => {
+    visibleFeatureIds.has(layerData.id) && actions.selectFeature(layerData.id);
+    if (mode === "edit" && !editableFeatureIds.has(layerData.id)) {
+      actions.setEditableFeatureIds(
+        new Set([...editableFeatureIds, layerData.id]),
+      );
+    }
+    if (selected && layerData.id !== selectedFeatureId) {
+      actions.selectFeature(layerData.id);
+    }
+  };
   return (
     <aside className="py-3 pl-2 pr-3">
       <h3 className="border-b border-border text-xs pb-2 block">
         مدیریت لایه ها
       </h3>
       <div className="select-none">
-        <Layer<IRegion>
+        <Layer
           colors={{ icon: "--map-green", input: "--map-green-hover" }}
-          data={regionMockData}
+          data={regions}
           label="مناطق"
-          onChange={console.log}
-          defaults={
-            isOpen.region
-              ? regionMockData.map(() => ({ selected: true, mode: "view" }))
-              : regionMockData.map(() => ({ selected: false, mode: "view" }))
-          }
+          onChange={handleLayerChange}
+          defaults={regions.map((feat) => ({
+            mode: editableFeatureIds.has(feat.id) ? "edit" : "view",
+            selected: selectedFeatureId === feat.id,
+          }))}
         />
-        <Layer<IBlock>
+        <Layer
           colors={{ icon: "--map-blue", input: "--map-blue-hover" }}
-          data={blockMockData}
+          data={blocks}
           label="بلوک‌ها"
-          onChange={() => {}}
-          defaults={
-            isOpen.blocks
-              ? blockMockData.map(() => ({ selected: true, mode: "view" }))
-              : blockMockData.map(() => ({ selected: false, mode: "view" }))
-          }
+          onChange={handleLayerChange}
+          defaults={blocks.map((feat) => ({
+            mode: editableFeatureIds.has(feat.id) ? "edit" : "view",
+            selected: selectedFeatureId === feat.id,
+          }))}
         />
-        <Layer<IParcel>
+        <Layer
           colors={{ icon: "--map-yellow", input: "--map-yellow-hover" }}
-          data={parcelMockData}
+          data={parcels}
           label="قطعه‌ها"
-          onChange={() => {}}
-          defaults={
-            isOpen.parcels
-              ? parcelMockData.map(() => ({ selected: true, mode: "view" }))
-              : parcelMockData.map(() => ({ selected: false, mode: "view" }))
-          }
+          onChange={handleLayerChange}
+          defaults={parcels.map((feat) => ({
+            mode: editableFeatureIds.has(feat.id) ? "edit" : "view",
+            selected: selectedFeatureId === feat.id,
+          }))}
         />
-        <Layer<IOwner>
+        <Layer
           colors={{ icon: "--map-purple", input: "--map-purple-hover" }}
-          data={ownerMockData}
+          data={[]}
           label="مالکین"
           onChange={() => {}}
-          defaults={
-            isOpen.owners
-              ? ownerMockData.map(() => ({ selected: true, mode: "view" }))
-              : ownerMockData.map(() => ({ selected: false, mode: "view" }))
-          }
         />
       </div>
     </aside>
   );
 }
 
-interface LayerProps<T> {
+interface LayerProps {
+  onLayerVisibilityChange?: (visible: boolean) => void;
   defaults?: { selected: boolean; mode: "edit" | "view" }[];
   onChange(eventData: {
-    layerData: T;
+    layerData: AreaFeature;
     selected: boolean;
     mode: "edit" | "view";
   }): void;
   colors: { icon: string; input: string };
   label: string;
-  data: T[];
+  data: AreaFeature[];
 }
 
-function Layer<T extends { name: string }>(props: LayerProps<T>) {
+function Layer(props: LayerProps) {
   const [isClose, setClose] = useState<boolean>(
     props.defaults?.[0]?.selected !== undefined
       ? !props.defaults[0].selected
@@ -363,7 +400,7 @@ function Layer<T extends { name: string }>(props: LayerProps<T>) {
 
   function handleLayerChange(
     event: React.ChangeEvent<HTMLInputElement>,
-    item: T,
+    item: AreaFeature,
   ) {
     const formElement = event.target.form;
     if (!formElement) return;
@@ -381,7 +418,12 @@ function Layer<T extends { name: string }>(props: LayerProps<T>) {
     >
       <div
         className="title_feature flex items-center justify-end py-3 gap-2 relative"
-        onClick={() => setClose((prev) => !prev)}
+        onClick={() => {
+          setClose((prev) => {
+            props.onLayerVisibilityChange?.(!prev);
+            return !prev;
+          });
+        }}
       >
         {isClose ? (
           <FiEyeOff
@@ -416,7 +458,7 @@ function Layer<T extends { name: string }>(props: LayerProps<T>) {
               <FiLock className="peer-not-checked:hidden text-border-strong" />
             </label>
             <label className="w-full flex items-center justify-end cursor-pointer gap-3 text-xs select-none">
-              <span>{item.name}</span>
+              <span>{item.properties.name}</span>
               <div className="relative">
                 <input
                   type="checkbox"
