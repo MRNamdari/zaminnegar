@@ -1,0 +1,260 @@
+@import "tailwindcss";
+
+/* =========================================
+   THEME SWITCHING
+========================================= */
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces */
+  --app-bg: light-dark(#f1f5f9, #071426);
+  --app-surface: light-dark(#ffffff, #0b1f35);
+  --app-surface-raised: light-dark(#f8fafc, #102b48);
+  --app-surface-muted: light-dark(#e2e8f0, #183653);
+
+  /* Borders */
+  --app-border: light-dark(#d4dce6, rgb(47, 62, 104));
+  --app-border-strong: light-dark(#64748b, #476581);
+
+  /* Text */
+  --app-text: light-dark(#0f172a, #e2e8f0);
+  --app-text-secondary: light-dark(#334155, #cbd5e1);
+  --app-text-muted: light-dark(#64748b, #94a3b8);
+
+  /* Actions */
+  --app-primary: light-dark(#1d4ed8, #2563eb);
+  --app-on-primary: #ffffff;
+
+  --app-success: light-dark(#047857, #047857);
+  --app-on-success: #ffffff;
+
+  --app-error: light-dark(#b91c1c, #b91c1c);
+  --app-on-error: #ffffff;
+
+  --app-warning: #fbbf24;
+  --app-on-warning: #422006;
+
+  --app-info: light-dark(#0369a1, #0369a1);
+  --app-on-info: #ffffff;
+
+  /* GIS */
+  --map-green: light-dark(#047857, #7eff1d);
+  --map-blue: light-dark(#60a5fa, #1dacd8);
+  --map-yellow: light-dark(#d97706f2, #facc15);
+  --map-purple: light-dark(#a78bfa, #5e00d9);
+  --map-cyan: light-dark(#0e7490, #22d3ee);
+  --map-orange: light-dark(#c2410c, #fb923c);
+
+  /* =========================================
+     SURFACE HOVER
+  ========================================= */
+
+  --app-bg-hover: light-dark(
+    color-mix(in srgb, var(--app-bg) 90%, black),
+    color-mix(in srgb, var(--app-bg) 90%, white)
+  );
+
+  --app-surface-hover: light-dark(
+    color-mix(in srgb, var(--app-surface) 90%, black),
+    color-mix(in srgb, var(--app-surface) 90%, white)
+  );
+
+  --app-surface-raised-hover: light-dark(
+    color-mix(in srgb, var(--app-surface-raised) 90%, black),
+    color-mix(in srgb, var(--app-surface-raised) 90%, white)
+  );
+
+  --app-surface-muted-hover: light-dark(
+    color-mix(in srgb, var(--app-surface-muted) 90%, black),
+    color-mix(in srgb, var(--app-surface-muted) 90%, white)
+  );
+
+  /* =========================================
+     BORDER HOVER
+  ========================================= */
+
+  --app-border-hover: light-dark(
+    color-mix(in srgb, var(--app-border) 85%, black),
+    color-mix(in srgb, var(--app-border) 85%, white)
+  );
+
+  --app-border-strong-hover: light-dark(
+    color-mix(in srgb, var(--app-border-strong) 85%, black),
+    color-mix(in srgb, var(--app-border-strong) 85%, white)
+  );
+
+  /* =========================================
+     TEXT HOVER
+  ========================================= */
+
+  --app-text-hover: light-dark(
+    color-mix(in srgb, var(--app-text) 90%, black),
+    color-mix(in srgb, var(--app-text) 90%, white)
+  );
+
+  --app-text-secondary-hover: light-dark(
+    color-mix(in srgb, var(--app-text-secondary) 90%, black),
+    color-mix(in srgb, var(--app-text-secondary) 90%, white)
+  );
+
+  --app-text-muted-hover: light-dark(
+    color-mix(in srgb, var(--app-text-muted) 90%, black),
+    color-mix(in srgb, var(--app-text-muted) 90%, white)
+  );
+
+  /* =========================================
+     ACTION HOVER
+  ========================================= */
+
+  --app-primary-hover: light-dark(
+    color-mix(in srgb, var(--app-primary) 88%, black),
+    color-mix(in srgb, var(--app-primary) 88%, white)
+  );
+
+  --app-success-hover: light-dark(
+    color-mix(in srgb, var(--app-success) 88%, black),
+    color-mix(in srgb, var(--app-success) 88%, white)
+  );
+
+  --app-error-hover: light-dark(
+    color-mix(in srgb, var(--app-error) 88%, black),
+    color-mix(in srgb, var(--app-error) 88%, white)
+  );
+
+  --app-warning-hover: light-dark(
+    color-mix(in srgb, var(--app-warning) 88%, black),
+    color-mix(in srgb, var(--app-warning) 88%, white)
+  );
+
+  --app-info-hover: light-dark(
+    color-mix(in srgb, var(--app-info) 88%, black),
+    color-mix(in srgb, var(--app-info) 88%, white)
+  );
+
+  /* =========================================
+     GIS HOVER
+  ========================================= */
+
+  --map-green-hover: light-dark(
+    color-mix(in srgb, var(--map-green) 85%, black),
+    color-mix(in srgb, var(--map-green) 85%, white)
+  );
+
+  --map-blue-hover: light-dark(
+    color-mix(in srgb, var(--map-blue) 85%, black),
+    color-mix(in srgb, var(--map-blue) 85%, white)
+  );
+
+  --map-yellow-hover: light-dark(
+    color-mix(in srgb, var(--map-yellow) 85%, black),
+    color-mix(in srgb, var(--map-yellow) 85%, white)
+  );
+
+  --map-purple-hover: light-dark(
+    color-mix(in srgb, var(--map-purple) 85%, black),
+    color-mix(in srgb, var(--map-purple) 85%, white)
+  );
+
+  --map-cyan-hover: light-dark(
+    color-mix(in srgb, var(--map-cyan) 85%, black),
+    color-mix(in srgb, var(--map-cyan) 85%, white)
+  );
+
+  --map-orange-hover: light-dark(
+    color-mix(in srgb, var(--map-orange) 85%, black),
+    color-mix(in srgb, var(--map-orange) 85%, white)
+  );
+}
+
+/* =========================================
+   TAILWIND COLOR REGISTRATION
+========================================= */
+
+@theme inline {
+  /* ---------------------------------------
+     SEMANTIC APPLICATION TOKENS
+  --------------------------------------- */
+
+  --color-background: var(--app-bg);
+  --color-surface: var(--app-surface);
+  --color-surface-raised: var(--app-surface-raised);
+  --color-surface-muted: var(--app-surface-muted);
+
+  --color-border: var(--app-border);
+  --color-border-strong: var(--app-border-strong);
+
+  --color-foreground: var(--app-text);
+  --color-foreground-secondary: var(--app-text-secondary);
+  --color-foreground-muted: var(--app-text-muted);
+
+  --color-action-primary: var(--app-primary);
+  --color-on-primary: var(--app-on-primary);
+
+  --color-action-success: var(--app-success);
+  --color-on-success: var(--app-on-success);
+
+  --color-action-error: var(--app-error);
+  --color-on-error: var(--app-on-error);
+
+  --color-action-warning: var(--app-warning);
+  --color-on-warning: var(--app-on-warning);
+
+  --color-action-info: var(--app-info);
+  --color-on-info: var(--app-on-info);
+
+  /* ---------------------------------------
+     GIS COLORS
+  --------------------------------------- */
+
+  --color-map-green: var(--map-green);
+  --color-map-blue: var(--map-blue);
+  --color-map-yellow: var(--map-yellow);
+  --color-map-purple: var(--map-purple);
+  --color-map-cyan: var(--map-cyan);
+  --color-map-orange: var(--map-orange);
+
+  /* SURFACE HOVER */
+  --color-background-hover: var(--app-bg-hover);
+  --color-surface-hover: var(--app-surface-hover);
+  --color-surface-raised-hover: var(--app-surface-raised-hover);
+  --color-surface-muted-hover: var(--app-surface-muted-hover);
+
+  /* BORDER HOVER */
+  --color-border-hover: var(--app-border-hover);
+  --color-border-strong-hover: var(--app-border-strong-hover);
+
+  /* TEXT HOVER */
+  --color-foreground-hover: var(--app-text-hover);
+  --color-foreground-secondary-hover: var(--app-text-secondary-hover);
+  --color-foreground-muted-hover: var(--app-text-muted-hover);
+
+  /* ACTION HOVER */
+  --color-action-primary-hover: var(--app-primary-hover);
+  --color-action-success-hover: var(--app-success-hover);
+  --color-action-error-hover: var(--app-error-hover);
+  --color-action-warning-hover: var(--app-warning-hover);
+  --color-action-info-hover: var(--app-info-hover);
+
+  /* GIS HOVER */
+  --color-map-green-hover: var(--map-green-hover);
+  --color-map-blue-hover: var(--map-blue-hover);
+  --color-map-yellow-hover: var(--map-yellow-hover);
+  --color-map-purple-hover: var(--map-purple-hover);
+  --color-map-cyan-hover: var(--map-cyan-hover);
+  --color-map-orange-hover: var(--map-orange-hover);
+}
+
+[class*="rounded"] {
+  --radius-xs: calc(0.125rem * 1.5);
+  --radius-sm: calc(0.25rem * 1.5);
+  --radius-md: calc(0.375rem * 1.5);
+  --radius-lg: calc(0.5rem * 1.5);
+  --radius-xl: calc(0.75rem * 1.5);
+  --radius-2xl: calc(1rem * 1.5);
+  --radius-3xl: calc(1.5rem * 1.5);
+  --radius-4xl: calc(2rem * 1.5);
+  corner-shape: squircle;
+}

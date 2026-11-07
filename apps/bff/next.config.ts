@@ -1,9 +1,17 @@
-import type { NextConfig } from 'next';
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true,
-  // The client package ships TypeScript sources.
-  transpilePackages: ['@zaminnegar/api-client'],
+  /* config options here */
+  cacheComponents: true,
+  partialPrefetching: true,
+  turbopack: {
+    rules: {
+      "*.css": {
+        loaders: ["@tailwindcss/turbopack"],
+        as: "*.css",
+      },
+    },
+  },
 };
 
 export default nextConfig;

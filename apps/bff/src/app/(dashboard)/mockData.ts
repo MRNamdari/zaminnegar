@@ -1,0 +1,125 @@
+import {type Block} from "@/app/components/dashboard/blocks/BlocksTable";
+import { Owner } from "../components/dashboard/owners/OwnersTable";
+
+export const mockBlocks: Block[] = [
+  {
+    id:"1",
+    code: "BLK-030",
+    region: "مرکز",
+    parcelCount: 26,
+    status: "نهایی",
+  },
+  {
+    id:"2",
+    code: "BLK-029",
+    region: "غرب",
+    parcelCount: 39,
+    status: "پیش‌نویس",
+  },
+  {
+    id:"3",
+    code: "BLK-028",
+    region: "شرق",
+    parcelCount: 13,
+    status: "پیشنهادیه",
+  },
+  {
+    id:"4",
+    code: "BLK-027",
+    region: "جنوب",
+    parcelCount: 47,
+    status: "نهایی",
+  },
+  {
+    id:"5",
+    code: "BLK-026",
+    region: "شمال",
+    parcelCount: 22,
+    status: "پیش‌نویس",
+  },
+  {
+    id:"6",
+    code: "BLK-025",
+    region: "مرکز",
+    parcelCount: 34,
+    status: "پیشنهادیه",
+  },
+  { id:"7",
+    code: "BLK-024", 
+    region: "غرب", 
+    parcelCount: 9, 
+    status: "نهایی" },
+  {
+    id:"8",
+    code: "BLK-023",
+    region: "شرق",
+    parcelCount: 55,
+    status: "پیش‌نویس",
+  },
+  {
+    id:"9",
+    code: "BLK-022",
+    region: "جنوب",
+    parcelCount: 18,
+    status: "پیشنهادیه",
+  },
+  {
+    id:"10",
+    code: "BLK-021",
+    region: "شمال",
+    parcelCount: 43,
+    status: "نهایی",
+  },
+
+  {
+    id:"11",
+    code: "BLK-020",
+    region: "مرکز",
+    parcelCount: 29,
+    status: "پیش‌نویس",
+  },
+  {
+    id:"12",
+    code: "BLK-019",
+    region: "غرب",
+    parcelCount: 4,
+    status: "پیشنهادیه",
+  },
+];
+
+
+export const initialOwners: Owner[] = [
+  {
+    id: "1",
+    name: "علی رضایی",
+    nationalCode: "93692581478",
+    phoneNumber: "09368257148",
+    fatherName: "سجاد",
+    parcelCount: 12,
+    totalArea: 3.5,
+    status: "فعال",
+    address: "مشهد، طرق، خیابان ولیعصر، ولیعصر 12، پلاک 25",
+  },
+  {
+    id: "2",
+    name: "محمد احمدی",
+    nationalCode: "98754612358",
+    phoneNumber: "09258645821",
+    fatherName: "عماد",
+    parcelCount: 8,
+    totalArea: 2.4,
+    status: "غیر فعال",
+    address: "مشهد، طرق، خیابان صاحب الزمان، صاحب الزمان 8، پلاک 158",
+  },
+  {
+    id: "3",
+    name: "حسین کریمی",
+    nationalCode: "98724153687",
+    phoneNumber: "09368745322",
+    fatherName: "اکبر",
+    parcelCount: 5,
+    totalArea: 1.8,
+    status: "فعال",
+    address: "مشهد، طرق، خیابان ساعی، ساعی 2، پلاک 5",
+  },
+];

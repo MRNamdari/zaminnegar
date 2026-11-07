@@ -1,26 +1,194 @@
-@import 'tailwindcss';
-
-@theme {
-  --font-sans: 'Vazirmatn Variable', system-ui, sans-serif;
-  --color-ink: #1b2a24;
-  --color-ink-soft: #55645c;
-  --color-panel: #f6f7f4;
-  --color-line: #d3dacf;
-  --color-field: #2f7d4f;
-  --color-field-dark: #1f5a38;
-  --color-saffron: #e0a419;
-  --color-danger: #b3261e;
+@import "tailwindcss";
+@import "./theme.css";
+@font-face {
+  font-family: "Vazirmatn";
+  src: url("/fonts/Vazirmatn[wght].woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  line-height: 2;
 }
 
-@layer base {
-  html,
-  body {
-    height: 100%;
+html {
+  font-family: "Vazirmatn";
+}
+
+body {
+  font-family: "Vazirmatn";
+  font-weight: 200;
+}
+
+/* =========================================
+   Dialog animations
+   ========================================= */
+
+.ui-dialog {
+  opacity: 0;
+  transform: translateY(1rem) scale(0.98);
+
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease,
+    display 200ms allow-discrete,
+    overlay 200ms allow-discrete;
+}
+
+.ui-dialog[open] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Entry animation */
+@starting-style {
+  .ui-dialog[open] {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.98);
   }
-  body {
-    @apply bg-panel font-sans text-sm text-ink antialiased;
+}
+
+/* Backdrop animation */
+.ui-dialog::backdrop {
+  background-color: rgb(0 0 0 / 0%);
+  backdrop-filter: blur(0);
+
+  transition:
+    background-color 200ms ease,
+    backdrop-filter 200ms ease,
+    display 200ms allow-discrete,
+    overlay 200ms allow-discrete;
+}
+
+.ui-dialog[open]::backdrop {
+  background-color: light-dark(rgb(0 0 0 / 50%), rgb(255 255 255 / 10%));
+  backdrop-filter: blur(4px);
+}
+
+@starting-style {
+  .ui-dialog[open]::backdrop {
+    background-color: rgb(0 0 0 / 0%);
+    backdrop-filter: blur(0);
   }
-  :focus-visible {
-    @apply outline-2 outline-offset-2 outline-saffron;
+}
+
+/* Desktop dialog */
+@media (min-width: 640px) {
+  .ui-dialog {
+    transform: translateY(0.5rem) scale(0.96);
   }
+
+  @starting-style {
+    .ui-dialog[open] {
+      transform: translateY(0.5rem) scale(0.96);
+    }
+  }
+}
+
+/* =========================================
+   Popup animations
+   ========================================= */
+
+[popover] {
+  /* Animation */
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transform-origin: bottom left;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    overlay 180ms allow-discrete,
+    display 180ms allow-discrete;
+}
+
+/* Opening state */
+@starting-style {
+  [popover]:popover-open {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Closing state */
+[popover]:not(:popover-open) {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* =========================================
+   Reduced motion accessibility
+   ========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-dialog,
+  .ui-dialog::backdrop,
+  [popover] {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .ui-dialog {
+    transform: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .ui-dialog {
+    transform: translateY(100%);
+  }
+
+  .ui-dialog[open] {
+    transform: translateY(0);
+  }
+
+  @starting-style {
+    .ui-dialog[open] {
+      transform: translateY(100%);
+    }
+  }
+}
+.delete::before,
+.delete::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #ef4444;
+  transform: translateY(101%);
+  transition: transform 0.5s ease-in-out;
+  z-index: -1;
+}
+.delete::before {
+  transition: transform 0.3s ease-out;
+  opacity: 0.4;
+}
+
+.delete:hover::before,
+.delete:hover::after {
+  transform: translateY(0);
+}
+
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  background-color: transparent;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #005e9d;
+  border-radius: 10px;
+  height: 4px;
+}
+
+/* Chrome, Edge, Safari */
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+/* Firefox */
+input[type="search"] {
+  appearance: none;
 }
