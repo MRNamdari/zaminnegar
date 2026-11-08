@@ -260,6 +260,9 @@ importers:
       '@turf/turf':
         specifier: ^7.4.0
         version: 7.4.0
+      '@zaminnegar/api-client':
+        specifier: 'workspace:'
+        version: link:../../packages/api-client
       maplibre-gl:
         specifier: 6.16.0
         version: 6.16.0
