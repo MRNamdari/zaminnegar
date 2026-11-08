@@ -1,5 +1,7 @@
+import { IBlock } from '../../blocks/interfaces/block.interface';
 import { IFeature } from '../../features/interfaces/feature.interface';
 import type { IParcel } from '../../parcels/interfaces/parcel.interface';
+import { IRegion } from '../../regions/interfaces/region.interface';
 
 /** A project groups the parcels of one farm or survey. */
 export interface IProject {
@@ -9,8 +11,10 @@ export interface IProject {
   createdAt: Date;
   updatedAt: Date;
   /** Only present when the relation is explicitly loaded. */
-  parcels?: IParcel[];
   features?: IFeature[];
+  regions?: IRegion[];
+  blocks?: IBlock[];
+  parcels?: IParcel[];
 }
 
 /** Fields a caller may provide when creating a project. */

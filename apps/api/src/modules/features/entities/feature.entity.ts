@@ -7,6 +7,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
@@ -47,9 +48,6 @@ export class FeatureEntity implements IFeature {
 
   @Column({ name: 'project_id', type: 'uuid' })
   projectId!: string;
-
-  @Column({ name: 'block_id', type: 'uuid', nullable: true })
-  blockId?: string | null;
 
   @Column({
     name: 'name',
@@ -95,19 +93,19 @@ export class FeatureEntity implements IFeature {
   })
   project?: IProject;
 
-  @ManyToOne(() => RegionEntity, (region) => region.features, {
+  @OneToOne(() => RegionEntity, (region) => region.feature, {
     onDelete: 'SET NULL',
     nullable: true,
   })
   region?: IRegion;
 
-  @ManyToOne(() => BlockEntity, (block) => block.features, {
+  @OneToOne(() => BlockEntity, (block) => block.feature, {
     onDelete: 'SET NULL',
     nullable: true,
   })
   block?: IBlock;
 
-  @ManyToOne(() => ParcelEntity, (parcel) => parcel.features, {
+  @OneToOne(() => ParcelEntity, (parcel) => parcel.feature, {
     onDelete: 'SET NULL',
     nullable: true,
   })

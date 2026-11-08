@@ -19,6 +19,10 @@ import {
 } from '../projects.constants';
 import { FeatureEntity } from '../../features/entities/feature.entity';
 import { IFeature } from '../../features/interfaces/feature.interface';
+import { IBlock } from '../../blocks/interfaces/block.interface';
+import { IRegion } from '../../regions/interfaces/region.interface';
+import { RegionEntity } from '../../regions/entities/region.entity';
+import { BlockEntity } from '../../blocks/entities/block.entity';
 
 /**
  * Persistence model of {@link IProject}. The schema itself is created by migrations.
@@ -51,9 +55,15 @@ export class ProjectEntity implements IProject {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt!: Date;
 
-  @OneToMany(() => ParcelEntity, (parcel) => parcel.project)
-  parcels?: IParcel[];
-
   @OneToMany(() => FeatureEntity, (feature) => feature.project)
   features?: IFeature[];
+
+  @OneToMany(() => RegionEntity, (region) => region.project)
+  regions?: IRegion[];
+
+  @OneToMany(() => BlockEntity, (block) => block.project)
+  blocks?: IBlock[];
+
+  @OneToMany(() => ParcelEntity, (parcel) => parcel.project)
+  parcels?: IParcel[];
 }

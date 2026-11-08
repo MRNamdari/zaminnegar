@@ -4,6 +4,7 @@ export const BLOCKS_TABLE = 'blocks';
 export const BLOCK_CONSTRAINTS = {
   primaryKey: 'pk_blocks',
   uniqueRegionName: 'uq_blocks_region_id_name',
+  foreignKeyProject: 'fk_blocks_project_id',
   foreignKeyRegion: 'fk_blocks_region_id',
 } as const;
 

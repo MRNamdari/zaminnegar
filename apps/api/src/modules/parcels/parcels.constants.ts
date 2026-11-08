@@ -5,12 +5,11 @@ export const PARCELS_TABLE = 'parcels';
 export const PARCEL_CONSTRAINTS = {
   primaryKey: 'pk_parcels',
   foreignKeyProject: 'fk_parcels_project_id',
+  foreignKeyFeature: 'fk_parcels_feature_id',
+  foreignKeyRegion: 'fk_parcels_region_id',
   uniqueProjectName: 'uq_parcels_project_id_name',
   checkGeometryValid: 'chk_parcels_geom_valid',
-  checkFillColor: 'chk_parcels_fill_color',
-  checkStrokeColor: 'chk_parcels_stroke_color',
-  checkFillOpacity: 'chk_parcels_fill_opacity',
-  checkStrokeWidth: 'chk_parcels_stroke_width',
+  parcelStatus: 'parcels_status_enum',
 } as const;
 
 /** Explicit index names. */
@@ -25,14 +24,6 @@ export const PARCEL_LIMITS = {
   notesMaxLength: 5000,
   strokeWidthMin: 0.5,
   strokeWidthMax: 10,
-} as const;
-
-/** Styling applied when the client does not send one (mirrors the column defaults). */
-export const PARCEL_DEFAULTS = {
-  fillColor: '#2F7D4F',
-  fillOpacity: 0.35,
-  strokeColor: '#FFFFFF',
-  strokeWidth: 2,
 } as const;
 
 /** Polygons smaller than this (square meters) are rejected as degenerate. */

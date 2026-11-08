@@ -9,6 +9,7 @@ export interface IFeature {
   id: string;
 
   name: string;
+  projectId: string;
   /** Boundary in WGS 84 (EPSG:4326), `[longitude, latitude]`. */
   geometry: IMultiPolygon;
   /** Geodesic area in square meters, computed by PostGIS (`ST_Area(geom::geography)`). */
@@ -20,5 +21,4 @@ export interface IFeature {
   region?: IRegion;
   block?: IBlock;
   parcel?: IParcel;
-  owners?: IParcelOwner[];
 }

@@ -3,7 +3,9 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
@@ -19,6 +21,12 @@ import {
   REGION_LIMITS,
   REGIONS_TABLE,
 } from '../regions.constants';
+import { FeatureEntity } from '../../features/entities/feature.entity';
+import { IFeature } from '../../features/interfaces/feature.interface';
+import { ProjectEntity } from '../../projects/entities/project.entity';
+import { IProject } from '../../projects/interfaces/project.interface';
+import { ParcelEntity } from '../../parcels/entities/parcel.entity';
+import { IParcel } from '../../parcels/interfaces/parcel.interface';
 
 /**
  * Persistence model of {@link IRegion}. The schema itself is created by migrations.
@@ -46,12 +54,22 @@ export class RegionEntity implements IRegion {
   description!: string;
 
   @Column({
-    name: 'territory',
-    type: 'geometry',
-    spatialFeatureType: 'MultiPolygon',
-    srid: SRID_WGS84,
+    name: 'project_id',
+    type: 'varchar',
   })
-  territory!: IMultiPolygon;
+  projectId!: string;
+
+  @ManyToOne(() => ProjectEntity, (project) => project.regions)
+  project?: IProject;
+
+  @Column({
+    name: 'feature_id',
+    type: 'varchar',
+  })
+  featureId!: string;
+
+  @OneToMany(() => FeatureEntity, (feature) => feature.region)
+  feature?: IFeature;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
@@ -61,4 +79,7 @@ export class RegionEntity implements IRegion {
 
   @OneToMany(() => BlockEntity, (block) => block.region)
   blocks?: IBlock[];
+
+  @OneToMany(() => ParcelEntity, (parcel) => parcel.region)
+  parcels?: IParcel[];
 }
