@@ -4,139 +4,222 @@
  */
 
 export interface paths {
-    "/api/v1/regions": {
+    "/api/projects": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
+        /** List projects */
+        get: operations["ProjectController_list"];
+        put?: never;
+        /** Create a project */
+        post: operations["ProjectController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a project by id */
+        get: operations["ProjectController_get"];
+        put?: never;
+        post?: never;
+        /** Delete a project */
+        delete: operations["ProjectController_remove"];
+        options?: never;
+        head?: never;
+        /** Update a project */
+        patch: operations["ProjectController_update"];
+        trace?: never;
+    };
+    "/api/boundaries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List boundaries */
+        get: operations["BoundaryController_list"];
+        put?: never;
         /**
-         * List regions
-         * @description Most recently changed regions first. Each region carries its parcel count and extent.
+         * Create a boundary
+         * @description Creates a draft boundary; it becomes a region, block or parcel outline when one is created with its boundaryId
          */
-        get: operations["RegionsController_list_v1"];
+        post: operations["BoundaryController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/boundaries/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a boundary by id */
+        get: operations["BoundaryController_get"];
+        put?: never;
+        post?: never;
+        /** Delete a boundary */
+        delete: operations["BoundaryController_remove"];
+        options?: never;
+        head?: never;
+        /** Update a boundary */
+        patch: operations["BoundaryController_update"];
+        trace?: never;
+    };
+    "/api/regions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List regions */
+        get: operations["RegionController_list"];
         put?: never;
         /**
          * Create a region
-         * @description Region names are unique.
+         * @description Send geometry, or the boundaryId of a finished draft
          */
-        post: operations["RegionsController_create_v1"];
+        post: operations["RegionController_create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/regions/{regionId}": {
+    "/api/regions/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get a region */
-        get: operations["RegionsController_get_v1"];
+        /** Get a region by id */
+        get: operations["RegionController_get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete a region */
+        delete: operations["RegionController_remove"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update a region */
+        patch: operations["RegionController_update"];
         trace?: never;
     };
-    "/api/v1/regions/{regionId}/blocks": {
+    "/api/blocks": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List blocks in a region */
-        get: operations["BlocksController_list_v1"];
+        /** List blocks */
+        get: operations["BlockController_list"];
         put?: never;
         /**
          * Create a block
-         * @description Block names are unique inside a region.
+         * @description Send geometry, or the boundaryId of a finished draft
          */
-        post: operations["BlocksController_create_v1"];
+        post: operations["BlockController_create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/regions/{regionId}/blocks/{blockId}": {
+    "/api/blocks/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get a block */
-        get: operations["BlocksController_get_v1"];
+        /** Get a block by id */
+        get: operations["BlockController_get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete a block */
+        delete: operations["BlockController_remove"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update a block */
+        patch: operations["BlockController_update"];
         trace?: never;
     };
-    "/api/v1/owners": {
+    "/api/parcels": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List owners */
-        get: operations["OwnersController_list_v1"];
+        /** List parcels */
+        get: operations["ParcelController_list"];
         put?: never;
-        /** Create an owner */
-        post: operations["OwnersController_create_v1"];
+        /**
+         * Create a parcel
+         * @description Send geometry, or the boundaryId of a finished draft
+         */
+        post: operations["ParcelController_create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/owners/{ownerId}": {
+    "/api/parcels/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get an owner */
-        get: operations["OwnersController_get_v1"];
+        /** Get a parcel by id */
+        get: operations["ParcelController_get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete a parcel together with its ownerships and boundary */
+        delete: operations["ParcelController_remove"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update a parcel */
+        patch: operations["ParcelController_update"];
         trace?: never;
     };
-    "/api/v1/parcels/{parcelId}/owners": {
+    "/api/parcels/{id}/owners": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List owners on a parcel */
-        get: operations["ParcelOwnersController_list_v1"];
+        /** List the owners of a parcel with their shares */
+        get: operations["ParcelController_listOwners"];
         put?: never;
-        /** Attach an owner to a parcel with a share */
-        post: operations["ParcelOwnersController_assign_v1"];
+        /** Give an owner a share of a parcel */
+        post: operations["ParcelController_assignOwner"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/parcels/{parcelId}/owners/{ownerId}": {
+    "/api/parcels/{id}/owners/{ownerId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -146,116 +229,60 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Remove an owner from a parcel */
-        delete: operations["ParcelOwnersController_remove_v1"];
+        /** Remove an owner's share from a parcel */
+        delete: operations["ParcelController_removeOwner"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Change an owner's share of a parcel */
+        patch: operations["ParcelController_updateOwnership"];
         trace?: never;
     };
-    "/api/v1/projects": {
+    "/api/owners": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * List projects
-         * @description Most recently changed projects first. Each project carries its parcel count and extent.
-         */
-        get: operations["ProjectsController_list_v1"];
+        /** List owners */
+        get: operations["OwnerController_list"];
         put?: never;
-        /**
-         * Create a project
-         * @description Project names are unique.
-         */
-        post: operations["ProjectsController_create_v1"];
+        /** Create a owner */
+        post: operations["OwnerController_create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/projects/{projectId}": {
+    "/api/owners/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get a project */
-        get: operations["ProjectsController_get_v1"];
+        /** Get a owner by id */
+        get: operations["OwnerController_get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete a owner */
+        delete: operations["OwnerController_remove"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update a owner */
+        patch: operations["OwnerController_update"];
         trace?: never;
     };
-    "/api/v1/projects/{projectId}/parcels": {
+    "/api/owners/{id}/parcels": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * List parcels of a project
-         * @description Returns every parcel, oldest first. Geometry is GeoJSON in EPSG:4326.
-         */
-        get: operations["ParcelsController_list_v1"];
-        put?: never;
-        /**
-         * Create a parcel
-         * @description The polygon is validated by PostGIS (`ST_IsValid`); self-intersecting polygons are rejected with 422. The area is computed server-side.
-         */
-        post: operations["ParcelsController_create_v1"];
-        /**
-         * Delete every parcel of a project
-         * @description Irreversible. The project itself is kept.
-         */
-        delete: operations["ParcelsController_removeAll_v1"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/projects/{projectId}/parcels/{parcelId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a parcel */
-        get: operations["ParcelsController_get_v1"];
-        put?: never;
-        post?: never;
-        /** Delete a parcel */
-        delete: operations["ParcelsController_remove_v1"];
-        options?: never;
-        head?: never;
-        /**
-         * Update a parcel
-         * @description Send only the fields to change. Sending `geometry` re-validates the polygon and recomputes the area.
-         */
-        patch: operations["ParcelsController_update_v1"];
-        trace?: never;
-    };
-    "/api/v1/projects/{projectId}/exports/geojson": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Export parcels as GeoJSON
-         * @description RFC 7946 FeatureCollection in WGS 84 with `[longitude, latitude]` coordinates. Each feature carries the parcel styling and area.
-         */
-        get: operations["ParcelsExportController_geoJson_v1"];
+        /** List the parcels an owner holds shares in, with the share of each */
+        get: operations["OwnerController_listParcels"];
         put?: never;
         post?: never;
         delete?: never;
@@ -268,530 +295,552 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        MultiPolygonDto: {
+        CreateProjectDto: {
+            name: string;
+            /** @default  */
+            description: string;
+        };
+        ProjectResponseDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        PaginatedResponseDto: {
+            items: Record<string, never>[];
+            /** @description Total number of matches across all pages */
+            total: number;
+            page: number;
+            limit: number;
+        };
+        UpdateProjectDto: {
+            name?: string;
+            /** @default  */
+            description: string;
+        };
+        Function: Record<string, never>;
+        CreateBoundaryDto: {
+            /** Format: uuid */
+            projectId: string;
+            name: string;
             /**
-             * @example MultiPolygon
-             * @enum {string}
-             */
-            type: "MultiPolygon";
-            /**
-             * @description Polygons → rings → `[longitude, latitude]` positions (WGS 84). Rings must be closed.
-             * @example [
-             *       [
+             * @description GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
+             * @example {
+             *       "type": "MultiPolygon",
+             *       "coordinates": [
              *         [
              *           [
-             *             49.6,
-             *             37.3
-             *           ],
-             *           [
-             *             49.61,
-             *             37.3
-             *           ],
-             *           [
-             *             49.61,
-             *             37.31
-             *           ],
-             *           [
-             *             49.6,
-             *             37.31
-             *           ],
-             *           [
-             *             49.6,
-             *             37.3
+             *             [
+             *               8.68,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.11
+             *             ]
              *           ]
              *         ]
              *       ]
-             *     ]
+             *     }
              */
-            coordinates: number[][][][];
+            geometry: {
+                [key: string]: unknown;
+            } & components["schemas"]["Function"];
         };
-        CreateRegionDto: {
-            /**
-             * @description Unique region name.
-             * @example Shaft rice paddies 2026
-             */
-            name: string;
-            /**
-             * @description Free-text description.
-             * @default
-             * @example Parcels surveyed during the spring planting season.
-             */
-            description: string;
-            /** @description Region territory boundary in WGS 84. */
-            territory: components["schemas"]["MultiPolygonDto"];
-        };
-        RegionDto: {
-            /**
-             * Format: uuid
-             * @example 5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11
-             */
+        BoundaryResponseDto: {
+            /** Format: uuid */
             id: string;
-            /** @example Shaft rice paddies 2026 */
-            name: string;
-            /** @example Parcels surveyed during the spring planting season. */
-            description: string;
-            /**
-             * @description Number of parcels in the project.
-             * @example 12
-             */
-            parcelCount: number;
-            /**
-             * @description Bounding box `[west, south, east, north]` of all parcels; `null` while the region is empty.
-             * @example [
-             *       49.59,
-             *       37.29,
-             *       49.62,
-             *       37.32
-             *     ]
-             */
-            extent: number[] | null;
-            /**
-             * Format: date-time
-             * @example 2026-10-27T09:30:00.000Z
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description Also bumped whenever a parcel of the project changes.
-             * @example 2026-10-27T10:05:00.000Z
-             */
-            updatedAt: string;
-        };
-        ErrorResponseDto: {
-            /**
-             * @description HTTP status code.
-             * @example 404
-             */
-            statusCode: number;
-            /**
-             * @description Stable machine-readable error code.
-             * @example PROJECT_NOT_FOUND
-             */
-            code: string;
-            /**
-             * @description Human-readable explanation.
-             * @example Project not found.
-             */
-            message: string;
-            /**
-             * @description Structured context, e.g. an array of ValidationErrorDetailDto for 400 responses.
-             * @example null
-             */
-            details?: Record<string, never> | null;
-            /**
-             * @description Request path.
-             * @example /api/v1/projects/5f0c…
-             */
-            path: string;
-            /**
-             * @description ISO 8601 time the error was produced.
-             * @example 2026-10-27T09:30:00.000Z
-             */
-            timestamp: string;
-        };
-        RegionListDto: {
-            items: components["schemas"]["RegionDto"][];
-            /**
-             * @description Total number of regions, ignoring pagination.
-             * @example 3
-             */
-            total: number;
-            /** @example 20 */
-            limit: number;
-            /** @example 0 */
-            offset: number;
-        };
-        CreateBlockDto: {
-            /**
-             * @description Block name, unique inside the region.
-             * @example North block
-             */
-            name: string;
-            /**
-             * @description Free-text description.
-             * @default
-             * @example Upper orchard subdivision.
-             */
-            description: string;
-        };
-        BlockDto: {
-            /**
-             * Format: uuid
-             * @example 4c6e6459-fda9-4c71-bb9c-8bb66efc0701
-             */
-            id: string;
-            /**
-             * Format: uuid
-             * @example 5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11
-             */
-            regionId: string;
-            /** @example North block */
-            name: string;
-            /** @example Upper orchard subdivision. */
-            description: string;
-            /**
-             * @description Number of parcels in this block.
-             * @example 6
-             */
-            parcelCount: number;
-            /**
-             * Format: date-time
-             * @example 2026-10-27T09:30:00.000Z
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @example 2026-10-27T10:05:00.000Z
-             */
-            updatedAt: string;
-        };
-        BlockListDto: {
-            items: components["schemas"]["BlockDto"][];
-            /**
-             * @description Total number of blocks, ignoring pagination.
-             * @example 3
-             */
-            total: number;
-            /** @example 20 */
-            limit: number;
-            /** @example 0 */
-            offset: number;
-        };
-        CreateOwnerDto: {
-            /**
-             * @description Owner name.
-             * @example Ali Rezaei
-             */
-            name: string;
-            /**
-             * @description Owner phone number.
-             * @example +989121234567
-             */
-            phone?: Record<string, never>;
-            /**
-             * @description Owner email address.
-             * @example owner@example.com
-             */
-            email?: Record<string, never>;
-            /**
-             * @description Free-text notes.
-             * @example Primary owner of the west parcel.
-             */
-            notes?: Record<string, never>;
-        };
-        OwnerDto: {
-            /**
-             * Format: uuid
-             * @example b6f0f4b9-b615-4d33-a4d2-70fb4f37af2a
-             */
-            id: string;
-            /** @example Ali Rezaei */
-            name: string;
-            /** @example +989121234567 */
-            phone?: Record<string, never>;
-            /** @example owner@example.com */
-            email?: Record<string, never>;
-            /** @example Primary owner of the west parcel. */
-            notes?: Record<string, never>;
-            /**
-             * Format: date-time
-             * @example 2026-10-27T09:30:00.000Z
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @example 2026-10-27T10:05:00.000Z
-             */
-            updatedAt: string;
-        };
-        OwnerListDto: {
-            items: components["schemas"]["OwnerDto"][];
-            /**
-             * @description Total number of owners, ignoring pagination.
-             * @example 3
-             */
-            total: number;
-            /** @example 20 */
-            limit: number;
-            /** @example 0 */
-            offset: number;
-        };
-        CreateParcelOwnerDto: {
-            /**
-             * Format: uuid
-             * @description Owner id to attach to the parcel.
-             * @example b6f0f4b9-b615-4d33-a4d2-70fb4f37af2a
-             */
-            ownerId: string;
-            /**
-             * @description Ownership share in the range [0, 1].
-             * @example 0.5
-             */
-            share: number;
-        };
-        ParcelOwnerDto: {
-            /**
-             * Format: uuid
-             * @example 5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11
-             */
-            parcelId: string;
-            /**
-             * Format: uuid
-             * @example b6f0f4b9-b615-4d33-a4d2-70fb4f37af2a
-             */
-            ownerId: string;
-            /** @example 0.5 */
-            share: number;
-            /**
-             * Format: date-time
-             * @example 2026-10-27T09:30:00.000Z
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @example 2026-10-27T10:05:00.000Z
-             */
-            updatedAt: string;
-        };
-        CreateProjectDto: {
-            /**
-             * @description Unique project name.
-             * @example Shaft rice paddies 2026
-             */
-            name: string;
-            /**
-             * @description Free-text description.
-             * @default
-             * @example Parcels surveyed during the spring planting season.
-             */
-            description: string;
-        };
-        ProjectDto: {
-            /**
-             * Format: uuid
-             * @example 5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11
-             */
-            id: string;
-            /** @example Shaft rice paddies 2026 */
-            name: string;
-            /** @example Parcels surveyed during the spring planting season. */
-            description: string;
-            /**
-             * @description Number of parcels in the project.
-             * @example 12
-             */
-            parcelCount: number;
-            /**
-             * @description Bounding box `[west, south, east, north]` of all parcels; `null` while the project is empty.
-             * @example [
-             *       49.59,
-             *       37.29,
-             *       49.62,
-             *       37.32
-             *     ]
-             */
-            extent: number[] | null;
-            /**
-             * Format: date-time
-             * @example 2026-10-27T09:30:00.000Z
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description Also bumped whenever a parcel of the project changes.
-             * @example 2026-10-27T10:05:00.000Z
-             */
-            updatedAt: string;
-        };
-        ProjectListDto: {
-            items: components["schemas"]["ProjectDto"][];
-            /**
-             * @description Total number of projects, ignoring pagination.
-             * @example 3
-             */
-            total: number;
-            /** @example 20 */
-            limit: number;
-            /** @example 0 */
-            offset: number;
-        };
-        ParcelDto: {
-            /**
-             * Format: uuid
-             * @example c7a1b2f4-3d56-4e78-9a01-b2c3d4e5f607
-             */
-            id: string;
-            /**
-             * Format: uuid
-             * @example 5f0c8f0e-2d41-4b6a-9d4e-8a1f0c2b7e11
-             */
+            /** Format: uuid */
             projectId: string;
-            /** @example North paddy */
             name: string;
-            geometry: components["schemas"]["MultiPolygonDto"];
-            /** @example #2F7D4F */
-            fillColor: string;
-            /** @example 0.35 */
-            fillOpacity: number;
-            /** @example #FFFFFF */
-            strokeColor: string;
-            /** @example 2 */
-            strokeWidth: number;
-            /** @example Irrigated from the east canal. */
-            notes: string | null;
-            /**
-             * @description Geodesic area in square meters (PostGIS `ST_Area(geom::geography)`). An estimate, not a survey-grade value.
-             * @example 10432.7
-             */
+            geometry: {
+                [key: string]: unknown;
+            };
+            /** @description Geodesic area in square meters */
             areaM2: number;
-            /**
-             * Format: date-time
-             * @example 2026-10-27T09:30:00.000Z
-             */
+            /** Format: date-time */
             createdAt: string;
-            /**
-             * Format: date-time
-             * @example 2026-10-27T10:05:00.000Z
-             */
+            /** Format: date-time */
             updatedAt: string;
         };
-        CreateParcelDto: {
+        UpdateBoundaryDto: {
+            name?: string;
             /**
-             * @description Parcel name, unique inside the project.
-             * @example North paddy
+             * @description GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
+             * @example {
+             *       "type": "MultiPolygon",
+             *       "coordinates": [
+             *         [
+             *           [
+             *             [
+             *               8.68,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.11
+             *             ]
+             *           ]
+             *         ]
+             *       ]
+             *     }
              */
+            geometry?: {
+                [key: string]: unknown;
+            } & components["schemas"]["Function"];
+        };
+        /** @enum {string} */
+        RegionStatus: "active" | "inactive";
+        CreateRegionDto: {
+            /** Format: uuid */
+            projectId: string;
             name: string;
-            /** @description Parcel boundary in WGS 84. Self-intersecting polygons are rejected with 422. */
-            geometry: components["schemas"]["MultiPolygonDto"];
+            /** @default  */
+            description: string;
+            /** @default active */
+            status: components["schemas"]["RegionStatus"];
             /**
-             * @description Fill color as `#RRGGBB`.
-             * @default #2F7D4F
-             * @example #2F7D4F
+             * Format: uuid
+             * @description Existing draft boundary to use instead of geometry
              */
-            fillColor: string;
+            boundaryId?: string;
             /**
-             * @description Fill opacity.
-             * @default 0.35
-             * @example 0.35
+             * @description GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
+             * @example {
+             *       "type": "MultiPolygon",
+             *       "coordinates": [
+             *         [
+             *           [
+             *             [
+             *               8.68,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.11
+             *             ]
+             *           ]
+             *         ]
+             *       ]
+             *     }
              */
-            fillOpacity: number;
+            geometry?: {
+                [key: string]: unknown;
+            } & components["schemas"]["Function"];
+        };
+        RegionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            projectId: string;
+            /** Format: uuid */
+            boundaryId: string;
+            name: string;
+            description: string;
+            status: components["schemas"]["RegionStatus"];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        UpdateRegionDto: {
+            name?: string;
+            /** @default  */
+            description: string;
+            /** @default active */
+            status: components["schemas"]["RegionStatus"];
             /**
-             * @description Boundary color as `#RRGGBB`.
-             * @default #FFFFFF
-             * @example #FFFFFF
+             * @description GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
+             * @example {
+             *       "type": "MultiPolygon",
+             *       "coordinates": [
+             *         [
+             *           [
+             *             [
+             *               8.68,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.11
+             *             ]
+             *           ]
+             *         ]
+             *       ]
+             *     }
              */
-            strokeColor: string;
+            geometry?: {
+                [key: string]: unknown;
+            } & components["schemas"]["Function"];
+        };
+        /** @enum {string} */
+        BlockStatus: "active" | "inactive";
+        CreateBlockDto: {
+            /** Format: uuid */
+            projectId: string;
+            /** Format: uuid */
+            regionId: string;
+            name: string;
+            /** @default  */
+            description: string;
+            /** @default active */
+            status: components["schemas"]["BlockStatus"];
             /**
-             * @description Boundary width in pixels.
-             * @default 2
-             * @example 2
+             * Format: uuid
+             * @description Existing draft boundary to use instead of geometry
              */
-            strokeWidth: number;
+            boundaryId?: string;
             /**
-             * @description Free-text notes; `null` clears them.
-             * @example Irrigated from the east canal.
+             * @description GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
+             * @example {
+             *       "type": "MultiPolygon",
+             *       "coordinates": [
+             *         [
+             *           [
+             *             [
+             *               8.68,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.11
+             *             ]
+             *           ]
+             *         ]
+             *       ]
+             *     }
              */
-            notes?: string | null;
+            geometry?: {
+                [key: string]: unknown;
+            } & components["schemas"]["Function"];
+        };
+        BlockResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            projectId: string;
+            /** Format: uuid */
+            regionId: string;
+            /** Format: uuid */
+            boundaryId: string;
+            name: string;
+            description: string;
+            status: components["schemas"]["BlockStatus"];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        UpdateBlockDto: {
+            /** Format: uuid */
+            regionId?: string;
+            name?: string;
+            /** @default  */
+            description: string;
+            /** @default active */
+            status: components["schemas"]["BlockStatus"];
+            /**
+             * @description GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
+             * @example {
+             *       "type": "MultiPolygon",
+             *       "coordinates": [
+             *         [
+             *           [
+             *             [
+             *               8.68,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.11
+             *             ]
+             *           ]
+             *         ]
+             *       ]
+             *     }
+             */
+            geometry?: {
+                [key: string]: unknown;
+            } & components["schemas"]["Function"];
+        };
+        /** @enum {string} */
+        ParcelStatus: "active" | "inactive";
+        CreateParcelDto: {
+            /** Format: uuid */
+            projectId: string;
+            /** Format: uuid */
+            regionId: string;
+            /**
+             * Format: uuid
+             * @description Must belong to regionId
+             */
+            blockId?: Record<string, never> | null;
+            name: string;
+            /** @default active */
+            status: components["schemas"]["ParcelStatus"];
+            /**
+             * Format: uuid
+             * @description Existing draft boundary to use instead of geometry
+             */
+            boundaryId?: string;
+            /**
+             * @description GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
+             * @example {
+             *       "type": "MultiPolygon",
+             *       "coordinates": [
+             *         [
+             *           [
+             *             [
+             *               8.68,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.11
+             *             ]
+             *           ]
+             *         ]
+             *       ]
+             *     }
+             */
+            geometry?: {
+                [key: string]: unknown;
+            } & components["schemas"]["Function"];
+        };
+        ParcelResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            projectId: string;
+            /** Format: uuid */
+            regionId: string;
+            /** Format: uuid */
+            blockId: Record<string, never> | null;
+            /** Format: uuid */
+            boundaryId: string;
+            name: string;
+            status: components["schemas"]["ParcelStatus"];
+            /** @description Geodesic area in square meters */
+            areaM2: number;
+            /** @description % of the region this parcel occupies */
+            regionOccupancyPct: number;
+            /** @description % of the block this parcel occupies */
+            blockOccupancyPct: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
         };
         UpdateParcelDto: {
-            /**
-             * @description Parcel name, unique inside the project.
-             * @example North paddy
-             */
-            name?: string;
-            /** @description Parcel boundary in WGS 84. Self-intersecting polygons are rejected with 422. */
-            geometry?: components["schemas"]["MultiPolygonDto"];
-            /**
-             * @description Fill color as `#RRGGBB`.
-             * @default #2F7D4F
-             * @example #2F7D4F
-             */
-            fillColor: string;
-            /**
-             * @description Fill opacity.
-             * @default 0.35
-             * @example 0.35
-             */
-            fillOpacity: number;
-            /**
-             * @description Boundary color as `#RRGGBB`.
-             * @default #FFFFFF
-             * @example #FFFFFF
-             */
-            strokeColor: string;
-            /**
-             * @description Boundary width in pixels.
-             * @default 2
-             * @example 2
-             */
-            strokeWidth: number;
-            /**
-             * @description Free-text notes; `null` clears them.
-             * @example Irrigated from the east canal.
-             */
-            notes?: string | null;
-        };
-        ParcelFeaturePropertiesDto: {
+            /** Format: uuid */
+            regionId?: string;
             /**
              * Format: uuid
-             * @example c7a1b2f4-3d56-4e78-9a01-b2c3d4e5f607
+             * @description Must belong to regionId
              */
+            blockId?: Record<string, never> | null;
+            name?: string;
+            /** @default active */
+            status: components["schemas"]["ParcelStatus"];
+            /**
+             * @description GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
+             * @example {
+             *       "type": "MultiPolygon",
+             *       "coordinates": [
+             *         [
+             *           [
+             *             [
+             *               8.68,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.11
+             *             ],
+             *             [
+             *               8.69,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.12
+             *             ],
+             *             [
+             *               8.68,
+             *               50.11
+             *             ]
+             *           ]
+             *         ]
+             *       ]
+             *     }
+             */
+            geometry?: {
+                [key: string]: unknown;
+            } & components["schemas"]["Function"];
+        };
+        OwnerResponseDto: {
+            /** Format: uuid */
             id: string;
-            /** @example North paddy */
+            /** Format: uuid */
+            projectId: string;
             name: string;
-            /** @example #2F7D4F */
-            fillColor: string;
-            /** @example 0.35 */
-            fillOpacity: number;
-            /** @example #FFFFFF */
-            strokeColor: string;
-            /** @example 2 */
-            strokeWidth: number;
-            /** @example null */
-            notes: string | null;
-            /**
-             * @description Geodesic area in square meters.
-             * @example 10432.7
-             */
-            areaM2: number;
-            /**
-             * @description Geodesic area in hectares.
-             * @example 1.04327
-             */
-            areaHectares: number;
-            /**
-             * Format: date-time
-             * @example 2026-10-27T09:30:00.000Z
-             */
+            phone: Record<string, never> | null;
+            email: Record<string, never> | null;
+            notes: Record<string, never> | null;
+            /** Format: date-time */
             createdAt: string;
-            /**
-             * Format: date-time
-             * @example 2026-10-27T10:05:00.000Z
-             */
+            /** Format: date-time */
             updatedAt: string;
         };
-        ParcelFeatureDto: {
-            /**
-             * @example Feature
-             * @enum {string}
-             */
-            type: "Feature";
+        OwnershipWithOwnerResponseDto: {
+            /** Format: uuid */
+            parcelId: string;
+            /** Format: uuid */
+            ownerId: string;
+            sharePct: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            owner: components["schemas"]["OwnerResponseDto"];
+        };
+        AssignOwnerDto: {
             /**
              * Format: uuid
-             * @description Same as `properties.id`.
-             * @example c7a1b2f4-3d56-4e78-9a01-b2c3d4e5f607
+             * @description Must belong to the same project as the parcel
              */
-            id: string;
-            geometry: components["schemas"]["MultiPolygonDto"];
-            properties: components["schemas"]["ParcelFeaturePropertiesDto"];
+            ownerId: string;
+            /** @description Percent of the parcel; all shares of a parcel sum to ≤ 100 */
+            sharePct: number;
         };
-        ParcelFeatureCollectionDto: {
-            /**
-             * @example FeatureCollection
-             * @enum {string}
-             */
-            type: "FeatureCollection";
-            features: components["schemas"]["ParcelFeatureDto"][];
+        OwnershipResponseDto: {
+            /** Format: uuid */
+            parcelId: string;
+            /** Format: uuid */
+            ownerId: string;
+            sharePct: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        UpdateOwnershipDto: {
+            /** @description Percent of the parcel; all shares of a parcel sum to ≤ 100 */
+            sharePct: number;
+        };
+        CreateOwnerDto: {
+            /** Format: uuid */
+            projectId: string;
+            name: string;
+            phone?: Record<string, never> | null;
+            email?: Record<string, never> | null;
+            notes?: Record<string, never> | null;
+        };
+        UpdateOwnerDto: {
+            name?: string;
+            phone?: Record<string, never> | null;
+            email?: Record<string, never> | null;
+            notes?: Record<string, never> | null;
+        };
+        OwnershipWithParcelResponseDto: {
+            /** Format: uuid */
+            parcelId: string;
+            /** Format: uuid */
+            ownerId: string;
+            sharePct: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            parcel: components["schemas"]["ParcelResponseDto"];
         };
     };
     responses: never;
@@ -802,13 +851,13 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    RegionsController_list_v1: {
+    ProjectController_list: {
         parameters: {
             query?: {
-                /** @description Maximum number of items to return. */
+                page?: number;
                 limit?: number;
-                /** @description Number of items to skip. */
-                offset?: number;
+                /** @description Case-insensitive match on name */
+                search?: string;
             };
             header?: never;
             path?: never;
@@ -816,632 +865,19 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description One page of regions. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RegionListDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
+                    "application/json": components["schemas"]["PaginatedResponseDto"] & {
+                        items?: components["schemas"]["ProjectResponseDto"][];
+                    };
                 };
             };
         };
     };
-    RegionsController_create_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateRegionDto"];
-            };
-        };
-        responses: {
-            /** @description The created region. */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RegionDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /**
-             * @description The request conflicts with existing data (e.g. duplicate name).
-             *
-             *     A region with this name already exists.
-             */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    RegionsController_get_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description region id. */
-                regionId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The region. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RegionDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description The requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    BlocksController_list_v1: {
-        parameters: {
-            query?: {
-                /** @description Maximum number of items to return. */
-                limit?: number;
-                /** @description Number of items to skip. */
-                offset?: number;
-            };
-            header?: never;
-            path: {
-                regionId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description One page of blocks. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BlockListDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    BlocksController_create_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                regionId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateBlockDto"];
-            };
-        };
-        responses: {
-            /** @description The created block. */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BlockDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /**
-             * @description The request conflicts with existing data (e.g. duplicate name).
-             *
-             *     A block with this name already exists in the region.
-             */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    BlocksController_get_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Region id. */
-                regionId: string;
-                /** @description Block id. */
-                blockId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The block. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BlockDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description The requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    OwnersController_list_v1: {
-        parameters: {
-            query?: {
-                /** @description Maximum number of items to return. */
-                limit?: number;
-                /** @description Number of items to skip. */
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description One page of owners. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OwnerListDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    OwnersController_create_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateOwnerDto"];
-            };
-        };
-        responses: {
-            /** @description The created owner. */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OwnerDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /**
-             * @description The request conflicts with existing data (e.g. duplicate name).
-             *
-             *     An owner with this name already exists.
-             */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    OwnersController_get_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Owner id. */
-                ownerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The owner. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OwnerDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description The requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    ParcelOwnersController_list_v1: {
-        parameters: {
-            query?: {
-                /** @description Maximum number of items to return. */
-                limit?: number;
-                /** @description Number of items to skip. */
-                offset?: number;
-            };
-            header?: never;
-            path: {
-                parcelId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description One page of ownership links. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ParcelOwnerDto"][];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    ParcelOwnersController_assign_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                parcelId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateParcelOwnerDto"];
-            };
-        };
-        responses: {
-            /** @description The owner assignment on the parcel. */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ParcelOwnerDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description The requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /**
-             * @description The request conflicts with existing data (e.g. duplicate name).
-             *
-             *     The owner is already assigned to this parcel.
-             */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    ParcelOwnersController_remove_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Parcel id. */
-                parcelId: string;
-                /** @description Owner id. */
-                ownerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description The requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    ProjectsController_list_v1: {
-        parameters: {
-            query?: {
-                /** @description Maximum number of items to return. */
-                limit?: number;
-                /** @description Number of items to skip. */
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description One page of projects. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProjectListDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    ProjectsController_create_v1: {
+    ProjectController_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -1454,154 +890,464 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The created project. */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectDto"];
+                    "application/json": components["schemas"]["ProjectResponseDto"];
                 };
             };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
+        };
+    };
+    ProjectController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
+                    "application/json": components["schemas"]["ProjectResponseDto"];
                 };
             };
-            /**
-             * @description The request conflicts with existing data (e.g. duplicate name).
-             *
-             *     A project with this name already exists.
-             */
-            409: {
+        };
+    };
+    ProjectController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
         };
     };
-    ProjectsController_get_v1: {
+    ProjectController_update: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description Project id. */
-                projectId: string;
+                id: string;
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProjectDto"];
+            };
+        };
         responses: {
-            /** @description The project. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description The requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
+                    "application/json": components["schemas"]["ProjectResponseDto"];
                 };
             };
         };
     };
-    ParcelsController_list_v1: {
+    BoundaryController_list: {
         parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Id of the project that owns the parcels. */
-                projectId: string;
+            query?: {
+                page?: number;
+                limit?: number;
+                projectId?: string;
+                /** @description Case-insensitive match on name */
+                search?: string;
             };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description All parcels of the project. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ParcelDto"][];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description The requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
+                    "application/json": components["schemas"]["PaginatedResponseDto"] & {
+                        items?: components["schemas"]["BoundaryResponseDto"][];
+                    };
                 };
             };
         };
     };
-    ParcelsController_create_v1: {
+    BoundaryController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateBoundaryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BoundaryResponseDto"];
+                };
+            };
+        };
+    };
+    BoundaryController_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description Id of the project that owns the parcels. */
-                projectId: string;
+                id: string;
             };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BoundaryResponseDto"];
+                };
+            };
+        };
+    };
+    BoundaryController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BoundaryController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBoundaryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BoundaryResponseDto"];
+                };
+            };
+        };
+    };
+    RegionController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                projectId?: string;
+                status?: components["schemas"]["RegionStatus"];
+                /** @description Case-insensitive match on name */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponseDto"] & {
+                        items?: components["schemas"]["RegionResponseDto"][];
+                    };
+                };
+            };
+        };
+    };
+    RegionController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRegionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegionResponseDto"];
+                };
+            };
+        };
+    };
+    RegionController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegionResponseDto"];
+                };
+            };
+        };
+    };
+    RegionController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RegionController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRegionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegionResponseDto"];
+                };
+            };
+        };
+    };
+    BlockController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                projectId?: string;
+                regionId?: string;
+                status?: components["schemas"]["BlockStatus"];
+                /** @description Case-insensitive match on name */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponseDto"] & {
+                        items?: components["schemas"]["BlockResponseDto"][];
+                    };
+                };
+            };
+        };
+    };
+    BlockController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateBlockDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlockResponseDto"];
+                };
+            };
+        };
+    };
+    BlockController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlockResponseDto"];
+                };
+            };
+        };
+    };
+    BlockController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BlockController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBlockDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlockResponseDto"];
+                };
+            };
+        };
+    };
+    ParcelController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                projectId?: string;
+                regionId?: string;
+                blockId?: string;
+                status?: components["schemas"]["ParcelStatus"];
+                /** @description Case-insensitive match on name */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponseDto"] & {
+                        items?: components["schemas"]["ParcelResponseDto"][];
+                    };
+                };
+            };
+        };
+    };
+    ParcelController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody: {
@@ -1610,223 +1356,62 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The created parcel. */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ParcelDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description The requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /**
-             * @description The request conflicts with existing data (e.g. duplicate name).
-             *
-             *     A parcel with this name already exists in the project.
-             */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The request was well-formed but semantically invalid (e.g. an invalid polygon). */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
+                    "application/json": components["schemas"]["ParcelResponseDto"];
                 };
             };
         };
     };
-    ParcelsController_removeAll_v1: {
+    ParcelController_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description Id of the project that owns the parcels. */
-                projectId: string;
+                id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description All parcels were deleted. */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description The requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    ParcelsController_get_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Id of the project that owns the parcels. */
-                projectId: string;
-                /** @description Parcel id. */
-                parcelId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The parcel. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ParcelDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description The requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
+                    "application/json": components["schemas"]["ParcelResponseDto"];
                 };
             };
         };
     };
-    ParcelsController_remove_v1: {
+    ParcelController_remove: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description Id of the project that owns the parcels. */
-                projectId: string;
-                /** @description Parcel id. */
-                parcelId: string;
+                id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description The parcel was deleted. */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description The requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
         };
     };
-    ParcelsController_update_v1: {
+    ParcelController_update: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description Id of the project that owns the parcels. */
-                projectId: string;
-                /** @description Parcel id. */
-                parcelId: string;
+                id: string;
             };
             cookie?: never;
         };
@@ -1836,110 +1421,240 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The updated parcel. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ParcelDto"];
-                };
-            };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description The requested resource does not exist. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /**
-             * @description The request conflicts with existing data (e.g. duplicate name).
-             *
-             *     Another parcel of the project already uses this name.
-             */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The request was well-formed but semantically invalid (e.g. an invalid polygon). */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unexpected server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
+                    "application/json": components["schemas"]["ParcelResponseDto"];
                 };
             };
         };
     };
-    ParcelsExportController_geoJson_v1: {
+    ParcelController_listOwners: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description Project id. */
-                projectId: string;
+                id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description The FeatureCollection. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ParcelFeatureCollectionDto"];
+                    "application/json": components["schemas"]["OwnershipWithOwnerResponseDto"][];
                 };
             };
-            /** @description The request failed validation (details contain per-field messages). */
-            400: {
+        };
+    };
+    ParcelController_assignOwner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignOwnerDto"];
+            };
+        };
+        responses: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
+                    "application/json": components["schemas"]["OwnershipResponseDto"];
                 };
             };
-            /** @description The requested resource does not exist. */
-            404: {
+        };
+    };
+    ParcelController_removeOwner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                ownerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ParcelController_updateOwnership: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                ownerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateOwnershipDto"];
+            };
+        };
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
+                    "application/json": components["schemas"]["OwnershipResponseDto"];
                 };
             };
-            /** @description Unexpected server error. */
-            500: {
+        };
+    };
+    OwnerController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                projectId?: string;
+                /** @description Case-insensitive match on name */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
+                    "application/json": components["schemas"]["PaginatedResponseDto"] & {
+                        items?: components["schemas"]["OwnerResponseDto"][];
+                    };
+                };
+            };
+        };
+    };
+    OwnerController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateOwnerDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerResponseDto"];
+                };
+            };
+        };
+    };
+    OwnerController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerResponseDto"];
+                };
+            };
+        };
+    };
+    OwnerController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OwnerController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateOwnerDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerResponseDto"];
+                };
+            };
+        };
+    };
+    OwnerController_listParcels: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnershipWithParcelResponseDto"][];
                 };
             };
         };
