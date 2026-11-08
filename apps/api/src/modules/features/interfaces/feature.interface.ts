@@ -1,6 +1,5 @@
 import { IMultiPolygon } from '../../../common/geometry/interfaces/multi-polygon.interface';
 import { IBlock } from '../../blocks/interfaces/block.interface';
-import { IParcelOwner } from '../../owners/interfaces/owner.interface';
 import { IParcel } from '../../parcels/interfaces/parcel.interface';
 import { IProject } from '../../projects/interfaces/project.interface';
 import { IRegion } from '../../regions/interfaces/region.interface';
@@ -22,3 +21,7 @@ export interface IFeature {
   block?: IBlock;
   parcel?: IParcel;
 }
+
+export type ICreateFeature = Pick<IFeature, 'name' | 'projectId' | 'geometry'>;
+
+export type IUpdateFeature = Pick<IFeature, 'geometry' | 'name'>;
