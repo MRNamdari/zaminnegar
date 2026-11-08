@@ -7,7 +7,10 @@ import { OwnerRepository } from '../repositories/owner.repository';
 import { CreateOwnerCommand } from './create-owner.command';
 
 @CommandHandler(CreateOwnerCommand)
-export class CreateOwnerHandler implements ICommandHandler<CreateOwnerCommand, Owner> {
+export class CreateOwnerHandler implements ICommandHandler<
+  CreateOwnerCommand,
+  Owner
+> {
   constructor(
     private readonly dataSource: DataSource,
     private readonly owners: OwnerRepository,
@@ -16,7 +19,8 @@ export class CreateOwnerHandler implements ICommandHandler<CreateOwnerCommand, O
 
   execute({ dto }: CreateOwnerCommand): Promise<Owner> {
     return this.dataSource.transaction(async (manager) => {
-      if (!(await this.projects.findById(dto.projectId, manager))) throw new ProjectNotFoundError(dto.projectId);
+      if (!(await this.projects.findById(dto.projectId, manager)))
+        throw new ProjectNotFoundError(dto.projectId);
       return this.owners.save(
         this.owners.build({
           projectId: dto.projectId,
@@ -24,6 +28,8 @@ export class CreateOwnerHandler implements ICommandHandler<CreateOwnerCommand, O
           phone: dto.phone ?? null,
           email: dto.email ?? null,
           notes: dto.notes ?? null,
+          nationalId: dto.nationalId,
+          status: dto.status,
         }),
         manager,
       );

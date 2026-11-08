@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+} from 'class-validator';
+import { OwnerStatus } from '../../../common/enums/owner-status.enum';
 
 export class CreateOwnerDto {
   @ApiProperty({ format: 'uuid' })
@@ -28,4 +37,12 @@ export class CreateOwnerDto {
   @IsOptional()
   @IsString()
   notes?: string | null;
+
+  @ApiProperty()
+  @IsString()
+  nationalId!: string;
+
+  @ApiProperty({ enum: OwnerStatus, default: OwnerStatus.pending })
+  @IsEnum(OwnerStatus)
+  status!: OwnerStatus;
 }

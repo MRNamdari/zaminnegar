@@ -1,3 +1,4 @@
+import { OwnerStatus } from '../enums/owner-status.enum';
 import type { IParcelOwnership } from './parcel-ownership.interface';
 import type { IProject } from './project.interface';
 
@@ -9,6 +10,8 @@ export interface IOwner {
   phone?: string | null;
   email?: string | null;
   notes?: string | null;
+  status: OwnerStatus;
+  nationalId: string;
   createdAt: Date;
   updatedAt: Date;
   /** Only present when the relation is explicitly loaded. */

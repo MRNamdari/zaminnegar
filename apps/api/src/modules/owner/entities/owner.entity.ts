@@ -1,8 +1,18 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, Relation } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+  Relation,
+} from 'typeorm';
 import { TimestampedEntity } from '../../../common/base/timestamped.entity';
 import { IOwner } from '../../../common/interfaces/owner.interface';
 import { ParcelOwnership } from '../../parcel/entities/parcel-ownership.entity';
 import { Project } from '../../project/entities/project.entity';
+import { OwnerStatus } from '../../../common/enums/owner-status.enum';
 
 @Entity({ name: 'owners' })
 @Index('ix_owners__project_id', ['projectId'])
@@ -31,7 +41,16 @@ export class Owner extends TimestampedEntity implements IOwner {
   @Column({ type: 'text', name: 'notes', nullable: true })
   notes?: string | null;
 
-  @ManyToOne(() => Project, (project) => project.owners, { nullable: false, onDelete: 'CASCADE' })
+  @Column({ type: 'varchar', name: 'national_id' })
+  nationalId!: string;
+
+  @Column({ type: 'enum', enum: OwnerStatus, enumName: 'owners_status_enum' })
+  status!: OwnerStatus;
+
+  @ManyToOne(() => Project, (project) => project.owners, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({
     name: 'project_id',
     referencedColumnName: 'id',
