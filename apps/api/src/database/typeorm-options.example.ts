@@ -17,5 +17,5 @@ export const typeormOptionsExample = (
   database,
   entities: [__dirname + '/../modules/**/entities/*.entity.{ts,js}'],
   namingStrategy: new ExplicitNamingStrategy(),
-  synchronize: false, // schema comes from migrations only
+  synchronize: true, // schema comes from migrations only
 });
