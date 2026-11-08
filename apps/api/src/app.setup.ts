@@ -1,7 +1,7 @@
 import { INestApplication, ValidationPipe, VersioningType } from '@nestjs/common';
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-import { RequestValidationError } from './common/errors/request-validation.error';
-import { flattenValidationErrors } from './common/validation/flatten-validation-errors';
+// import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+// import { RequestValidationError } from './common/errors/request-validation.error';
+// import { flattenValidationErrors } from './common/validation/flatten-validation-errors';
 
 /**
  * Applies everything that shapes the public HTTP contract: global prefix, URI
@@ -16,8 +16,8 @@ export function configureApp(app: INestApplication): void {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      exceptionFactory: (errors) => new RequestValidationError(flattenValidationErrors(errors)),
+      // exceptionFactory: (errors) => new RequestValidationError(flattenValidationErrors(errors)),
     }),
   );
-  app.useGlobalFilters(new AllExceptionsFilter());
+  // app.useGlobalFilters(new AllExceptionsFilter());
 }
