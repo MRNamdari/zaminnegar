@@ -13,7 +13,10 @@ async function bootstrap(): Promise<void> {
 
   const document = SwaggerModule.createDocument(
     app,
-    new DocumentBuilder().setTitle('Agri API').setVersion('0.1.0').build(),
+    new DocumentBuilder()
+      .setTitle('ZaminNegar API')
+      .setVersion('0.1.0')
+      .build(),
   );
   SwaggerModule.setup('docs', app, document);
 
