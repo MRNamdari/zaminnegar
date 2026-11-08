@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/api/projects": {
+    "/projects": {
       "post": {
         "operationId": "ProjectController_create",
         "parameters": [],
@@ -98,7 +98,7 @@
         ]
       }
     },
-    "/api/projects/{id}": {
+    "/projects/{id}": {
       "get": {
         "operationId": "ProjectController_get",
         "parameters": [
@@ -190,7 +190,7 @@
         ]
       }
     },
-    "/api/boundaries": {
+    "/boundaries": {
       "post": {
         "description": "Creates a draft boundary; it becomes a region, block or parcel outline when one is created with its boundaryId",
         "operationId": "BoundaryController_create",
@@ -297,7 +297,7 @@
         ]
       }
     },
-    "/api/boundaries/{id}": {
+    "/boundaries/{id}": {
       "get": {
         "operationId": "BoundaryController_get",
         "parameters": [
@@ -389,7 +389,7 @@
         ]
       }
     },
-    "/api/regions": {
+    "/regions": {
       "post": {
         "description": "Send geometry, or the boundaryId of a finished draft",
         "operationId": "RegionController_create",
@@ -504,7 +504,7 @@
         ]
       }
     },
-    "/api/regions/{id}": {
+    "/regions/{id}": {
       "get": {
         "operationId": "RegionController_get",
         "parameters": [
@@ -596,7 +596,7 @@
         ]
       }
     },
-    "/api/blocks": {
+    "/blocks": {
       "post": {
         "description": "Send geometry, or the boundaryId of a finished draft",
         "operationId": "BlockController_create",
@@ -720,7 +720,7 @@
         ]
       }
     },
-    "/api/blocks/{id}": {
+    "/blocks/{id}": {
       "get": {
         "operationId": "BlockController_get",
         "parameters": [
@@ -812,7 +812,7 @@
         ]
       }
     },
-    "/api/parcels": {
+    "/parcels": {
       "post": {
         "description": "Send geometry, or the boundaryId of a finished draft",
         "operationId": "ParcelController_create",
@@ -945,7 +945,7 @@
         ]
       }
     },
-    "/api/parcels/{id}": {
+    "/parcels/{id}": {
       "get": {
         "operationId": "ParcelController_get",
         "parameters": [
@@ -1037,7 +1037,7 @@
         ]
       }
     },
-    "/api/parcels/{id}/owners": {
+    "/parcels/{id}/owners": {
       "get": {
         "operationId": "ParcelController_listOwners",
         "parameters": [
@@ -1110,7 +1110,7 @@
         ]
       }
     },
-    "/api/parcels/{id}/owners/{ownerId}": {
+    "/parcels/{id}/owners/{ownerId}": {
       "patch": {
         "operationId": "ParcelController_updateOwnership",
         "parameters": [
@@ -1189,7 +1189,7 @@
         ]
       }
     },
-    "/api/owners": {
+    "/owners": {
       "post": {
         "operationId": "OwnerController_create",
         "parameters": [],
@@ -1295,7 +1295,7 @@
         ]
       }
     },
-    "/api/owners/{id}": {
+    "/owners/{id}": {
       "get": {
         "operationId": "OwnerController_get",
         "parameters": [
@@ -1387,7 +1387,7 @@
         ]
       }
     },
-    "/api/owners/{id}/parcels": {
+    "/owners/{id}/parcels": {
       "get": {
         "operationId": "OwnerController_listParcels",
         "parameters": [
@@ -2317,6 +2317,12 @@
             "type": "object",
             "nullable": true
           },
+          "nationalId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -2333,6 +2339,8 @@
           "phone",
           "email",
           "notes",
+          "nationalId",
+          "status",
           "createdAt",
           "updatedAt"
         ]
@@ -2465,11 +2473,25 @@
           "notes": {
             "type": "object",
             "nullable": true
+          },
+          "nationalId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive",
+              "pending"
+            ],
+            "default": "pending"
           }
         },
         "required": [
           "projectId",
-          "name"
+          "name",
+          "nationalId",
+          "status"
         ]
       },
       "UpdateOwnerDto": {
@@ -2492,6 +2514,18 @@
           "notes": {
             "type": "object",
             "nullable": true
+          },
+          "nationalId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive",
+              "pending"
+            ],
+            "default": "pending"
           }
         }
       },

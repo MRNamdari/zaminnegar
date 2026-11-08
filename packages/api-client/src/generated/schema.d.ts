@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/projects": {
+    "/projects": {
         parameters: {
             query?: never;
             header?: never;
@@ -22,7 +22,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/projects/{id}": {
+    "/projects/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -41,7 +41,7 @@ export interface paths {
         patch: operations["ProjectController_update"];
         trace?: never;
     };
-    "/api/boundaries": {
+    "/boundaries": {
         parameters: {
             query?: never;
             header?: never;
@@ -62,7 +62,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/boundaries/{id}": {
+    "/boundaries/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -81,7 +81,7 @@ export interface paths {
         patch: operations["BoundaryController_update"];
         trace?: never;
     };
-    "/api/regions": {
+    "/regions": {
         parameters: {
             query?: never;
             header?: never;
@@ -102,7 +102,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/regions/{id}": {
+    "/regions/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -121,7 +121,7 @@ export interface paths {
         patch: operations["RegionController_update"];
         trace?: never;
     };
-    "/api/blocks": {
+    "/blocks": {
         parameters: {
             query?: never;
             header?: never;
@@ -142,7 +142,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/blocks/{id}": {
+    "/blocks/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -161,7 +161,7 @@ export interface paths {
         patch: operations["BlockController_update"];
         trace?: never;
     };
-    "/api/parcels": {
+    "/parcels": {
         parameters: {
             query?: never;
             header?: never;
@@ -182,7 +182,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/parcels/{id}": {
+    "/parcels/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -201,7 +201,7 @@ export interface paths {
         patch: operations["ParcelController_update"];
         trace?: never;
     };
-    "/api/parcels/{id}/owners": {
+    "/parcels/{id}/owners": {
         parameters: {
             query?: never;
             header?: never;
@@ -219,7 +219,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/parcels/{id}/owners/{ownerId}": {
+    "/parcels/{id}/owners/{ownerId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -237,7 +237,7 @@ export interface paths {
         patch: operations["ParcelController_updateOwnership"];
         trace?: never;
     };
-    "/api/owners": {
+    "/owners": {
         parameters: {
             query?: never;
             header?: never;
@@ -255,7 +255,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/owners/{id}": {
+    "/owners/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -274,7 +274,7 @@ export interface paths {
         patch: operations["OwnerController_update"];
         trace?: never;
     };
-    "/api/owners/{id}/parcels": {
+    "/owners/{id}/parcels": {
         parameters: {
             query?: never;
             header?: never;
@@ -775,6 +775,8 @@ export interface components {
             phone: Record<string, never> | null;
             email: Record<string, never> | null;
             notes: Record<string, never> | null;
+            nationalId: string;
+            status: string;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -823,12 +825,24 @@ export interface components {
             phone?: Record<string, never> | null;
             email?: Record<string, never> | null;
             notes?: Record<string, never> | null;
+            nationalId: string;
+            /**
+             * @default pending
+             * @enum {string}
+             */
+            status: "active" | "inactive" | "pending";
         };
         UpdateOwnerDto: {
             name?: string;
             phone?: Record<string, never> | null;
             email?: Record<string, never> | null;
             notes?: Record<string, never> | null;
+            nationalId?: string;
+            /**
+             * @default pending
+             * @enum {string}
+             */
+            status: "active" | "inactive" | "pending";
         };
         OwnershipWithParcelResponseDto: {
             /** Format: uuid */

@@ -9,11 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@zaminnegar/api-client": "workspace:",
     "@tanstack/react-form": "^1.33.5",
     "@tanstack/react-query": "^5.106.1",
     "@tanstack/react-table": "^9.3.1",
     "@turf/turf": "^7.4.0",
+    "@zaminnegar/api-client": "workspace:^",
     "maplibre-gl": "6.16.0",
     "neverthrow": "^8.2.0",
     "next": "16.4.3",
