@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IconType } from "react-icons";
-import { CiMap, CiUser, CiGrid42, CiGrid32 } from "react-icons/ci";
+import { CiMap, CiUser, CiGrid42, CiGrid32, CiGrid41 } from "react-icons/ci";
 import { PiPolygonLight } from "react-icons/pi";
 
 export type NavigationItem = {
@@ -12,6 +12,7 @@ export type NavigationItem = {
 };
 
 const navigationItems: NavigationItem[] = [
+  { label: "پروژه ها", href: "/projects", icon: CiGrid41 },
   { label: "نقشه", href: "/map", icon: CiMap },
   { label: "مالکین", href: "/owners", icon: CiUser },
   { label: "مناطق", href: "/regions", icon: PiPolygonLight },
