@@ -16,7 +16,7 @@ export default function MapPage() {
         </div>
         <div className="col-span-7 h-full border-e border-border grid grid-rows-[1fr_auto]">
           <div className="row-span-9 min-h-0">
-            <div className="h-175">
+            <div className="h-full">
               <MapEditor />
             </div>
           </div>
