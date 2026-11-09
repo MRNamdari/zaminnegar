@@ -2,7 +2,6 @@ import { notFound } from "next/navigation"
 import { parcelMockData } from "@/app/(dashboard)/parcels/ParcelMockData"
 import { BackButton } from "@/app/components/dashboard/Backbutton"
 import ParcelsInformation from "@/app/components/dashboard/parcels/ParcelsInformation"
-import { MapEditor, MapEditorProvider } from "@/app/features/map-editor";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -16,7 +15,6 @@ export default async function page({ params }: Props) {
     notFound();
   }
   return (
-   <MapEditorProvider>
     <div className="w-full h-full overflow-y-auto pb-4 pt-6">
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-4 items-center p-4 border border-slate-200/10 rounded-xl">
         <div className="flex justify-between items-center w-full">
@@ -35,11 +33,9 @@ export default async function page({ params }: Props) {
         <div className="flex gap-4 w-full">
           <ParcelsInformation parcel={parcel} />
           <div className="w-1/2 rounded-2xl overflow-hidden">
-            <MapEditor controls={false} toolbar={false} miniMap={false} viewModeToggle={false} />
           </div>
         </div>
       </div>
     </div>
-    </MapEditorProvider>
   )
 }
