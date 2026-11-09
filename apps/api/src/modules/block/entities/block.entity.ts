@@ -47,6 +47,10 @@ export class Block extends TimestampedEntity implements IBlock {
   @Column({ type: 'text', name: 'description', default: '' })
   description!: string;
 
+  /** Maintained by ParcelRepository.recalculateMetrics (copied from the boundary). */
+  @Column({ type: 'double precision', name: 'area_m2', default: 0 })
+  areaM2!: number;
+
   @Column({
     type: 'enum',
     enum: BlockStatus,
@@ -56,7 +60,10 @@ export class Block extends TimestampedEntity implements IBlock {
   })
   status!: BlockStatus;
 
-  @ManyToOne(() => Project, (project) => project.blocks, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Project, (project) => project.blocks, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({
     name: 'project_id',
     referencedColumnName: 'id',
@@ -64,7 +71,10 @@ export class Block extends TimestampedEntity implements IBlock {
   })
   project?: Relation<Project>;
 
-  @ManyToOne(() => Region, (region) => region.blocks, { nullable: false, onDelete: 'NO ACTION' })
+  @ManyToOne(() => Region, (region) => region.blocks, {
+    nullable: false,
+    onDelete: 'NO ACTION',
+  })
   @JoinColumn({
     name: 'region_id',
     referencedColumnName: 'id',
@@ -72,7 +82,10 @@ export class Block extends TimestampedEntity implements IBlock {
   })
   region?: Relation<Region>;
 
-  @OneToOne(() => Boundary, (boundary) => boundary.ofBlock, { nullable: false, onDelete: 'NO ACTION' })
+  @OneToOne(() => Boundary, (boundary) => boundary.ofBlock, {
+    nullable: false,
+    onDelete: 'NO ACTION',
+  })
   @JoinColumn({
     name: 'boundary_id',
     referencedColumnName: 'id',

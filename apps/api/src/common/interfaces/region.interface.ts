@@ -12,6 +12,7 @@ export interface IRegion {
   name: string;
   description: string;
   status: RegionStatus;
+  areaM2?: number;
   createdAt: Date;
   updatedAt: Date;
   /** Only present when the relation is explicitly loaded. */

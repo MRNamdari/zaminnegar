@@ -43,6 +43,10 @@ export class Region extends TimestampedEntity implements IRegion {
   @Column({ type: 'text', name: 'description', default: '' })
   description!: string;
 
+  /** Maintained by ParcelRepository.recalculateMetrics (copied from the boundary). */
+  @Column({ type: 'double precision', name: 'area_m2', default: 0 })
+  areaM2!: number;
+
   @Column({
     type: 'enum',
     enum: RegionStatus,
@@ -52,7 +56,10 @@ export class Region extends TimestampedEntity implements IRegion {
   })
   status!: RegionStatus;
 
-  @ManyToOne(() => Project, (project) => project.regions, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Project, (project) => project.regions, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({
     name: 'project_id',
     referencedColumnName: 'id',
@@ -60,7 +67,10 @@ export class Region extends TimestampedEntity implements IRegion {
   })
   project?: Relation<Project>;
 
-  @OneToOne(() => Boundary, (boundary) => boundary.ofRegion, { nullable: false, onDelete: 'NO ACTION' })
+  @OneToOne(() => Boundary, (boundary) => boundary.ofRegion, {
+    nullable: false,
+    onDelete: 'NO ACTION',
+  })
   @JoinColumn({
     name: 'boundary_id',
     referencedColumnName: 'id',

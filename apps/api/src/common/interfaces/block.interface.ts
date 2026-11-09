@@ -13,6 +13,7 @@ export interface IBlock {
   name: string;
   description: string;
   status: BlockStatus;
+  areaM2?: number;
   createdAt: Date;
   updatedAt: Date;
   /** Only present when the relation is explicitly loaded. */
