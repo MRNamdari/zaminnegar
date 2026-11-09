@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { Dialog, DialogProps } from "../../Dialog";
-import { useAppForm } from "../../form/hooks/form";
-import { AddRegionSchema } from "./schema/addRegionSchema";
+import { useRouter } from 'next/navigation';
+import { Dialog, DialogProps } from '../../Dialog';
+import { useAppForm } from '../../form/hooks/form';
+import { AddRegionSchema } from './schema/addRegionSchema';
 
-export function AddRegionDialog(props: Omit<DialogProps, "children">) {
+export function AddRegionDialog(props: Omit<DialogProps, 'children'>) {
   const router = useRouter();
 
   const form = useAppForm({
     defaultValues: {
-      name: "",
-      description: "",
+      name: '',
+      description: '',
     },
 
     validators: {
@@ -19,9 +19,9 @@ export function AddRegionDialog(props: Omit<DialogProps, "children">) {
     },
 
     onSubmit: async ({ value }) => {
-      console.log("Region Data:", value);
+      console.log('Region Data:', value);
 
-      router.push("/map");
+      router.push('/map');
     },
   });
 
@@ -66,7 +66,6 @@ export function AddRegionDialog(props: Omit<DialogProps, "children">) {
               />
             )}
           </form.AppField>
-          
 
           <div className="flex items-center gap-3 mt-4">
             <button
@@ -77,7 +76,19 @@ export function AddRegionDialog(props: Omit<DialogProps, "children">) {
               انصراف
             </button>
 
-            <form.SubmitButton disabled={true} label="برو به نقشه" />
+            <form.Subscribe
+              selector={(state) => ({
+                canSubmit: state.canSubmit,
+                isSubmitting: state.isSubmitting,
+              })}
+            >
+              {({ canSubmit, isSubmitting }) => (
+                <form.SubmitButton
+                  disabled={!canSubmit || isSubmitting}
+                  label="برو به نقشه"
+                />
+              )}
+            </form.Subscribe>
           </div>
         </form>
       </form.AppForm>
