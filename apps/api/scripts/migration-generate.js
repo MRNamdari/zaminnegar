@@ -16,7 +16,7 @@ const hasName = args.length > 0 && !args[0].startsWith('-');
 const name = (hasName ? args[0] : 'Auto').replace(/[^A-Za-z0-9_]/g, '');
 const extraArgs = hasName ? args.slice(1) : args;
 
-const cli = path.join(path.dirname(require.resolve('typeorm/package.json')), 'cli-ts-node-commonjs.js');
+const cli = path.join(path.dirname(require.resolve('typeorm')), 'cli-ts-node-commonjs.js');
 const nodeArgs = [];
 if (existsSync('.env')) nodeArgs.push('--env-file=.env');
 
@@ -27,7 +27,7 @@ const result = spawnSync(
     cli,
     'migration:generate',
     '-d',
-    'src/data-source.ts',
+    'src/database/data-source.ts',
     '-p',
     `src/database/migrations/${name || 'Auto'}`,
     ...extraArgs,
