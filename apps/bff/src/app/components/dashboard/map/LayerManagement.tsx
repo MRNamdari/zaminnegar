@@ -1,336 +1,103 @@
-"use client";
-import { IBlock } from "@/app/features/blocks/interface";
+'use client';
 import {
   AreaFeature,
+  type Level,
   useWorkspaceActions,
   useWorkspaceState,
-} from "@/app/features/map-editor";
-import { IOwner } from "@/app/features/owners/interface";
-import { IParcel } from "@/app/features/parcels/interface";
-import { IRegion } from "@/app/features/regions/interface";
-import { useEffect, useState } from "react";
-import { FiEye, FiEyeOff, FiLock, FiUnlock } from "react-icons/fi";
-import { HiOutlineCheck } from "react-icons/hi";
+} from '@/app/features/map-editor';
 
-const regionMockData: IRegion[] = [
-  {
-    id: "region-001",
-    name: "منطقه شالیزاری شمال",
-    description: "منطقه کشاورزی شمال شامل چندین بلوک و قطعه شالیزاری",
-    territory: {
-      type: "MultiPolygon",
-      coordinates: [
-        [
-          [
-            [49.5821, 37.2801],
-            [49.5865, 37.2801],
-            [49.5865, 37.2835],
-            [49.5821, 37.2835],
-            [49.5821, 37.2801],
-          ],
-        ],
-        [
-          [
-            [49.588, 37.281],
-            [49.59, 37.281],
-            [49.59, 37.283],
-            [49.588, 37.283],
-            [49.588, 37.281],
-          ],
-        ],
-      ],
-    },
-    areaM2: "1254000",
-    createdAt: new Date("2026-01-15T08:30:00Z"),
-    updatedAt: new Date("2026-03-20T14:45:00Z"),
-    blocks: [],
-  },
-];
-
-const blockMockData: IBlock[] = [
-  {
-    id: "block-001",
-    regionId: "region-001",
-    name: "بلوک شمالی",
-    description: "بلوک کشاورزی شمالی",
-    territory: {
-      type: "MultiPolygon",
-      coordinates: [
-        [
-          [
-            [49.5821, 37.282],
-            [49.5843, 37.282],
-            [49.5843, 37.2835],
-            [49.5821, 37.2835],
-            [49.5821, 37.282],
-          ],
-        ],
-      ],
-    },
-    areaM2: "1854000",
-    createdAt: new Date("2026-01-16"),
-    updatedAt: new Date("2026-02-10"),
-    parcels: [],
-  },
-  {
-    id: "block-002",
-    regionId: "region-001",
-    name: "بلوک جنوبی",
-    description: "بلوک کشاورزی جنوبی",
-    territory: {
-      type: "MultiPolygon",
-      coordinates: [
-        [
-          [
-            [49.5821, 37.2801],
-            [49.5843, 37.2801],
-            [49.5843, 37.282],
-            [49.5821, 37.282],
-            [49.5821, 37.2801],
-          ],
-        ],
-      ],
-    },
-    areaM2: "1854000",
-    createdAt: new Date("2026-01-17"),
-    updatedAt: new Date("2026-02-15"),
-    parcels: [],
-  },
-  {
-    id: "block-003",
-    regionId: "region-002",
-    name: "بلوک مرکزی",
-    description: "بلوک کشاورزی مرکزی",
-    territory: {
-      type: "MultiPolygon",
-      coordinates: [
-        [
-          [
-            [49.59, 37.275],
-            [49.5925, 37.275],
-            [49.5925, 37.277],
-            [49.59, 37.277],
-            [49.59, 37.275],
-          ],
-        ],
-      ],
-    },
-    areaM2: "1854000",
-    createdAt: new Date("2026-02-01"),
-    updatedAt: new Date("2026-04-12"),
-    parcels: [],
-  },
-];
-const parcelMockData: IParcel[] = [
-  {
-    id: "parcel-001",
-    projectId: "project-001",
-    blockId: "block-001",
-    name: "قطعه شماره ۱",
-    geometry: {
-      type: "MultiPolygon",
-      coordinates: [
-        [
-          [
-            [49.5821, 37.282],
-            [49.583, 37.282],
-            [49.583, 37.2828],
-            [49.5821, 37.2828],
-            [49.5821, 37.282],
-          ],
-        ],
-      ],
-    },
-    fillColor: "#22c55e",
-    fillOpacity: 0.4,
-    strokeColor: "#15803d",
-    strokeWidth: 2,
-    notes: "زمین شالیزاری با کشت برنج",
-    areaM2: "8500",
-    createdAt: new Date("2026-01-20"),
-    updatedAt: new Date("2026-02-15"),
-    owners: [],
-  },
-  {
-    id: "parcel-002",
-    projectId: "project-001",
-    blockId: "block-001",
-    name: "قطعه شماره ۲",
-    geometry: {
-      type: "MultiPolygon",
-      coordinates: [
-        [
-          [
-            [49.583, 37.282],
-            [49.584, 37.282],
-            [49.584, 37.2828],
-            [49.583, 37.2828],
-            [49.583, 37.282],
-          ],
-        ],
-      ],
-    },
-    fillColor: "#3b82f6",
-    fillOpacity: 0.4,
-    strokeColor: "#1d4ed8",
-    strokeWidth: 2,
-    notes: "زمین کشاورزی در بخش شمالی بلوک",
-    areaM2: "9200",
-    createdAt: new Date("2026-01-22"),
-    updatedAt: new Date("2026-02-18"),
-    owners: [],
-  },
-  {
-    id: "parcel-003",
-    projectId: "project-001",
-    blockId: "block-002",
-    name: "قطعه شماره ۳",
-    geometry: {
-      type: "MultiPolygon",
-      coordinates: [
-        [
-          [
-            [49.5821, 37.2801],
-            [49.5831, 37.2801],
-            [49.5831, 37.281],
-            [49.5821, 37.281],
-            [49.5821, 37.2801],
-          ],
-        ],
-      ],
-    },
-    fillColor: "#f59e0b",
-    fillOpacity: 0.4,
-    strokeColor: "#b45309",
-    strokeWidth: 2,
-    notes: "قطعه دارای سیستم آبیاری مستقل",
-    areaM2: "7800",
-    createdAt: new Date("2026-02-01"),
-    updatedAt: new Date("2026-03-10"),
-    owners: [],
-  },
-  {
-    id: "parcel-004",
-    projectId: "project-001",
-    blockId: null,
-    name: "قطعه مستقل شماره ۴",
-    geometry: {
-      type: "MultiPolygon",
-      coordinates: [
-        [
-          [
-            [49.59, 37.275],
-            [49.591, 37.275],
-            [49.591, 37.276],
-            [49.59, 37.276],
-            [49.59, 37.275],
-          ],
-        ],
-      ],
-    },
-    fillColor: "#a855f7",
-    fillOpacity: 0.4,
-    strokeColor: "#7e22ce",
-    strokeWidth: 2,
-    notes: null,
-    areaM2: "9800",
-    createdAt: new Date("2026-02-10"),
-    updatedAt: new Date("2026-03-15"),
-    owners: [],
-  },
-] as any;
-const ownerMockData: IOwner[] = [
-  {
-    id: "owner-001",
-    name: "علی رضایی",
-    phone: "09123456789",
-    email: "ali.rezaei@example.com",
-    notes: "مالک زمین‌های کشاورزی شمال منطقه",
-    createdAt: new Date("2026-01-10"),
-    updatedAt: new Date("2026-02-15"),
-    parcels: [],
-  },
-  {
-    id: "owner-002",
-    name: "محمد احمدی",
-    phone: "09123456780",
-    email: "mohammad.ahmadi@example.com",
-    notes: "مالک چند قطعه شالیزاری",
-    createdAt: new Date("2026-01-12"),
-    updatedAt: new Date("2026-02-20"),
-    parcels: [],
-  },
-  {
-    id: "owner-003",
-    name: "حسین کریمی",
-    phone: "09123456781",
-    email: null,
-    notes: "مالک زمین‌های بخش جنوبی",
-    createdAt: new Date("2026-01-15"),
-    updatedAt: new Date("2026-03-01"),
-    parcels: [],
-  },
-  {
-    id: "owner-004",
-    name: "رضا محمدی",
-    phone: null,
-    email: "reza.mohammadi@example.com",
-    notes: null,
-    createdAt: new Date("2026-02-01"),
-    updatedAt: new Date("2026-02-01"),
-    parcels: [],
-  },
-];
+import React, { startTransition, useCallback, useEffect, useMemo } from 'react';
+import { useState } from 'react';
+import { FiEye, FiEyeOff, FiLock, FiUnlock } from 'react-icons/fi';
+import { HiOutlineCheck } from 'react-icons/hi';
 
 export default function LayerManagement() {
   const { features, selectedFeatureId, visibleFeatureIds, editableFeatureIds } =
     useWorkspaceState();
   const actions = useWorkspaceActions();
-  features.features.map((f) => {
-    f.properties;
-  });
 
-  const { regions, blocks, parcels } = features.features.reduce(
-    (a, c) => {
-      switch (c.properties.level) {
-        case "region":
-          a.regions.push(c);
-        case "block":
-          a.blocks.push(c);
-        case "parcel":
-          a.parcels.push(c);
-      }
-      return a;
-    },
-    {
-      regions: [] as AreaFeature[],
-      blocks: [] as AreaFeature[],
-      parcels: [] as AreaFeature[],
-    },
+  const [visibleLevels, setVisibleLevels] = useState<{
+    [key in Level]: boolean;
+  }>({ region: true, block: true, parcel: true });
+
+  const { regions, blocks, parcels } = useMemo(
+    () =>
+      features.features.reduce(
+        (a, c) => {
+          switch (c.properties.level) {
+            case 'region':
+              a.regions.push(c);
+              break;
+            case 'block':
+              a.blocks.push(c);
+              break;
+            case 'parcel':
+              a.parcels.push(c);
+              break;
+          }
+          return a;
+        },
+        {
+          regions: [] as AreaFeature[],
+          blocks: [] as AreaFeature[],
+          parcels: [] as AreaFeature[],
+        },
+      ),
+    [features],
   );
 
-  const [visibleFeatures, setVisibleFeatures] = useState(visibleFeatureIds);
-  const [editableFeatures, setEditableFeatures] = useState(editableFeatureIds);
+  const handleModeChange: LayerProps['onModeChange'] = useCallback(
+    ({ layer, mode }) => {
+      if (mode === 'edit' && !editableFeatureIds.has(layer.id)) {
+        actions.setEditableFeatureIds(
+          new Set([...editableFeatureIds, layer.id]),
+        );
+      } else if (mode === 'view' && editableFeatureIds.has(layer.id)) {
+        actions.setEditableFeatureIds(
+          new Set(editableFeatureIds.values().filter((id) => id !== layer.id)),
+        );
+      }
+    },
+    [actions, editableFeatureIds],
+  );
 
-  const handleLayerChange = ({
-    layerData,
-    mode,
-    selected,
-  }: {
-    layerData: AreaFeature;
-    selected: boolean;
-    mode: "edit" | "view";
-  }) => {
-    visibleFeatureIds.has(layerData.id) && actions.selectFeature(layerData.id);
-    if (mode === "edit" && !editableFeatureIds.has(layerData.id)) {
-      actions.setEditableFeatureIds(
-        new Set([...editableFeatureIds, layerData.id]),
-      );
-    }
-    if (selected && layerData.id !== selectedFeatureId) {
-      actions.selectFeature(layerData.id);
-    }
-  };
+  const handleSelectionChange: LayerProps['onSelect'] = useCallback(
+    ({ layer, selected }) => {
+      if (selected && layer.id !== selectedFeatureId) {
+        actions.selectFeature(layer.id);
+      }
+
+      if (!selected && layer.id === selectedFeatureId) {
+        actions.clearSelection();
+      }
+    },
+    [actions, selectedFeatureId],
+  );
+
+  const collectVisibleFeatures = useCallback(
+    (vis: typeof visibleLevels) => {
+      return new Set(
+        features.features
+          .filter((f) => vis[f.properties.level])
+          .map((f) => f.id),
+      ) as ReadonlySet<string>;
+    },
+    [features],
+  );
+
+  const visibleLevelsDispatch = useCallback(
+    (patch: Partial<{ [key in Level]: boolean }>) => {
+      return (state: { [key in Level]: boolean }) => {
+        const newState = { ...state, ...patch };
+        actions.setVisibleFeatureIds(collectVisibleFeatures(newState));
+        return newState;
+      };
+    },
+    [actions],
+  );
+
+  console.log(visibleLevels);
+
   return (
     <aside className="py-3 pl-2 pr-3">
       <h3 className="border-b border-border text-xs pb-2 block">
@@ -338,94 +105,86 @@ export default function LayerManagement() {
       </h3>
       <div className="select-none">
         <Layer
-          colors={{ icon: "--map-green", input: "--map-green-hover" }}
+          colors={{ icon: '--map-green', input: '--map-green-hover' }}
           data={regions}
           label="مناطق"
-          onChange={handleLayerChange}
-          defaults={regions.map((feat) => ({
-            mode: editableFeatureIds.has(feat.id) ? "edit" : "view",
-            selected: selectedFeatureId === feat.id,
-          }))}
+          onModeChange={handleModeChange}
+          onSelect={handleSelectionChange}
+          setLayerVisibility={(visible) =>
+            startTransition(() =>
+              setVisibleLevels(visibleLevelsDispatch({ region: visible })),
+            )
+          }
+          visible={visibleLevels.region}
+          editableFeatureIds={editableFeatureIds}
+          selectedFeatureId={selectedFeatureId}
         />
         <Layer
-          colors={{ icon: "--map-blue", input: "--map-blue-hover" }}
+          colors={{ icon: '--map-blue', input: '--map-blue-hover' }}
           data={blocks}
           label="بلوک‌ها"
-          onChange={handleLayerChange}
-          defaults={blocks.map((feat) => ({
-            mode: editableFeatureIds.has(feat.id) ? "edit" : "view",
-            selected: selectedFeatureId === feat.id,
-          }))}
+          onModeChange={handleModeChange}
+          onSelect={handleSelectionChange}
+          setLayerVisibility={(visible) =>
+            startTransition(() =>
+              setVisibleLevels(visibleLevelsDispatch({ block: visible })),
+            )
+          }
+          visible={visibleLevels.block}
+          editableFeatureIds={editableFeatureIds}
+          selectedFeatureId={selectedFeatureId}
         />
         <Layer
-          colors={{ icon: "--map-yellow", input: "--map-yellow-hover" }}
+          colors={{ icon: '--map-yellow', input: '--map-yellow-hover' }}
           data={parcels}
           label="قطعه‌ها"
-          onChange={handleLayerChange}
-          defaults={parcels.map((feat) => ({
-            mode: editableFeatureIds.has(feat.id) ? "edit" : "view",
-            selected: selectedFeatureId === feat.id,
-          }))}
+          onModeChange={handleModeChange}
+          onSelect={handleSelectionChange}
+          setLayerVisibility={(visible) =>
+            startTransition(() =>
+              setVisibleLevels(visibleLevelsDispatch({ parcel: visible })),
+            )
+          }
+          visible={visibleLevels.parcel}
+          editableFeatureIds={editableFeatureIds}
+          selectedFeatureId={selectedFeatureId}
         />
-        <Layer
-          colors={{ icon: "--map-purple", input: "--map-purple-hover" }}
+        {/* <Layer
+          colors={{ icon: '--map-purple', input: '--map-purple-hover' }}
           data={[]}
           label="مالکین"
-          onChange={() => {}}
-        />
+          editableFeatureIds={editableFeatureIds}
+          selectedFeatureId={selectedFeatureId}
+        /> */}
       </div>
     </aside>
   );
 }
 
 interface LayerProps {
-  onLayerVisibilityChange?: (visible: boolean) => void;
-  defaults?: { selected: boolean; mode: "edit" | "view" }[];
-  onChange(eventData: {
-    layerData: AreaFeature;
-    selected: boolean;
-    mode: "edit" | "view";
-  }): void;
+  visible: boolean;
+  setLayerVisibility?: (visible: boolean) => void;
+  selectedFeatureId: string | null;
+  editableFeatureIds: ReadonlySet<string>;
+  onModeChange?(event: { layer: AreaFeature; mode: 'edit' | 'view' }): void;
+  onSelect?(event: { layer: AreaFeature; selected: boolean }): void;
   colors: { icon: string; input: string };
   label: string;
   data: AreaFeature[];
 }
 
 function Layer(props: LayerProps) {
-  const [isClose, setClose] = useState<boolean>(
-    props.defaults?.[0]?.selected !== undefined
-      ? !props.defaults[0].selected
-      : false,
-  );
-
-  function handleLayerChange(
-    event: React.ChangeEvent<HTMLInputElement>,
-    item: AreaFeature,
-  ) {
-    const formElement = event.target.form;
-    if (!formElement) return;
-    const fd = new FormData(formElement);
-    props.onChange({
-      layerData: item,
-      mode: fd.get("mode") === "on" ? "view" : "edit",
-      selected: fd.get("selected") === "on" ? true : false,
-    });
-  }
-
   return (
     <div
-      className={`feature_items_wrap relative h-fit ${isClose ? "overflow-visible" : "overflow-hidden"} border-b border-border cursor-pointer`}
+      className={`feature_items_wrap relative h-fit ${!props.visible ? 'overflow-visible' : 'overflow-hidden'} border-b border-border cursor-pointer`}
     >
       <div
         className="title_feature flex items-center justify-end py-3 gap-2 relative"
         onClick={() => {
-          setClose((prev) => {
-            props.onLayerVisibilityChange?.(!prev);
-            return !prev;
-          });
+          props.setLayerVisibility?.(!props.visible);
         }}
       >
-        {isClose ? (
+        {!props.visible ? (
           <FiEyeOff
             className="absolute right-1.5"
             stroke={`var(${props.colors.icon})`}
@@ -440,52 +199,64 @@ function Layer(props: LayerProps) {
         <PolygonIcon fillColor={`var(${props.colors.icon})`} />
       </div>
       <div
-        className={`${isClose ? "absolute opacity-0 invisible" : "opacity-100 visible"} w-full flex flex-col gap-3 mb-3 pr-1`}
+        className={`${!props.visible ? 'absolute opacity-0 invisible' : 'opacity-100 visible'} w-full flex flex-col gap-3 mb-3 pr-1`}
       >
-        {props.data.map((item, key) => (
-          <form key={key} className="flex items-center ">
-            <label className="relative min-w-fit shrink-0 rounded-full transition-colors hover:bg-background-hover p-2">
-              <input
-                name="mode"
-                type="checkbox"
-                className="peer absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                onChange={(e) => {
-                  handleLayerChange(e, item);
-                }}
-                defaultChecked={props.defaults?.[key]?.mode === "view"}
-              />
-              <FiUnlock className="peer-checked:hidden text-border-strong" />
-              <FiLock className="peer-not-checked:hidden text-border-strong" />
-            </label>
-            <label className="w-full flex items-center justify-end cursor-pointer gap-3 text-xs select-none">
-              <span>{item.properties.name}</span>
-              <div className="relative">
+        <form>
+          {props.data.map((item, key) => (
+            <div key={key} className="flex items-center">
+              <label className="relative min-w-fit shrink-0 rounded-full transition-colors hover:bg-background-hover p-2">
                 <input
+                  name="mode"
                   type="checkbox"
-                  name="selected"
-                  onChange={(e) => handleLayerChange(e, item)}
-                  defaultChecked={props.defaults?.[key]?.selected}
-                  style={
-                    {
-                      "--input": `var(${props.colors.input})`,
-                    } as React.CSSProperties
-                  }
-                  className={`peer appearance-none w-4 h-4 border border-border checked:border-0 rounded-sm cursor-pointer transition-colors duration-200  checked:bg-(--input)`}
+                  className="peer absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  onChange={(e) => {
+                    props.onModeChange?.({
+                      layer: item,
+                      mode: e.target.checked ? 'edit' : 'view',
+                    });
+                  }}
+                  checked={props.editableFeatureIds.has(item.id)}
                 />
-                <HiOutlineCheck className="peer-checked:block hidden absolute inset-x-0.5 inset-y-0.5 text-background" />
-              </div>
-            </label>
-          </form>
-        ))}
+                <FiUnlock className="peer-not-checked:hidden text-border-strong" />
+                <FiLock className="peer-checked:hidden text-border-strong" />
+              </label>
+              <label className="w-full flex items-center justify-end cursor-pointer gap-3 text-xs select-none">
+                <span>{item.properties.name}</span>
+                <div className="relative">
+                  <input
+                    type="radio"
+                    name="selected"
+                    onChange={() => {}}
+                    onClick={(e) =>
+                      props.onSelect?.({
+                        layer: item,
+                        selected:
+                          props.selectedFeatureId === item.id ? false : true,
+                      })
+                    }
+                    checked={props.selectedFeatureId === item.id}
+                    style={
+                      {
+                        '--input': `var(${props.colors.input})`,
+                      } as React.CSSProperties
+                    }
+                    className={`peer appearance-none w-4 h-4 border border-border checked:border-0 rounded-sm cursor-pointer transition-colors duration-200  checked:bg-(--input)`}
+                  />
+                  <HiOutlineCheck className="peer-checked:block hidden absolute inset-x-0.5 inset-y-0.5 text-background" />
+                </div>
+              </label>
+            </div>
+          ))}
+        </form>
       </div>
     </div>
   );
 }
 
 export const PolygonIcon = ({
-  fillColor = "",
-  className = "",
-  width = "20px",
+  fillColor = '',
+  className = '',
+  width = '20px',
 }: {
   fillColor?: string;
   className?: string;
