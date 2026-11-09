@@ -1,7 +1,7 @@
-import { err, ok, type Result } from "neverthrow";
-import { z } from "zod";
-import { validationError, type ValidationError } from "./errors";
-import { LEVELS, levelSchema, toolSchema, type Level } from "./schemas";
+import { err, ok, type Result } from 'neverthrow';
+import { z } from 'zod';
+import { validationError, type ValidationError } from './errors';
+import { LEVELS, levelSchema, toolSchema, type Level } from './schemas';
 
 const lngLat = z.tuple([
   z.number().min(-180).max(180),
@@ -11,8 +11,8 @@ const lngLat = z.tuple([
 export type NamingContext = { level: Level; label: string; index: number };
 export type NamingStrategy = (context: NamingContext) => string;
 const namingSchema = z.custom<NamingStrategy>(
-  (value) => typeof value === "function",
-  "Expected a function",
+  (value) => typeof value === 'function',
+  'Expected a function',
 );
 
 const levelStyle = z.object({ label: z.string(), color: z.string().min(1) });
@@ -31,10 +31,10 @@ export const editorConfigSchema = z.object({
       bounds: z
         .tuple([z.number(), z.number(), z.number(), z.number()])
         .optional(),
-      basemap: z.enum(["satellite", "streets"]).default("satellite"),
+      basemap: z.enum(['satellite', 'streets']).default('satellite'),
       /** Overrides `basemap` with a remote MapLibre style document. */
       styleUrl: z.url().optional(),
-      projection: z.enum(["mercator", "globe"]).default("mercator"),
+      projection: z.enum(['mercator', 'globe']).default('mercator'),
       terrain: z
         .object({
           enabled: z.boolean().default(true),
@@ -54,15 +54,15 @@ export const editorConfigSchema = z.object({
   drawing: z
     .object({
       /** Tools exposed in the toolbar. `select` is always available. */
-      tools: z.array(toolSchema).default(["select", "polygon"]),
-      defaultTool: toolSchema.default("select"),
+      tools: z.array(toolSchema).default(['select', 'polygon']),
+      defaultTool: toolSchema.default('select'),
       undoRedo: z.boolean().default(true),
       /** Send a finished drawing straight to the create operation. When false the user confirms with Save. */
       autoSaveDrafts: z.boolean().default(true),
       keys: z
         .object({
-          finish: z.string().default("Enter"),
-          cancel: z.string().default("Escape"),
+          finish: z.string().default('Enter'),
+          cancel: z.string().default('Escape'),
         })
         .prefault({}),
       styles: z
@@ -78,26 +78,24 @@ export const editorConfigSchema = z.object({
   features: z
     .object({
       levels: z.record(levelSchema, levelStyle).default({
-        region: { label: "منطقه", color: "#22c55e" },
-        block: { label: "بلوک", color: "#3b82f6" },
-        parcel: { label: "قطعه", color: "#facc15" },
+        region: { label: 'منطقه', color: '#22c55e' },
+        block: { label: 'بلوک', color: '#3b82f6' },
+        parcel: { label: 'قطعه', color: '#facc15' },
       }),
-      selectedColor: z.string().default("#a855f7"),
-      defaultLevel: levelSchema.default("parcel"),
+      selectedColor: z.string().default('#a855f7'),
+      defaultLevel: levelSchema.default('parcel'),
       labels: z
         .object({
           enabled: z.boolean().default(true),
-          hiddenLevels: z.array(levelSchema).default(["parcel"]),
+          hiddenLevels: z.array(levelSchema).default(['parcel']),
         })
         .prefault({}),
       /** Which levels may contain a feature of a given level (used to suggest `parentId`). */
-      hierarchy: z
-        .record(levelSchema, z.array(levelSchema))
-        .default({
-          region: [],
-          block: ["region"],
-          parcel: ["block", "region"],
-        }),
+      hierarchy: z.record(levelSchema, z.array(levelSchema)).default({
+        region: [],
+        block: ['region'],
+        parcel: ['block', 'region'],
+      }),
       validation: z
         .object({ minAreaM2: z.number().nonnegative().default(1) })
         .prefault({}),
@@ -114,16 +112,15 @@ export const editorConfigSchema = z.object({
       statusBar: z.boolean().default(true),
       texts: z
         .object({
-          loading: z.string().default("در حال بارگذاری نقشه…"),
-          select: z.string().default("Select and edit"),
-          polygon: z.string().default("Draw polygon"),
-          rectangle: z.string().default("Draw rectangle"),
-          delete: z.string().default("Delete selected feature"),
-          undo: z.string().default("Undo"),
-          redo: z.string().default("Redo"),
-          save: z.string().default("Save changes"),
-          cancel: z.string().default("Cancel"),
-          retry: z.string().default("Retry"),
+          loading: z.string().default('در حال بارگذاری نقشه…'),
+          select: z.string().default('گزینش و ویرایش'),
+          polygon: z.string().default('رسم'),
+          delete: z.string().default('حذف مرزبندی انتخاب شده'),
+          undo: z.string().default('واگرد'),
+          redo: z.string().default('از نو'),
+          save: z.string().default('ذخیره تغییرات'),
+          cancel: z.string().default('لغو'),
+          retry: z.string().default('تلاش مجدد'),
         })
         .prefault({}),
     })
@@ -158,10 +155,10 @@ export function resolveEditorConfig(
   if (parsed.success) return ok(parsed.data);
   return err(
     validationError(
-      "invalid_config",
-      "Editor configuration is invalid",
+      'invalid_config',
+      'Editor configuration is invalid',
       parsed.error.issues.map((issue) => ({
-        path: issue.path.join("."),
+        path: issue.path.join('.'),
         message: issue.message,
       })),
     ),
