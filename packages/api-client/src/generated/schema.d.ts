@@ -121,6 +121,23 @@ export interface paths {
         patch: operations["RegionController_update"];
         trace?: never;
     };
+    "/regions/{id}/parcels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the parcels a region contains */
+        get: operations["RegionController_listParcels"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/blocks": {
         parameters: {
             query?: never;
@@ -526,6 +543,48 @@ export interface components {
             } & components["schemas"]["Function"];
         };
         /** @enum {string} */
+        ParcelStatus: "active" | "inactive";
+        ParcelResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            projectId: string;
+            /** Format: uuid */
+            regionId: string;
+            /** Format: uuid */
+            blockId: Record<string, never> | null;
+            /** Format: uuid */
+            boundaryId: string;
+            name: string;
+            status: components["schemas"]["ParcelStatus"];
+            /** @description Geodesic area in square meters */
+            areaM2: number;
+            /** @description % of the region this parcel occupies */
+            regionOccupancyPct: number;
+            /** @description % of the block this parcel occupies */
+            blockOccupancyPct: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        RegionWithParcelsResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            projectId: string;
+            /** Format: uuid */
+            boundaryId: string;
+            name: string;
+            description: string;
+            status: components["schemas"]["RegionStatus"];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            parcels: components["schemas"]["ParcelResponseDto"];
+        };
+        /** @enum {string} */
         BlockStatus: "active" | "inactive";
         CreateBlockDto: {
             /** Format: uuid */
@@ -639,8 +698,6 @@ export interface components {
                 [key: string]: unknown;
             } & components["schemas"]["Function"];
         };
-        /** @enum {string} */
-        ParcelStatus: "active" | "inactive";
         CreateParcelDto: {
             /** Format: uuid */
             projectId: string;
@@ -694,30 +751,6 @@ export interface components {
             geometry?: {
                 [key: string]: unknown;
             } & components["schemas"]["Function"];
-        };
-        ParcelResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            projectId: string;
-            /** Format: uuid */
-            regionId: string;
-            /** Format: uuid */
-            blockId: Record<string, never> | null;
-            /** Format: uuid */
-            boundaryId: string;
-            name: string;
-            status: components["schemas"]["ParcelStatus"];
-            /** @description Geodesic area in square meters */
-            areaM2: number;
-            /** @description % of the region this parcel occupies */
-            regionOccupancyPct: number;
-            /** @description % of the block this parcel occupies */
-            blockOccupancyPct: Record<string, never> | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
         };
         UpdateParcelDto: {
             /** Format: uuid */
@@ -1206,6 +1239,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RegionResponseDto"];
+                };
+            };
+        };
+    };
+    RegionController_listParcels: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegionWithParcelsResponse"][];
                 };
             };
         };

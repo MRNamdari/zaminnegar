@@ -596,6 +596,40 @@
         ]
       }
     },
+    "/regions/{id}/parcels": {
+      "get": {
+        "operationId": "RegionController_listParcels",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RegionWithParcelsResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List the parcels a region contains",
+        "tags": [
+          "regions"
+        ]
+      }
+    },
     "/blocks": {
       "post": {
         "description": "Send geometry, or the boundaryId of a finished draft",
@@ -1865,6 +1899,140 @@
           }
         }
       },
+      "ParcelStatus": {
+        "type": "string",
+        "enum": [
+          "active",
+          "inactive"
+        ]
+      },
+      "ParcelResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "regionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "blockId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "boundaryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ParcelStatus"
+              }
+            ]
+          },
+          "areaM2": {
+            "type": "number",
+            "description": "Geodesic area in square meters"
+          },
+          "regionOccupancyPct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "% of the region this parcel occupies"
+          },
+          "blockOccupancyPct": {
+            "type": "object",
+            "minimum": 0,
+            "maximum": 100,
+            "nullable": true,
+            "description": "% of the block this parcel occupies"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "regionId",
+          "blockId",
+          "boundaryId",
+          "name",
+          "status",
+          "areaM2",
+          "regionOccupancyPct",
+          "blockOccupancyPct",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "RegionWithParcelsResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "boundaryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RegionStatus"
+              }
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "parcels": {
+            "$ref": "#/components/schemas/ParcelResponseDto"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "boundaryId",
+          "name",
+          "description",
+          "status",
+          "createdAt",
+          "updatedAt",
+          "parcels"
+        ]
+      },
       "BlockStatus": {
         "type": "string",
         "enum": [
@@ -2065,13 +2233,6 @@
           }
         }
       },
-      "ParcelStatus": {
-        "type": "string",
-        "enum": [
-          "active",
-          "inactive"
-        ]
-      },
       "CreateParcelDto": {
         "type": "object",
         "properties": {
@@ -2149,81 +2310,6 @@
           "projectId",
           "regionId",
           "name"
-        ]
-      },
-      "ParcelResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "projectId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "regionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "blockId": {
-            "type": "object",
-            "format": "uuid",
-            "nullable": true
-          },
-          "boundaryId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ParcelStatus"
-              }
-            ]
-          },
-          "areaM2": {
-            "type": "number",
-            "description": "Geodesic area in square meters"
-          },
-          "regionOccupancyPct": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 100,
-            "description": "% of the region this parcel occupies"
-          },
-          "blockOccupancyPct": {
-            "type": "object",
-            "minimum": 0,
-            "maximum": 100,
-            "nullable": true,
-            "description": "% of the block this parcel occupies"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "projectId",
-          "regionId",
-          "blockId",
-          "boundaryId",
-          "name",
-          "status",
-          "areaM2",
-          "regionOccupancyPct",
-          "blockOccupancyPct",
-          "createdAt",
-          "updatedAt"
         ]
       },
       "UpdateParcelDto": {
