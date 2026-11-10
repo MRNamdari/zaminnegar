@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength, ValidateIf } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  ValidateIf,
+} from 'class-validator';
 import { MultiPolygonField } from '../../../common/decorators/multi-polygon-field.decorator';
 import { ParcelStatus } from '../../../common/enums/parcel-status.enum';
 import { IMultiPolygon } from '../../../common/interfaces/geometry.interface';
@@ -19,7 +27,13 @@ export class CreateParcelDto {
   @IsUUID()
   regionId!: string;
 
-  @ApiPropertyOptional({ format: 'uuid', nullable: true, description: 'Must belong to regionId' })
+  @ApiPropertyOptional({
+    type: 'string',
+    format: 'uuid',
+    nullable: true,
+    required: false,
+    description: 'Must belong to regionId',
+  })
   @IsOptional()
   @IsUUID()
   blockId?: string | null;
@@ -30,7 +44,11 @@ export class CreateParcelDto {
   @MaxLength(200)
   name!: string;
 
-  @ApiPropertyOptional({ enum: ParcelStatus, enumName: 'ParcelStatus', default: ParcelStatus.active })
+  @ApiPropertyOptional({
+    enum: ParcelStatus,
+    enumName: 'ParcelStatus',
+    default: ParcelStatus.active,
+  })
   @IsOptional()
   @IsEnum(ParcelStatus)
   status?: ParcelStatus;
@@ -39,7 +57,11 @@ export class CreateParcelDto {
    * A finished draft boundary of the same project that no region, block or parcel owns yet.
    * Send either `boundaryId` or `geometry`.
    */
-  @ApiPropertyOptional({ format: 'uuid', description: 'Existing draft boundary to use instead of geometry' })
+  @ApiPropertyOptional({
+    type: 'string',
+    format: 'uuid',
+    description: 'Existing draft boundary to use instead of geometry',
+  })
   @ValidateIf((o: CreateDtoShape) => o.geometry === undefined)
   @IsUUID()
   boundaryId?: string;

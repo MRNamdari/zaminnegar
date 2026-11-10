@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { OwnerStatus } from '../../../common/enums/owner-status.enum';
 import {
   IsEmail,
   IsEnum,
@@ -8,7 +9,6 @@ import {
   IsUUID,
   MaxLength,
 } from 'class-validator';
-import { OwnerStatus } from '../../../common/enums/owner-status.enum';
 
 export class CreateOwnerDto {
   @ApiProperty({ format: 'uuid' })
@@ -21,19 +21,29 @@ export class CreateOwnerDto {
   @MaxLength(200)
   name!: string;
 
-  @ApiPropertyOptional({ maxLength: 50, nullable: true })
+  @ApiPropertyOptional({
+    type: 'string',
+    maxLength: 50,
+    nullable: true,
+    required: false,
+  })
   @IsOptional()
   @IsString()
   @MaxLength(50)
   phone?: string | null;
 
-  @ApiPropertyOptional({ maxLength: 320, nullable: true })
+  @ApiPropertyOptional({
+    type: 'string',
+    maxLength: 320,
+    nullable: true,
+    required: false,
+  })
   @IsOptional()
   @IsEmail()
   @MaxLength(320)
   email?: string | null;
 
-  @ApiPropertyOptional({ nullable: true })
+  @ApiPropertyOptional({ type: 'string', nullable: true, required: false })
   @IsOptional()
   @IsString()
   notes?: string | null;
