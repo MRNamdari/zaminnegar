@@ -12,10 +12,16 @@
   },
   "scripts": {
     "generate": "openapi-typescript ./openapi.json --output ./src/generated/schema.d.ts",
+    "schema": "typed-openapi openapi.json --output src/api/openapi.zod.ts --runtime zod --validation strict --client promise --validate-side both --coerce --runtime-types --tanstack",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "openapi-fetch": "^0.14.1"
+    "openapi-fetch": "^0.14.1",
+    "typed-openapi": "^4.1.0"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "openapi-typescript": "^7.13.0",

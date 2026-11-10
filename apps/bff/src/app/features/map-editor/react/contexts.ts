@@ -52,6 +52,10 @@ export interface WorkspaceActions {
   setVisibleFeatureIds(ids: ReadonlySet<string> | null): void;
   setEditableFeatureIds(ids: ReadonlySet<string>): void;
   focusFeature(id: string): Cmd;
+  /** Completes the sequential draft forms and automatically starts creation. */
+  completeDraftConfiguration(
+    properties: Readonly<Record<string, unknown>>,
+  ): Cmd;
   /** Discards the current draft, local edit, or failure (not allowed while a request is in flight). */
   cancelSession(): Cmd;
   resolveConflict(resolution: ConflictResolution): Cmd;

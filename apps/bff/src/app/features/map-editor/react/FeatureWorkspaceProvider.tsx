@@ -28,6 +28,7 @@ import {
 import type { FeatureOperations } from '../core/operations';
 import {
   createFeatureRequestSchema,
+  draftConfigurationPropertiesSchema,
   deleteFeatureRequestSchema,
   updateFeatureRequestSchema,
   type AreaCollection,
@@ -430,6 +431,7 @@ export function FeatureWorkspaceProvider({
         draftId: draft.draftId,
         geometry: draft.geometry,
         properties: {
+          ...draft.extraProperties,
           level: draft.level,
           name: draft.name,
           parentId: draft.parentId,
@@ -611,6 +613,47 @@ export function FeatureWorkspaceProvider({
           'focus',
         );
       },
+      completeDraftConfiguration(properties) {
+        const { lifecycle: lc } = latest.current;
+        if (lc.status !== 'configuring') {
+          return failNow(
+            domainError(
+              'no_active_session',
+              'There is no draft awaiting configuration',
+            ),
+            'complete-draft-configuration',
+          );
+        }
+
+        const parsed = draftConfigurationPropertiesSchema.safeParse(properties);
+        if (!parsed.success) {
+          return failNow(
+            validationError(
+              'invalid_schema',
+              'Invalid draft configuration',
+              issues(parsed.error),
+            ),
+            'complete-draft-configuration',
+          );
+        }
+
+        const { name, parentId, ...extraProperties } = parsed.data;
+        const draft: Draft = {
+          ...lc.draft,
+          name: name ?? lc.draft.name,
+          parentId: parentId === undefined ? lc.draft.parentId : parentId,
+          extraProperties: {
+            ...lc.draft.extraProperties,
+            ...extraProperties,
+          },
+        };
+
+        dispatch({ type: 'configuration-completed', draft });
+        // This workflow always saves after the final form, independent of the
+        // legacy autoSaveDrafts setting (which previously saved on draw-completed).
+        void runDraftSave(draft);
+        return ok(undefined);
+      },
       cancelSession() {
         const { lifecycle: lc } = latest.current;
         if (lc.status === 'saving' || lc.status === 'updating') {
@@ -660,6 +703,7 @@ export function FeatureWorkspaceProvider({
     failNow,
     reported,
     requireEngine,
+    runDraftSave,
     setActiveTool,
     setEditableFeatureIds,
     setSelectedFeatureId,
@@ -715,9 +759,9 @@ export function FeatureWorkspaceProvider({
               [...byId.values()],
               cfg.features.hierarchy,
             ),
+            extraProperties: {},
           };
           dispatch({ type: 'draw-completed', draft });
-          if (cfg.drawing.autoSaveDrafts) void runDraftSave(draft);
           return;
         }
         case 'geometry-edited': {
@@ -745,7 +789,7 @@ export function FeatureWorkspaceProvider({
         }
       }
     },
-    [report, runDraftSave, setActiveTool, setSelectedFeatureId],
+    [report, setActiveTool, setSelectedFeatureId],
   );
 
   const registerEngine = useCallback((engine: MapEngine | null) => {

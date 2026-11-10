@@ -7,9 +7,15 @@ export class OwnerResponseDto {
   @ApiProperty({ format: 'uuid' }) @Expose() id!: string;
   @ApiProperty({ format: 'uuid' }) @Expose() projectId!: string;
   @ApiProperty() @Expose() name!: string;
-  @ApiProperty({ nullable: true }) @Expose() phone?: string | null;
-  @ApiProperty({ nullable: true }) @Expose() email?: string | null;
-  @ApiProperty({ nullable: true }) @Expose() notes?: string | null;
+  @ApiProperty({ nullable: true, required: false, type: 'string' })
+  @Expose()
+  phone?: string | null;
+  @ApiProperty({ nullable: true, required: false, type: 'string' })
+  @Expose()
+  email?: string | null;
+  @ApiProperty({ nullable: true, required: false, type: 'string' })
+  @Expose()
+  notes?: string | null;
   @ApiProperty() @Expose() nationalId!: string;
   @ApiProperty() @Expose() status!: OwnerStatus;
   @ApiProperty() @Expose() createdAt!: Date;

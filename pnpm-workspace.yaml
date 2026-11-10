@@ -13,6 +13,7 @@ packages:
 # Versions shared by several packages live here so they can never drift apart.
 catalog:
   '@types/node': ^22.20.5
+  '@tanstack/react-query': ^5.106.1
   prettier: ^3.9.10
   typescript: ^6.0.3
   zod: ^4.1.0

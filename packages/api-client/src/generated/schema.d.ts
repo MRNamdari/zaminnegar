@@ -178,6 +178,23 @@ export interface paths {
         patch: operations["BlockController_update"];
         trace?: never;
     };
+    "/blocks/{id}/parcels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the parcels a block contains */
+        get: operations["BlockController_listParcels"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/parcels": {
         parameters: {
             query?: never;
@@ -339,7 +356,6 @@ export interface components {
             /** @default  */
             description: string;
         };
-        Function: Record<string, never>;
         CreateBoundaryDto: {
             /** Format: uuid */
             projectId: string;
@@ -377,8 +393,10 @@ export interface components {
              *     }
              */
             geometry: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         BoundaryResponseDto: {
             /** Format: uuid */
@@ -431,8 +449,10 @@ export interface components {
              *     }
              */
             geometry?: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         /** @enum {string} */
         RegionStatus: "active" | "inactive";
@@ -482,8 +502,10 @@ export interface components {
              *     }
              */
             geometry?: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         RegionResponseDto: {
             /** Format: uuid */
@@ -539,8 +561,10 @@ export interface components {
              *     }
              */
             geometry?: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         /** @enum {string} */
         ParcelStatus: "active" | "inactive";
@@ -552,7 +576,7 @@ export interface components {
             /** Format: uuid */
             regionId: string;
             /** Format: uuid */
-            blockId: Record<string, never> | null;
+            blockId?: string | null;
             /** Format: uuid */
             boundaryId: string;
             name: string;
@@ -562,7 +586,7 @@ export interface components {
             /** @description % of the region this parcel occupies */
             regionOccupancyPct: number;
             /** @description % of the block this parcel occupies */
-            blockOccupancyPct: Record<string, never> | null;
+            blockOccupancyPct?: Record<string, never> | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -634,8 +658,10 @@ export interface components {
              *     }
              */
             geometry?: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         BlockResponseDto: {
             /** Format: uuid */
@@ -695,8 +721,28 @@ export interface components {
              *     }
              */
             geometry?: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
+        };
+        BlockWithParcelsResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            projectId: string;
+            /** Format: uuid */
+            regionId: string;
+            /** Format: uuid */
+            boundaryId: string;
+            name: string;
+            description: string;
+            status: components["schemas"]["BlockStatus"];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            parcels: components["schemas"]["ParcelResponseDto"];
         };
         CreateParcelDto: {
             /** Format: uuid */
@@ -707,7 +753,7 @@ export interface components {
              * Format: uuid
              * @description Must belong to regionId
              */
-            blockId?: Record<string, never> | null;
+            blockId?: string | null;
             name: string;
             /** @default active */
             status: components["schemas"]["ParcelStatus"];
@@ -749,8 +795,10 @@ export interface components {
              *     }
              */
             geometry?: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         UpdateParcelDto: {
             /** Format: uuid */
@@ -759,7 +807,7 @@ export interface components {
              * Format: uuid
              * @description Must belong to regionId
              */
-            blockId?: Record<string, never> | null;
+            blockId?: string | null;
             name?: string;
             /** @default active */
             status: components["schemas"]["ParcelStatus"];
@@ -796,8 +844,10 @@ export interface components {
              *     }
              */
             geometry?: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         OwnerResponseDto: {
             /** Format: uuid */
@@ -805,9 +855,9 @@ export interface components {
             /** Format: uuid */
             projectId: string;
             name: string;
-            phone: Record<string, never> | null;
-            email: Record<string, never> | null;
-            notes: Record<string, never> | null;
+            phone?: string | null;
+            email?: string | null;
+            notes?: string | null;
             nationalId: string;
             status: string;
             /** Format: date-time */
@@ -855,9 +905,9 @@ export interface components {
             /** Format: uuid */
             projectId: string;
             name: string;
-            phone?: Record<string, never> | null;
-            email?: Record<string, never> | null;
-            notes?: Record<string, never> | null;
+            phone?: string | null;
+            email?: string | null;
+            notes?: string | null;
             nationalId: string;
             /**
              * @default pending
@@ -867,9 +917,9 @@ export interface components {
         };
         UpdateOwnerDto: {
             name?: string;
-            phone?: Record<string, never> | null;
-            email?: Record<string, never> | null;
-            notes?: Record<string, never> | null;
+            phone?: string | null;
+            email?: string | null;
+            notes?: string | null;
             nationalId?: string;
             /**
              * @default pending
@@ -1377,6 +1427,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BlockResponseDto"];
+                };
+            };
+        };
+    };
+    BlockController_listParcels: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlockWithParcelsResponse"][];
                 };
             };
         };

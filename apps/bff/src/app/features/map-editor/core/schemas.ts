@@ -50,11 +50,20 @@ export type AreaCollection = z.infer<typeof areaCollectionSchema>;
 
 /* ---------------------------- operation contracts --------------------------- */
 
+/** Values collected by the sequential draft-configuration forms. */
+export const draftConfigurationPropertiesSchema = z.looseObject({
+  name: z.string().trim().min(1).optional(),
+  parentId: z.string().nullable().optional(),
+});
+export type DraftConfigurationProperties = z.infer<
+  typeof draftConfigurationPropertiesSchema
+>;
+
 export const createFeatureRequestSchema = z.object({
   /** Temporary client-side id. Never a database id. */
   draftId: z.string().min(1),
   geometry: polygonGeometrySchema,
-  properties: z.object({
+  properties: z.looseObject({
     level: levelSchema,
     name: z.string().min(1),
     parentId: z.string().nullable().optional(),

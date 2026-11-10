@@ -13,6 +13,8 @@ export interface Draft {
   level: Level;
   name: string;
   parentId: string | null;
+  /** Non-core properties collected by the configuration forms. */
+  extraProperties: Record<string, unknown>;
 }
 
 export type Conflict =
@@ -39,6 +41,7 @@ export interface Failure {
 export type LifecycleState =
   | { status: "idle" }
   | { status: "drawing"; tool: DrawTool }
+  | { status: "configuring"; draft: Draft }
   | { status: "draft"; draft: Draft }
   | { status: "saving"; draft: Draft }
   | { status: "persisted"; featureId: string }
@@ -51,6 +54,7 @@ export type LifecycleEvent =
   | { type: "drawing-started"; tool: DrawTool }
   | { type: "drawing-cancelled" }
   | { type: "draw-completed"; draft: Draft }
+  | { type: "configuration-completed"; draft: Draft }
   | { type: "edit-changed"; base: AreaFeature; geometry: PolygonGeometry }
   | { type: "save-started" }
   | { type: "create-succeeded"; featureId: string }
@@ -92,6 +96,11 @@ export function lifecycleReducer(
 
     case "draw-completed":
       return state.status === "drawing" || isResting(state)
+        ? { status: "configuring", draft: event.draft }
+        : state;
+
+    case "configuration-completed":
+      return state.status === "configuring"
         ? { status: "draft", draft: event.draft }
         : state;
 
@@ -221,6 +230,7 @@ export function lifecycleReducer(
 /** Draft ids the drawing engine must keep in its store (never removed by synchronization). */
 export function retainedDraftIds(state: LifecycleState): ReadonlySet<string> {
   switch (state.status) {
+    case "configuring":
     case "draft":
     case "saving":
       return new Set([state.draft.draftId]);

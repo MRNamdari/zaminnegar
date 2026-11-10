@@ -246,6 +246,7 @@ function createEntity(
   projectId: string,
   request: CreateFeatureRequest,
 ): ResultAsync<ApiEntity, EditorError> {
+  console.log({ request });
   const { geometry, properties } = request;
   const { level, name } = properties;
   const multi = toMultiPolygon(geometry);
@@ -272,12 +273,14 @@ function createEntity(
       return rejected('A block must be drawn inside a region');
     return settle(
       api.POST('/blocks', {
-        body: asBody<Schemas['CreateBlockDto']>({
+        body: {
+          status: properties.status as any,
+          description: properties.description as string,
           projectId,
           regionId: parent.id,
           name,
           geometry: multi,
-        }),
+        },
       }),
       blockSchema,
       'block',
@@ -287,13 +290,14 @@ function createEntity(
   const createParcel = (regionId: string, blockId?: string) =>
     settle(
       api.POST('/parcels', {
-        body: asBody<Schemas['CreateParcelDto']>({
+        body: {
           projectId,
           regionId,
           ...(blockId ? { blockId } : {}),
           name,
           geometry: multi,
-        }),
+          status: 'active',
+        },
       }),
       parcelSchema,
       'parcel',

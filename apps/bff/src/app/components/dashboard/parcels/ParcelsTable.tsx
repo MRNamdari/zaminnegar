@@ -1,7 +1,4 @@
-'use client';
-
-import { useMemo } from 'react';
-
+import { useMemo } from "react";
 import {
   useTable,
   tableFeatures,
@@ -15,8 +12,7 @@ import {
   columnVisibilityFeature,
   sortFns,
   type ColumnDef,
-} from '@tanstack/react-table';
-
+} from "@tanstack/react-table";
 import {
   FiEdit2,
   FiTrash2,
@@ -24,13 +20,11 @@ import {
   FiChevronRight,
   FiArrowUp,
   FiArrowDown,
-} from 'react-icons/fi';
-
-import Link from 'next/link';
-
-import type { IParcel } from '@/app/features/parcels/interface';
-import { toPersianNumber } from '@/app/util';
-import { SvgPolygon } from '../SvgMultiPolygon';
+} from "react-icons/fi";
+import type { IParcel } from "@/app/features/parcels/interface";
+import { toPersianNumber } from "@/app/util";
+import { SvgPolygon } from "../SvgMultiPolygon";
+import Link from "next/link";
 
 export type Parcel = IParcel;
 
@@ -68,9 +62,8 @@ export default function ParcelsTable({
   const columns = useMemo<ColumnDef<typeof features, Parcel>[]>(
     () => [
       {
-        accessorKey: 'id',
-        header: 'نام قطعه',
-        enableSorting: false,
+        accessorKey: "id",
+        header: "نام قطعه",
         cell({ row }) {
           return (
             <SvgPolygon height="3rem" multiPolygon={row.original.geometry} />
@@ -95,31 +88,34 @@ export default function ParcelsTable({
         },
       },
       {
-        accessorKey: 'areaM2',
-        header: 'مساحت',
-        enableSorting: true,
+        accessorKey: "areaM2",
+        header: "مساحت",
         cell({ row }) {
           const area = Number(row.original.areaM2) || 0;
 
           return (
             <div>
-              {toPersianNumber(Math.floor(area / 10_000))} <span>هکتار</span>
+              <div>
+                {toPersianNumber(
+                  Math.floor(parseFloat(row.original.areaM2) / 10_000),
+                )}{" "}
+                <span>هکتار</span>
+              </div>
             </div>
           );
         },
       },
       {
-        accessorKey: 'block',
-        header: 'بلوک ها',
-        enableSorting: false,
+        accessorKey: "block",
+        header: "بلوک ها",
         cell({ row }) {
-          return row.original.block || '-';
+          return row.original.block ?? "-";
         },
       },
       {
-        accessorKey: 'owners',
-        header: 'مالکین',
-        enableSorting: false,
+        accessorKey: "owners",
+        header: "مالکین",
+        sortingFn: "basic",
         cell({ row }) {
           const owners = row.original.owners ?? [];
 
@@ -150,19 +146,14 @@ export default function ParcelsTable({
         },
       },
       {
-        accessorKey: 'status',
-        header: 'وضعیت',
-        enableSorting: false,
+        accessorKey: "status",
+        header: "وضعیت",
         cell: ({ row }) => {
           const status = row.original.status;
 
           return (
             <span
-              className={`min-w-18 text-center select-none rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${
-                status === 'فعال'
-                  ? 'bg-map-green text-surface'
-                  : 'bg-surface-muted text-foreground'
-              }`}
+              className={`min-w-18 text-center select-none rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${status === "فعال" ? "bg-map-green text-surface" : "bg-surface-muted text-foreground"}`}
             >
               {status}
             </span>
@@ -207,7 +198,7 @@ export default function ParcelsTable({
 
   const columnFilters = useMemo(
     () =>
-      searchValue.trim() ? [{ id: 'name', value: searchValue.trim() }] : [],
+      searchValue.trim() ? [{ id: "code", value: searchValue.trim() }] : [],
     [searchValue],
   );
 
@@ -323,8 +314,8 @@ export default function ParcelsTable({
           </button>
 
           <span className="text-sm select-none">
-            صفحه {toPersianNumber(table.state.pagination.pageIndex + 1)}
-            از {toPersianNumber(Math.max(1, pageCount))}
+            صفحه {toPersianNumber(table.state.pagination.pageIndex + 1)} از{" "}
+            {toPersianNumber(Math.max(1, pageCount))}
           </span>
 
           <button
