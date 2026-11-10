@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState } from 'react';
 import {
   useTable,
   tableFeatures,
@@ -12,7 +12,7 @@ import {
   columnVisibilityFeature,
   sortFns,
   type ColumnDef,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 
 import {
   FiEdit2,
@@ -21,21 +21,21 @@ import {
   FiChevronRight,
   FiArrowUp,
   FiArrowDown,
-} from "react-icons/fi";
+} from 'react-icons/fi';
 
-import type { IRegion } from "@/app/features/regions/interface";
-import { toPersianNumber } from "@/app/util";
-import { SvgPolygon } from "../SvgMultiPolygon";
-import Link from "next/link";
+import type { IRegion } from '@/app/features/regions/interface';
+import { toPersianNumber } from '@/app/util';
+import { SvgPolygon } from '../SvgPolygon';
+import Link from 'next/link';
 
 export enum RegionStatus {
-  ACTIVE = "active",
-  INACTIVE = "inactive",
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
 }
 
 const RegionStatusMap = new Map<RegionStatus, string>([
-  [RegionStatus.ACTIVE, "فعال"],
-  [RegionStatus.INACTIVE, "غیرفعال"],
+  [RegionStatus.ACTIVE, 'فعال'],
+  [RegionStatus.INACTIVE, 'غیرفعال'],
 ]);
 
 type Region = IRegion & { status: RegionStatus };
@@ -66,8 +66,8 @@ const features = tableFeatures({
 });
 
 const statusStyles: Record<RegionStatus, string> = {
-  [RegionStatus.INACTIVE]: "bg-surface-muted text-foreground",
-  [RegionStatus.ACTIVE]: "bg-map-green text-surface",
+  [RegionStatus.INACTIVE]: 'bg-surface-muted text-foreground',
+  [RegionStatus.ACTIVE]: 'bg-map-green text-surface',
 };
 
 export default function RegionsTable({
@@ -81,8 +81,8 @@ export default function RegionsTable({
   const columns = useMemo<ColumnDef<typeof features, Region>[]>(
     () => [
       {
-        accessorKey: "id",
-        header: "نام منطقه",
+        accessorKey: 'id',
+        header: 'نام منطقه',
         cell({ row }) {
           return (
             <SvgPolygon height="3rem" multiPolygon={row.original.territory} />
@@ -90,10 +90,10 @@ export default function RegionsTable({
         },
       },
       {
-        accessorKey: "name",
-        header: "",
-        sortingFn: "alphanumeric",
-        filterFn: "includesString",
+        accessorKey: 'name',
+        header: '',
+        sortingFn: 'alphanumeric',
+        filterFn: 'includesString',
         cell({ row }) {
           return (
             <Link
@@ -106,19 +106,19 @@ export default function RegionsTable({
         },
       },
       {
-        accessorKey: "areaM2",
-        header: "مساحت",
+        accessorKey: 'areaM2',
+        header: 'مساحت',
         cell({ row }) {
           return (
             <div>
               <div>
-                {toPersianNumber(parseFloat(row.original.areaM2))}{" "}
+                {toPersianNumber(parseFloat(row.original.areaM2))}{' '}
                 <span>مترمربع</span>
               </div>
               <div>
                 {toPersianNumber(
                   Math.floor(parseFloat(row.original.areaM2) / 10_000),
-                )}{" "}
+                )}{' '}
                 <span>هکتار</span>
               </div>
             </div>
@@ -126,13 +126,13 @@ export default function RegionsTable({
         },
       },
       {
-        accessorKey: "blocks",
-        header: "بلوک ها",
-        sortingFn: "basic",
+        accessorKey: 'blocks',
+        header: 'بلوک ها',
+        sortingFn: 'basic',
       },
       {
-        accessorKey: "status",
-        header: "وضعیت",
+        accessorKey: 'status',
+        header: 'وضعیت',
         cell: ({ row }) => {
           const status = row.original.status;
 
@@ -146,8 +146,8 @@ export default function RegionsTable({
         },
       },
       {
-        id: "actions",
-        header: "",
+        id: 'actions',
+        header: '',
         enableSorting: false,
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
@@ -183,7 +183,7 @@ export default function RegionsTable({
 
   const columnFilters = useMemo(
     () =>
-      searchValue.trim() ? [{ id: "code", value: searchValue.trim() }] : [],
+      searchValue.trim() ? [{ id: 'code', value: searchValue.trim() }] : [],
     [searchValue],
   );
 
@@ -229,9 +229,9 @@ export default function RegionsTable({
                         <table.FlexRender header={header} />
 
                         {header.column.getCanSort() &&
-                          (header.column.getIsSorted() === "asc" ? (
+                          (header.column.getIsSorted() === 'asc' ? (
                             <FiArrowUp />
-                          ) : header.column.getIsSorted() === "desc" ? (
+                          ) : header.column.getIsSorted() === 'desc' ? (
                             <FiArrowDown />
                           ) : null)}
                       </button>
@@ -260,7 +260,7 @@ export default function RegionsTable({
                   onKeyDown={(event) => {
                     if (
                       event.target === event.currentTarget &&
-                      (event.key === "Enter" || event.key === " ")
+                      (event.key === 'Enter' || event.key === ' ')
                     ) {
                       event.preventDefault();
                       onRowClick(row.original);
@@ -299,7 +299,7 @@ export default function RegionsTable({
           </button>
 
           <span className="text-sm select-none">
-            صفحه {toPersianNumber(table.state.pagination.pageIndex + 1)} از{" "}
+            صفحه {toPersianNumber(table.state.pagination.pageIndex + 1)} از{' '}
             {toPersianNumber(Math.max(1, pageCount))}
           </span>
 
