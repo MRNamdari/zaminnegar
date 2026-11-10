@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import DetailsLayer from "@/app/components/dashboard/map/DetailsLayer";
-import LayerManagement from "@/app/components/dashboard/map/LayerManagement";
-import { MapWorkspace } from "@/app/components/dashboard/map/MapWorkspace";
-import SelectedParcels from "@/app/components/dashboard/map/SelectedParcels";
-import SelectedParcelsOwnersTable from "@/app/components/dashboard/map/SelectedParcelsOwnersTable";
-import { MapEditor } from "@/app/features/map-editor";
+import DetailsLevel from '@/app/components/dashboard/map/DetailsLevel';
+import LevelManagement from '@/app/components/dashboard/map/LevelManagement';
+import { MapWorkspace } from '@/app/components/dashboard/map/MapWorkspace';
+import SelectedParcels from '@/app/components/dashboard/map/SelectedParcels';
+import SelectedParcelsOwnersTable from '@/app/components/dashboard/map/SelectedParcelsOwnersTable';
+import { MapEditor } from '@/app/features/map-editor';
 
 export default function MapPage() {
   return (
     <MapWorkspace>
       <div className="grid grid-cols-12 h-full">
         <div className="col-span-3 h-full overflow-y-auto scrollbar-gutter-stable border-e border-border">
-          <DetailsLayer />
+          <DetailsLevel />
         </div>
         <div className="col-span-7 h-full border-e border-border grid grid-rows-[1fr_auto]">
           <div className="row-span-9 min-h-0">
@@ -25,40 +25,40 @@ export default function MapPage() {
               data={
                 [
                   {
-                    parcel: { areaM2: "8000", name: "P450" },
-                    block: { name: "B516" },
-                    owner: { name: "نوید نورزاد" },
-                    region: { name: "R65" },
+                    parcel: { areaM2: '8000', name: 'P450' },
+                    block: { name: 'B516' },
+                    owner: { name: 'نوید نورزاد' },
+                    region: { name: 'R65' },
                   },
                   {
-                    parcel: { areaM2: "8000", name: "P450" },
-                    block: { name: "B516" },
-                    owner: { name: "نوید نورزاد" },
-                    region: { name: "R65" },
+                    parcel: { areaM2: '8000', name: 'P450' },
+                    block: { name: 'B516' },
+                    owner: { name: 'نوید نورزاد' },
+                    region: { name: 'R65' },
                   },
                   {
-                    parcel: { areaM2: "8000", name: "P450" },
-                    block: { name: "B516" },
-                    owner: { name: "نوید نورزاد" },
-                    region: { name: "R65" },
+                    parcel: { areaM2: '8000', name: 'P450' },
+                    block: { name: 'B516' },
+                    owner: { name: 'نوید نورزاد' },
+                    region: { name: 'R65' },
                   },
                   {
-                    parcel: { areaM2: "8000", name: "P450" },
-                    block: { name: "B516" },
-                    owner: { name: "نوید نورزاد" },
-                    region: { name: "R65" },
+                    parcel: { areaM2: '8000', name: 'P450' },
+                    block: { name: 'B516' },
+                    owner: { name: 'نوید نورزاد' },
+                    region: { name: 'R65' },
                   },
                   {
-                    parcel: { areaM2: "8000", name: "P450" },
-                    block: { name: "B516" },
-                    owner: { name: "نوید نورزاد" },
-                    region: { name: "R65" },
+                    parcel: { areaM2: '8000', name: 'P450' },
+                    block: { name: 'B516' },
+                    owner: { name: 'نوید نورزاد' },
+                    region: { name: 'R65' },
                   },
                   {
-                    parcel: { areaM2: "8000", name: "P450" },
-                    block: { name: "B516" },
-                    owner: { name: "نوید نورزاد" },
-                    region: { name: "R65" },
+                    parcel: { areaM2: '8000', name: 'P450' },
+                    block: { name: 'B516' },
+                    owner: { name: 'نوید نورزاد' },
+                    region: { name: 'R65' },
                   },
                 ] as any
               }
@@ -72,7 +72,7 @@ export default function MapPage() {
           </div>
         </div>
         <div className="col-span-2 h-full overflow-y-auto scrollbar-gutter-stable">
-          <LayerManagement />
+          <LevelManagement />
         </div>
       </div>
     </MapWorkspace>

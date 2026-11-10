@@ -1,5 +1,5 @@
-import { PolygonIcon } from "./LayerManagement";
-import { IoCloseOutline } from "react-icons/io5";
+import { PolygonIcon } from './LevelManagement';
+import { IoCloseOutline } from 'react-icons/io5';
 
 export default function SelectedParcels() {
   return (
