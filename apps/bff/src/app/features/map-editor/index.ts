@@ -1,5 +1,12 @@
 // Public API of the map editor. Everything else is internal.
 export { FeatureWorkspaceProvider } from "./react/FeatureWorkspaceProvider";
+export { DraftConfigurationFlow } from "./react/DraftConfigurationFlow";
+export type {
+  DraftConfigurationFlowProps,
+  DraftConfigurationStep,
+  DraftConfigurationStepProps,
+  DraftConfigurationValues,
+} from "./react/DraftConfigurationFlow";
 export type { FeatureWorkspaceProviderProps, WorkspaceValue } from "./react/FeatureWorkspaceProvider";
 export {
   useEditorConfig,
@@ -25,4 +32,4 @@ export { resolveEditorConfig, editorConfigSchema } from "./core/config";
 export type { EditorConfig, EditorConfigInput } from "./core/config";
 export * from "./core/schemas";
 export * from "./core/errors";
-export type { LifecycleState } from "./domain/lifecycle";
+export type { Draft, LifecycleState } from "./domain/lifecycle";

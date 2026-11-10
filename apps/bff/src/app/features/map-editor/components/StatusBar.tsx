@@ -37,6 +37,18 @@ export function StatusBar() {
         </button>,
       );
       break;
+    case 'configuring':
+      message = 'Complete the feature information';
+      controls.push(
+        <button
+          key="c"
+          className={button}
+          onClick={() => void actions.cancelSession()}
+        >
+          {texts.cancel}
+        </button>,
+      );
+      break;
     case 'draft':
       message = 'Unsaved drawing';
       controls.push(
