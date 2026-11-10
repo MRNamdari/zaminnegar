@@ -29,6 +29,11 @@ import {
 import { toPersianNumber } from "@/app/util";
 import Link from "next/link";
 
+export interface OwnerParcelShare {
+  parcelId: string;
+  share: number;
+}
+
 export interface Owner {
   code?: string;
   id: string;
@@ -40,6 +45,7 @@ export interface Owner {
   parcelCount: number;
   totalArea: number;
   status: "فعال" | "غیر فعال";
+  parcelShares: OwnerParcelShare[];
 }
 
 interface OwnersTableProps {
