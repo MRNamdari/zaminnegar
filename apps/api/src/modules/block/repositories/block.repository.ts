@@ -19,6 +19,9 @@ export class BlockRepository extends BaseRepository<Block> {
   findByIdWithBoundary(id: string, manager?: EntityManager): Promise<Block | null> {
     return this.repo(manager).findOne({ where: { id }, relations: { boundary: true } });
   }
+  findByIdWithParcels(id: string, manager?: EntityManager): Promise<Block | null> {
+    return this.repo(manager).findOne({ where: { id }, relations: { parcels: true } });
+  }
 
   findPage(query: BlockQueryDto): Promise<PaginatedResult<Block>> {
     const qb = this.repository.createQueryBuilder('block');
