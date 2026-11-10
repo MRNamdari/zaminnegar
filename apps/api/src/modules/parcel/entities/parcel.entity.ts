@@ -99,7 +99,10 @@ export class Parcel extends TimestampedEntity implements IParcel {
   })
   blockOccupancyPct?: number | null;
 
-  @ManyToOne(() => Project, (project) => project.parcels, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Project, (project) => project.parcels, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({
     name: 'project_id',
     referencedColumnName: 'id',
@@ -107,7 +110,10 @@ export class Parcel extends TimestampedEntity implements IParcel {
   })
   project?: Relation<Project>;
 
-  @ManyToOne(() => Region, (region) => region.parcels, { nullable: false, onDelete: 'NO ACTION' })
+  @ManyToOne(() => Region, (region) => region.parcels, {
+    nullable: false,
+    onDelete: 'NO ACTION',
+  })
   @JoinColumn({
     name: 'region_id',
     referencedColumnName: 'id',
@@ -115,7 +121,10 @@ export class Parcel extends TimestampedEntity implements IParcel {
   })
   region?: Relation<Region>;
 
-  @ManyToOne(() => Block, (block) => block.parcels, { nullable: true, onDelete: 'NO ACTION' })
+  @ManyToOne(() => Block, (block) => block.parcels, {
+    nullable: true,
+    onDelete: 'NO ACTION',
+  })
   @JoinColumn({
     name: 'block_id',
     referencedColumnName: 'id',
@@ -123,7 +132,10 @@ export class Parcel extends TimestampedEntity implements IParcel {
   })
   block?: Relation<Block> | null;
 
-  @OneToOne(() => Boundary, (boundary) => boundary.ofParcel, { nullable: false, onDelete: 'NO ACTION' })
+  @OneToOne(() => Boundary, (boundary) => boundary.ofParcel, {
+    nullable: false,
+    onDelete: 'NO ACTION',
+  })
   @JoinColumn({
     name: 'boundary_id',
     referencedColumnName: 'id',
