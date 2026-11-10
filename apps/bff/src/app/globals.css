@@ -192,3 +192,6 @@ input[type="search"]::-webkit-search-cancel-button {
 input[type="search"] {
   appearance: none;
 }
+.Toastify__toast{
+  font-family: "Vazirmatn" !important;
+}
