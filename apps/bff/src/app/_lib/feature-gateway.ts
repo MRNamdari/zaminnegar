@@ -1,4 +1,4 @@
-import type { components } from '@zaminnegar-client';
+import type { components } from '@zaminnegar/api-client';
 import { ResultAsync, err, errAsync, ok, type Result } from 'neverthrow';
 import { z } from 'zod';
 import {
