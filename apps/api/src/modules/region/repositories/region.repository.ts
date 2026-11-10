@@ -12,25 +12,57 @@ export class RegionRepository extends BaseRepository<Region> {
     super(repository);
   }
 
-  findByProjectAndName(projectId: string, name: string, manager?: EntityManager): Promise<Region | null> {
+  findByProjectAndName(
+    projectId: string,
+    name: string,
+    manager?: EntityManager,
+  ): Promise<Region | null> {
     return this.repo(manager).findOne({ where: { projectId, name } });
   }
 
-  findByIdWithBoundary(id: string, manager?: EntityManager): Promise<Region | null> {
-    return this.repo(manager).findOne({ where: { id }, relations: { boundary: true } });
+  findByIdWithBoundary(
+    id: string,
+    manager?: EntityManager,
+  ): Promise<Region | null> {
+    return this.repo(manager).findOne({
+      where: { id },
+      relations: { boundary: true },
+    });
+  }
+
+  findByIdWithParcels(
+    id: string,
+    manager?: EntityManager,
+  ): Promise<Region | null> {
+    return this.repo(manager).findOne({
+      where: { id },
+      relations: { parcels: true },
+    });
   }
 
   findPage(query: RegionQueryDto): Promise<PaginatedResult<Region>> {
     const qb = this.repository.createQueryBuilder('region');
-    if (query.projectId) qb.andWhere('region.projectId = :projectId', { projectId: query.projectId });
-    if (query.status) qb.andWhere('region.status = :status', { status: query.status });
+    if (query.projectId)
+      qb.andWhere('region.projectId = :projectId', {
+        projectId: query.projectId,
+      });
+    if (query.status)
+      qb.andWhere('region.status = :status', { status: query.status });
     if (query.search) {
-      qb.andWhere(`region.name ILIKE :search ESCAPE '\\'`, { search: `%${escapeLike(query.search)}%` });
+      qb.andWhere(`region.name ILIKE :search ESCAPE '\\'`, {
+        search: `%${escapeLike(query.search)}%`,
+      });
     }
-    return paginate(qb.orderBy('region.createdAt', 'DESC').addOrderBy('region.id', 'ASC'), query);
+    return paginate(
+      qb.orderBy('region.createdAt', 'DESC').addOrderBy('region.id', 'ASC'),
+      query,
+    );
   }
 
-  async countChildren(regionId: string, manager?: EntityManager): Promise<{ blocks: number; parcels: number }> {
+  async countChildren(
+    regionId: string,
+    manager?: EntityManager,
+  ): Promise<{ blocks: number; parcels: number }> {
     const em = manager ?? this.repository.manager;
     const rows: Array<{ blocks: number; parcels: number }> = await em.query(
       `SELECT (SELECT count(*)::int FROM blocks WHERE region_id = $1) AS blocks,
