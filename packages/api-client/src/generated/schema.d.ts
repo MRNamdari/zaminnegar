@@ -178,6 +178,23 @@ export interface paths {
         patch: operations["BlockController_update"];
         trace?: never;
     };
+    "/blocks/{id}/parcels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the parcels a block contains */
+        get: operations["BlockController_listParcels"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/parcels": {
         parameters: {
             query?: never;
@@ -697,6 +714,24 @@ export interface components {
             geometry?: {
                 [key: string]: unknown;
             } & components["schemas"]["Function"];
+        };
+        BlockWithParcelsResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            projectId: string;
+            /** Format: uuid */
+            regionId: string;
+            /** Format: uuid */
+            boundaryId: string;
+            name: string;
+            description: string;
+            status: components["schemas"]["BlockStatus"];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            parcels: components["schemas"]["ParcelResponseDto"];
         };
         CreateParcelDto: {
             /** Format: uuid */
@@ -1377,6 +1412,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BlockResponseDto"];
+                };
+            };
+        };
+    };
+    BlockController_listParcels: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlockWithParcelsResponse"][];
                 };
             };
         };
