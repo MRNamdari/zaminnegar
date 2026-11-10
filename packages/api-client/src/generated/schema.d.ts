@@ -356,7 +356,6 @@ export interface components {
             /** @default  */
             description: string;
         };
-        Function: Record<string, never>;
         CreateBoundaryDto: {
             /** Format: uuid */
             projectId: string;
@@ -394,8 +393,10 @@ export interface components {
              *     }
              */
             geometry: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         BoundaryResponseDto: {
             /** Format: uuid */
@@ -448,8 +449,10 @@ export interface components {
              *     }
              */
             geometry?: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         /** @enum {string} */
         RegionStatus: "active" | "inactive";
@@ -499,8 +502,10 @@ export interface components {
              *     }
              */
             geometry?: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         RegionResponseDto: {
             /** Format: uuid */
@@ -556,8 +561,10 @@ export interface components {
              *     }
              */
             geometry?: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         /** @enum {string} */
         ParcelStatus: "active" | "inactive";
@@ -569,7 +576,7 @@ export interface components {
             /** Format: uuid */
             regionId: string;
             /** Format: uuid */
-            blockId: Record<string, never> | null;
+            blockId?: string | null;
             /** Format: uuid */
             boundaryId: string;
             name: string;
@@ -579,7 +586,7 @@ export interface components {
             /** @description % of the region this parcel occupies */
             regionOccupancyPct: number;
             /** @description % of the block this parcel occupies */
-            blockOccupancyPct: Record<string, never> | null;
+            blockOccupancyPct?: Record<string, never> | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -651,8 +658,10 @@ export interface components {
              *     }
              */
             geometry?: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         BlockResponseDto: {
             /** Format: uuid */
@@ -712,8 +721,10 @@ export interface components {
              *     }
              */
             geometry?: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         BlockWithParcelsResponse: {
             /** Format: uuid */
@@ -742,7 +753,7 @@ export interface components {
              * Format: uuid
              * @description Must belong to regionId
              */
-            blockId?: Record<string, never> | null;
+            blockId?: string | null;
             name: string;
             /** @default active */
             status: components["schemas"]["ParcelStatus"];
@@ -784,8 +795,10 @@ export interface components {
              *     }
              */
             geometry?: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         UpdateParcelDto: {
             /** Format: uuid */
@@ -794,7 +807,7 @@ export interface components {
              * Format: uuid
              * @description Must belong to regionId
              */
-            blockId?: Record<string, never> | null;
+            blockId?: string | null;
             name?: string;
             /** @default active */
             status: components["schemas"]["ParcelStatus"];
@@ -831,8 +844,10 @@ export interface components {
              *     }
              */
             geometry?: {
-                [key: string]: unknown;
-            } & components["schemas"]["Function"];
+                /** @enum {string} */
+                type?: "MultiPolygon" | "Polygon";
+                coordinates?: number[][][][];
+            };
         };
         OwnerResponseDto: {
             /** Format: uuid */
@@ -840,9 +855,9 @@ export interface components {
             /** Format: uuid */
             projectId: string;
             name: string;
-            phone: Record<string, never> | null;
-            email: Record<string, never> | null;
-            notes: Record<string, never> | null;
+            phone?: string | null;
+            email?: string | null;
+            notes?: string | null;
             nationalId: string;
             status: string;
             /** Format: date-time */
@@ -890,9 +905,9 @@ export interface components {
             /** Format: uuid */
             projectId: string;
             name: string;
-            phone?: Record<string, never> | null;
-            email?: Record<string, never> | null;
-            notes?: Record<string, never> | null;
+            phone?: string | null;
+            email?: string | null;
+            notes?: string | null;
             nationalId: string;
             /**
              * @default pending
@@ -902,9 +917,9 @@ export interface components {
         };
         UpdateOwnerDto: {
             name?: string;
-            phone?: Record<string, never> | null;
-            email?: Record<string, never> | null;
-            notes?: Record<string, never> | null;
+            phone?: string | null;
+            email?: string | null;
+            notes?: string | null;
             nationalId?: string;
             /**
              * @default pending

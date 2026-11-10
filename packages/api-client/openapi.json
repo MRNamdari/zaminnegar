@@ -1599,10 +1599,6 @@
           }
         }
       },
-      "Function": {
-        "type": "object",
-        "properties": {}
-      },
       "CreateBoundaryDto": {
         "type": "object",
         "properties": {
@@ -1615,7 +1611,7 @@
             "maxLength": 200
           },
           "geometry": {
-            "additionalProperties": true,
+            "type": "object",
             "description": "GeoJSON MultiPolygon, WGS 84, [longitude, latitude]",
             "example": {
               "type": "MultiPolygon",
@@ -1646,11 +1642,31 @@
                 ]
               ]
             },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Function"
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "MultiPolygon",
+                  "Polygon"
+                ]
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
               }
-            ]
+            }
           }
         },
         "required": [
@@ -1708,7 +1724,7 @@
             "maxLength": 200
           },
           "geometry": {
-            "additionalProperties": true,
+            "type": "object",
             "description": "GeoJSON MultiPolygon, WGS 84, [longitude, latitude]",
             "example": {
               "type": "MultiPolygon",
@@ -1739,11 +1755,31 @@
                 ]
               ]
             },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Function"
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "MultiPolygon",
+                  "Polygon"
+                ]
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
               }
-            ]
+            }
           }
         }
       },
@@ -1783,7 +1819,7 @@
             "description": "Existing draft boundary to use instead of geometry"
           },
           "geometry": {
-            "additionalProperties": true,
+            "type": "object",
             "description": "GeoJSON MultiPolygon, WGS 84, [longitude, latitude]",
             "example": {
               "type": "MultiPolygon",
@@ -1814,11 +1850,31 @@
                 ]
               ]
             },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Function"
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "MultiPolygon",
+                  "Polygon"
+                ]
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
               }
-            ]
+            }
           }
         },
         "required": [
@@ -1894,7 +1950,7 @@
             ]
           },
           "geometry": {
-            "additionalProperties": true,
+            "type": "object",
             "description": "GeoJSON MultiPolygon, WGS 84, [longitude, latitude]",
             "example": {
               "type": "MultiPolygon",
@@ -1925,11 +1981,31 @@
                 ]
               ]
             },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Function"
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "MultiPolygon",
+                  "Polygon"
+                ]
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
               }
-            ]
+            }
           }
         }
       },
@@ -1956,7 +2032,7 @@
             "format": "uuid"
           },
           "blockId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
@@ -2004,13 +2080,11 @@
           "id",
           "projectId",
           "regionId",
-          "blockId",
           "boundaryId",
           "name",
           "status",
           "areaM2",
           "regionOccupancyPct",
-          "blockOccupancyPct",
           "createdAt",
           "updatedAt"
         ]
@@ -2107,7 +2181,7 @@
             "description": "Existing draft boundary to use instead of geometry"
           },
           "geometry": {
-            "additionalProperties": true,
+            "type": "object",
             "description": "GeoJSON MultiPolygon, WGS 84, [longitude, latitude]",
             "example": {
               "type": "MultiPolygon",
@@ -2138,11 +2212,31 @@
                 ]
               ]
             },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Function"
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "MultiPolygon",
+                  "Polygon"
+                ]
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
               }
-            ]
+            }
           }
         },
         "required": [
@@ -2228,7 +2322,7 @@
             ]
           },
           "geometry": {
-            "additionalProperties": true,
+            "type": "object",
             "description": "GeoJSON MultiPolygon, WGS 84, [longitude, latitude]",
             "example": {
               "type": "MultiPolygon",
@@ -2259,11 +2353,31 @@
                 ]
               ]
             },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Function"
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "MultiPolygon",
+                  "Polygon"
+                ]
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
               }
-            ]
+            }
           }
         }
       },
@@ -2336,7 +2450,7 @@
             "format": "uuid"
           },
           "blockId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true,
             "description": "Must belong to regionId"
@@ -2359,7 +2473,7 @@
             "description": "Existing draft boundary to use instead of geometry"
           },
           "geometry": {
-            "additionalProperties": true,
+            "type": "object",
             "description": "GeoJSON MultiPolygon, WGS 84, [longitude, latitude]",
             "example": {
               "type": "MultiPolygon",
@@ -2390,11 +2504,31 @@
                 ]
               ]
             },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Function"
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "MultiPolygon",
+                  "Polygon"
+                ]
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
               }
-            ]
+            }
           }
         },
         "required": [
@@ -2411,7 +2545,7 @@
             "format": "uuid"
           },
           "blockId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true,
             "description": "Must belong to regionId"
@@ -2429,7 +2563,7 @@
             ]
           },
           "geometry": {
-            "additionalProperties": true,
+            "type": "object",
             "description": "GeoJSON MultiPolygon, WGS 84, [longitude, latitude]",
             "example": {
               "type": "MultiPolygon",
@@ -2460,11 +2594,31 @@
                 ]
               ]
             },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Function"
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "MultiPolygon",
+                  "Polygon"
+                ]
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
               }
-            ]
+            }
           }
         }
       },
@@ -2483,15 +2637,15 @@
             "type": "string"
           },
           "phone": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "notes": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "nationalId": {
@@ -2513,9 +2667,6 @@
           "id",
           "projectId",
           "name",
-          "phone",
-          "email",
-          "notes",
           "nationalId",
           "status",
           "createdAt",
@@ -2638,17 +2789,17 @@
             "maxLength": 200
           },
           "phone": {
-            "type": "object",
+            "type": "string",
             "maxLength": 50,
             "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "maxLength": 320,
             "nullable": true
           },
           "notes": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "nationalId": {
@@ -2679,17 +2830,17 @@
             "maxLength": 200
           },
           "phone": {
-            "type": "object",
+            "type": "string",
             "maxLength": 50,
             "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "maxLength": 320,
             "nullable": true
           },
           "notes": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "nationalId": {
