@@ -1,9 +1,8 @@
-"use client";
+'use client';
 
-import { IoChevronDown } from "react-icons/io5";
-import { BlockFormValue, createFormBlock } from "./schemas/BlockCreate.schema";
-import { useAppForm } from "@/app/components/form/hooks/form";
-import { useRouter } from "next/navigation";
+import { toast } from 'react-toastify';
+import { BlockFormValue, createFormBlock } from './schemas/BlockCreate.schema';
+import { useAppForm } from '@/app/components/form/hooks/form';
 
 interface Props {
   onSubmit: (values: BlockFormValue) => void;
@@ -11,13 +10,12 @@ interface Props {
 }
 
 const initialValues: BlockFormValue = {
-  blockCode: "",
-  blockAreaName: "مرکز",
-  blockStatus: "پیش‌نویس",
+  blockCode: '',
+  blockAreaName: 'مرکز',
+  blockStatus: 'پیش‌نویس',
 };
 
 export default function CreateBlockForm({ onSubmit, onCancel }: Props) {
-    const router = useRouter();
   const form = useAppForm({
     defaultValues: initialValues,
     validators: {
@@ -25,8 +23,11 @@ export default function CreateBlockForm({ onSubmit, onCancel }: Props) {
     },
 
     onSubmit: async ({ value }) => {
-      console.log("Form Submitted:", value);
-        router.push('/map')
+      console.log('Form submitted:', value);
+
+      onSubmit(value);
+
+      toast.success('اطلاعات بلوک با موفقیت دریافت شد!');   
     },
   });
 
@@ -55,32 +56,35 @@ export default function CreateBlockForm({ onSubmit, onCancel }: Props) {
             />
           )}
         </form.AppField>
+
         <form.AppField name="blockAreaName">
           {(field) => (
             <field.SelectField
               label="نام منطقه"
               options={[
-                { label: "مرکز", value: "مرکز" },
-                { label: "شمال", value: "شمال" },
-                { label: "جنوب", value: "جنوب" },
-                { label: "شرق", value: "شرق" },
-                { label: "غرب", value: "غرب" },
+                { label: 'مرکز', value: 'مرکز' },
+                { label: 'شمال', value: 'شمال' },
+                { label: 'جنوب', value: 'جنوب' },
+                { label: 'شرق', value: 'شرق' },
+                { label: 'غرب', value: 'غرب' },
               ]}
             />
           )}
         </form.AppField>
+
         <form.AppField name="blockStatus">
           {(field) => (
             <field.SelectField
               label="وضعیت بلوک"
               options={[
-                { label: "نهایی", value: "نهایی" },
-                { label: "پیش‌نویس", value: "پیش‌نویس" },
-                { label: "پیشنهادیه", value: "پیشنهادیه" },
+                { label: 'نهایی', value: 'نهایی' },
+                { label: 'پیش‌نویس', value: 'پیش‌نویس' },
+                { label: 'پیشنهادیه', value: 'پیشنهادیه' },
               ]}
             />
           )}
         </form.AppField>
+
         <div className="flex items-center gap-3 mt-2">
           <button
             type="button"
