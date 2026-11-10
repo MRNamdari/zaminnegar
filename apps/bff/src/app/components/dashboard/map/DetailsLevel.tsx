@@ -1,21 +1,21 @@
-"use client";
-import { IoTrashOutline } from "react-icons/io5";
-import { HiOutlinePencil } from "react-icons/hi2";
-import { PolygonIcon } from "./LayerManagement";
-import { GoChevronDown, GoChevronRight } from "react-icons/go";
-import { CiGrid42 } from "react-icons/ci";
-import { useState } from "react";
+'use client';
+import { IoTrashOutline } from 'react-icons/io5';
+import { HiOutlinePencil } from 'react-icons/hi2';
+import { PolygonIcon } from './LevelManagement';
+import { GoChevronDown, GoChevronRight } from 'react-icons/go';
+import { CiGrid42 } from 'react-icons/ci';
+import { useState } from 'react';
 
 const owners = [
-  { id: 1, name: "علی صادقی", count: 5 },
-  { id: 2, name: "مهران مدیری", count: 3 },
-  { id: 3, name: "جواد سیدی", count: 8 },
-  { id: 4, name: "مهدی لطفی", count: 2 },
+  { id: 1, name: 'علی صادقی', count: 5 },
+  { id: 2, name: 'مهران مدیری', count: 3 },
+  { id: 3, name: 'جواد سیدی', count: 8 },
+  { id: 4, name: 'مهدی لطفی', count: 2 },
 ];
 
-export default function DetailsLayer() {
+export default function DetailsLevel() {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState('');
   const filteredOwners = owners.filter((owner) =>
     owner.name.toLowerCase().includes(searchValue.trim().toLowerCase()),
   );
@@ -59,7 +59,7 @@ export default function DetailsLayer() {
             <span className="text-xs font-medium">حذف منطقه</span>
           </button>
           <button
-            style={{ "--color-plyg": "#7eff1d" } as React.CSSProperties}
+            style={{ '--color-plyg': '#7eff1d' } as React.CSSProperties}
             className="patch cursor-pointer flex transition-bg duration-300 bg-(--color-plyg) hover:bg-[color-mix(in_srgb,var(--color-plyg),black_20%)] gap-1.5 py-2.5 items-center rounded-md justify-center w-full border border-border"
           >
             <HiOutlinePencil stroke="#020d20" />
