@@ -286,7 +286,7 @@ export default function ParcelsFormCreate({
               <button
                 type="button"
                 onClick={addOwner}
-                className="w-full border border-dashed border-border rounded-lg py-3 text-sm text-foreground hover:border-action-primary hover:text-foreground-muted-hover transition cursor-pointer flex items-center justify-center gap-2"
+                className="w-full border border-dashed border-border rounded-lg py-3 text-sm text-foreground hover:opacity-80 transition cursor-pointer flex items-center justify-center gap-2"
               >
                 <span>+</span>
                 افزودن مالک دیگر
