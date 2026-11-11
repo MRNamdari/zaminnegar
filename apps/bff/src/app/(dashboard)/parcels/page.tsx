@@ -1,42 +1,98 @@
-"use client";
+
+'use client';
+
+import { useState } from 'react';
+import { AiOutlinePlus } from 'react-icons/ai';
+import { CgSearch } from 'react-icons/cg';
 
 import ParcelsTable, {
   Parcel,
-} from "@/app/components/dashboard/parcels/ParcelsTable";
-import { useState } from "react";
-import { AiOutlinePlus } from "react-icons/ai";
-import { CgSearch } from "react-icons/cg";
-import { parcelMockData } from "./ParcelMockData";
-import { Dialog } from "@/app/components/Dialog";
-import ParcelFormCreate from "@/app/components/dashboard/parcels/ParcelsFormCreate";
-import ParcelsFormUpdate from "@/app/components/dashboard/parcels/ParcelsFormUpdate";
-import { UpdateParcelFormValues } from "@/app/components/dashboard/parcels/schema/ParcelsUpdate.schema";
+} from '@/app/components/dashboard/parcels/ParcelsTable';
+
+import ParcelsFormCreate, {
+  ParcelCreatePayload,
+} from '@/app/components/dashboard/parcels/ParcelsFormCreate';
+
+import ParcelsFormUpdate from '@/app/components/dashboard/parcels/ParcelsFormUpdate';
+
+import { UpdateParcelFormValues } from '@/app/components/dashboard/parcels/schema/ParcelsUpdate.schema';
+
+import { Dialog } from '@/app/components/Dialog';
+
+import { parcelMockData } from './ParcelMockData';
+import { initialOwners } from '../mockData';
 
 export default function Page() {
-  const [searchValue, setSearchValue] = useState("");
-  const [parcels, setParcels] = useState(parcelMockData);
+  const [searchValue, setSearchValue] = useState('');
+
+  const [parcels, setParcels] = useState<Parcel[]>(parcelMockData);
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [selectedParcel, setSelectedParcel] = useState<Parcel | null>(null);
-  const filteredParcels = parcels.filter((parcel) =>
-    parcel.name.toLowerCase().includes(searchValue.trim().toLowerCase()),
-  );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+  const [selectedParcel, setSelectedParcel] = useState<Parcel | null>(null);
+
+  // باز کردن فرم افزودن قطعه
   const handleAddParcel = () => {
     setIsAddModalOpen(true);
   };
 
+  // ثبت قطعه جدید
+  const handleCreateParcel = (values: ParcelCreatePayload) => {
+    const template = parcels[0];
+
+    // برای ساخت قطعه آزمایشی به اطلاعات هندسی نیاز داریم.
+    if (!template) {
+      console.error('اطلاعات اولیه قطعات برای ساخت قطعه آزمایشی موجود نیست.');
+      return;
+    }
+
+    const newId = crypto.randomUUID();
+    const now = new Date();
+
+    const newParcel = {
+      ...template,
+      id: newId,
+      name: values.nameParcel,
+      block: values.nameBlock,
+      status: values.parcelStatus,
+
+      owners: values.owners.map((item) => {
+        const owner = initialOwners.find(
+          (owner) => owner.id === item.ownerId,
+        );
+
+        return {
+          parcelId: newId,
+          ownerId: item.ownerId,
+          share: item.share,
+          createdAt: now,
+          updatedAt: now,
+          owner,
+        };
+      }),
+    } as unknown as Parcel;
+
+    // اضافه کردن قطعه جدید به جدول
+    setParcels((previous) => [...previous, newParcel]);
+
+    // بستن فرم افزودن
+    setIsAddModalOpen(false);
+  };
+
+  // باز کردن فرم ویرایش
   const handleOpenUpdateModal = (parcel: Parcel) => {
     setSelectedParcel(parcel);
     setIsUpdateModalOpen(true);
   };
 
+  // ویرایش قطعه
   const handleUpdateParcel = (values: UpdateParcelFormValues) => {
     if (!selectedParcel) return;
 
-    setParcels((prev) =>
-      prev.map((parcel) =>
+    setParcels((previous) =>
+      previous.map((parcel) =>
         parcel.id === selectedParcel.id
           ? {
               ...parcel,
@@ -52,41 +108,47 @@ export default function Page() {
     setSelectedParcel(null);
   };
 
+  // باز کردن پنجره حذف
   const handleDelete = (parcel: Parcel) => {
     setSelectedParcel(parcel);
     setIsDeleteModalOpen(true);
   };
+
+  // تأیید حذف قطعه
   const confirmDelete = () => {
     if (!selectedParcel) return;
 
-    setParcels((prev) =>
-      prev.filter((parcel) => parcel.id !== selectedParcel.id),
+    setParcels((previous) =>
+      previous.filter((parcel) => parcel.id !== selectedParcel.id),
     );
 
     setIsDeleteModalOpen(false);
     setSelectedParcel(null);
   };
+
   return (
     <div className="w-full h-full overflow-y-auto">
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-4 items-center pb-4 pt-6 pr-4">
+
         <h2 className="w-full text-right text-3xl leading-loose font-normal">
           قطعه ها
         </h2>
 
+        {/* جستجو و افزودن قطعه */}
         <div className="block-header w-full flex gap-4 justify-between items-center">
           <form
             onSubmit={(e) => e.preventDefault()}
             className="flex w-full items-center gap-2 rounded-lg border border-border bg-[#504e4e52]"
           >
             <label htmlFor="simple-search" className="sr-only">
-              جست و جو منطقه
+              جست و جو قطعه
             </label>
 
             <search className="min-w-0 w-full rounded-lg flex flex-1 border border-border bg-surface focus-within:ring-2 focus-within:ring-action-primary-hover/20">
               <input
                 type="search"
                 id="simple-search"
-                placeholder="جست و جوی منطقه..."
+                placeholder="جست و جوی قطعه..."
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
                 className="w-full py-2.5 px-3 text-sm text-foreground border-0 outline-none transition placeholder:text-foreground-muted"
@@ -103,6 +165,7 @@ export default function Page() {
           </form>
 
           <button
+            type="button"
             onClick={handleAddParcel}
             className="min-w-fit flex gap-2 items-center bg-action-primary transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
           >
@@ -111,14 +174,16 @@ export default function Page() {
           </button>
         </div>
 
+        {/* جدول قطعات */}
         <ParcelsTable
-          data={filteredParcels as any}
+          data={parcels}
           onDelete={handleDelete}
           onEdit={handleOpenUpdateModal}
-          onRowClick={console.log}
+          onRowClick={(parcel) => console.log(parcel)}
           searchValue={searchValue}
         />
 
+        {/* فرم افزودن قطعه */}
         <Dialog
           open={isAddModalOpen}
           onOpenChange={setIsAddModalOpen}
@@ -126,15 +191,23 @@ export default function Page() {
           description="اطلاعات قطعه جدید را وارد کنید"
           className="text-white"
         >
-          <ParcelFormCreate
-            onSubmit={() => setIsAddModalOpen(false)}
+          <ParcelsFormCreate
+            owners={initialOwners}
+            onSubmit={handleCreateParcel}
             onCancel={() => setIsAddModalOpen(false)}
           />
         </Dialog>
 
+        {/* فرم ویرایش قطعه */}
         <Dialog
           open={isUpdateModalOpen}
-          onOpenChange={setIsUpdateModalOpen}
+          onOpenChange={(open) => {
+            setIsUpdateModalOpen(open);
+
+            if (!open) {
+              setSelectedParcel(null);
+            }
+          }}
           title="ویرایش قطعه"
           description="اطلاعات قطعه را ویرایش کنید"
           className="text-white"
@@ -150,6 +223,8 @@ export default function Page() {
             />
           )}
         </Dialog>
+
+        {/* پنجره حذف قطعه */}
         <Dialog
           open={isDeleteModalOpen}
           onOpenChange={(open) => {
@@ -196,6 +271,7 @@ export default function Page() {
             </div>
           )}
         </Dialog>
+
       </div>
     </div>
   );

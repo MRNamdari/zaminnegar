@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 import {
   useTable,
   tableFeatures,
@@ -12,7 +12,7 @@ import {
   columnVisibilityFeature,
   sortFns,
   type ColumnDef,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 import {
   FiEdit2,
   FiTrash2,
@@ -20,11 +20,11 @@ import {
   FiChevronRight,
   FiArrowUp,
   FiArrowDown,
-} from 'react-icons/fi';
-import type { IParcel } from '@/app/features/parcels/interface';
-import { toPersianNumber } from '@/app/util';
-import { SvgPolygon } from '../SvgPolygon';
-import Link from 'next/link';
+} from "react-icons/fi";
+import type { IParcel } from "@/app/features/parcels/interface";
+import { toPersianNumber } from "@/app/util";
+import { SvgPolygon } from "../SvgMultiPolygon";
+import Link from "next/link";
 
 export type Parcel = IParcel;
 
@@ -36,8 +36,6 @@ interface ParcelTableProps {
   onDelete: (parcel: Parcel) => void;
   pageSize?: number;
 }
-
-// TanStack Table feature start
 
 const features = tableFeatures({
   rowSortingFeature,
@@ -53,8 +51,6 @@ const features = tableFeatures({
   paginatedRowModel: createPaginatedRowModel(),
 });
 
-// start function page
-
 export default function ParcelsTable({
   data,
   searchValue,
@@ -66,8 +62,8 @@ export default function ParcelsTable({
   const columns = useMemo<ColumnDef<typeof features, Parcel>[]>(
     () => [
       {
-        accessorKey: 'id',
-        header: 'نام قطعه',
+        accessorKey: "id",
+        header: "نام قطعه",
         cell({ row }) {
           return (
             <SvgPolygon height="3rem" multiPolygon={row.original.geometry} />
@@ -83,7 +79,8 @@ export default function ParcelsTable({
           return (
             <Link
               className="w-full inline-block h-full text-blue-400 hover:underline underline-offset-4"
-              href={{ pathname: `/parcels/${row.original.id}` }}
+              href={`/parcels/${row.original.id}`}
+              onClick={(event) => event.stopPropagation()}
             >
               {row.original.name}
             </Link>
@@ -91,15 +88,17 @@ export default function ParcelsTable({
         },
       },
       {
-        accessorKey: 'areaM2',
-        header: 'مساحت',
+        accessorKey: "areaM2",
+        header: "مساحت",
         cell({ row }) {
+          const area = Number(row.original.areaM2) || 0;
+
           return (
             <div>
               <div>
                 {toPersianNumber(
                   Math.floor(parseFloat(row.original.areaM2) / 10_000),
-                )}{' '}
+                )}{" "}
                 <span>هکتار</span>
               </div>
             </div>
@@ -107,45 +106,54 @@ export default function ParcelsTable({
         },
       },
       {
-        accessorKey: 'block',
-        header: 'بلوک ها',
+        accessorKey: "block",
+        header: "بلوک ها",
         cell({ row }) {
-          return row.original.block ?? '-';
+          return row.original.block ?? "-";
         },
       },
       {
-        accessorKey: 'owners',
-        header: 'مالکین',
-        sortingFn: 'basic',
+        accessorKey: "owners",
+        header: "مالکین",
+        sortingFn: "basic",
         cell({ row }) {
+          const owners = row.original.owners ?? [];
+
+          if (owners.length === 0) {
+            return '-';
+          }
+
           return (
-            <div className="flex gap-2">
-              {row.original.owners
-                ?.map((po) => po.owner)
-                .map((o) => (
+            <div className="flex flex-wrap gap-2">
+              {owners.map((parcelOwner) => {
+                const owner = parcelOwner.owner;
+
+                if (!owner) return null;
+
+                return (
                   <Link
-                    className=" h-full text-blue-400 hover:underline underline-offset-4"
-                    key={o?.id}
-                    href={{
-                      pathname: `/owners/${o?.id}`,
-                    }}
+                    key={owner.id}
+                    className="text-blue-400 hover:underline underline-offset-4"
+                    href={`/owners/${owner.id}`}
+                    onClick={(event) => event.stopPropagation()}
                   >
-                    {o?.name}
+                    {owner.name}
                   </Link>
-                ))}
+                );
+              })}
             </div>
           );
         },
       },
       {
-        accessorKey: 'status',
-        header: 'وضعیت',
+        accessorKey: "status",
+        header: "وضعیت",
         cell: ({ row }) => {
           const status = row.original.status;
 
           return (
             <span
-              className={`min-w-18 text-center select-none rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${status === 'فعال' ? 'bg-map-green text-surface' : 'bg-surface-muted text-foreground'}`}
+              className={`min-w-18 text-center select-none rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${status === "فعال" ? "bg-map-green text-surface" : "bg-surface-muted text-foreground"}`}
             >
               {status}
             </span>
@@ -190,7 +198,7 @@ export default function ParcelsTable({
 
   const columnFilters = useMemo(
     () =>
-      searchValue.trim() ? [{ id: 'code', value: searchValue.trim() }] : [],
+      searchValue.trim() ? [{ id: "code", value: searchValue.trim() }] : [],
     [searchValue],
   );
 
@@ -256,7 +264,7 @@ export default function ParcelsTable({
                   colSpan={columns.length}
                   className="px-4 py-10 text-center text-gray-300"
                 >
-                  قطعه ای یافت نشد
+                  قطعه‌ای یافت نشد
                 </td>
               </tr>
             ) : (
@@ -274,8 +282,8 @@ export default function ParcelsTable({
                     }
                   }}
                   tabIndex={0}
-                  aria-label={`Open block ${row.original.name}`}
-                  className="even:bg-surface transition hover:bg-surface-muted border-t border-border focus-visible:outline-2 "
+                  aria-label={`Open parcel ${row.original.name}`}
+                  className="even:bg-surface transition hover:bg-surface-muted border-t border-border focus-visible:outline-2"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 text-right">
@@ -306,7 +314,7 @@ export default function ParcelsTable({
           </button>
 
           <span className="text-sm select-none">
-            صفحه {toPersianNumber(table.state.pagination.pageIndex + 1)} از{' '}
+            صفحه {toPersianNumber(table.state.pagination.pageIndex + 1)} از{" "}
             {toPersianNumber(Math.max(1, pageCount))}
           </span>
 
