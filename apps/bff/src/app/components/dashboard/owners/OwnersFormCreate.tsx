@@ -288,23 +288,23 @@ export default function CreateOwnerForm({
         {/* مرحله دوم: قطعات تحت مالکیت */}
         {step === 2 && (
           <>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 items-end">
               <div className="rounded-lg border border-border p-3">
-                <p className="mb-1 text-xs text-muted-foreground">
+                <p className="mb-1 text-xs text-foreground">
                   مساحت کل سهم مالک
                 </p>
 
-                <p className="text-sm font-medium">
+                <p className="text-sm font-medium text-foreground">
                   {Number(totalArea).toLocaleString('fa-IR')} متر مربع
                 </p>
               </div>
 
               <div className="rounded-lg border border-border p-3">
-                <p className="mb-1 text-xs text-muted-foreground">
+                <p className="mb-1 text-xs text-muted-foreground text-foreground">
                   تعداد قطعات
                 </p>
 
-                <p className="text-sm font-medium">
+                <p className="text-sm font-medium text-foreground">
                   {parcelCount.toLocaleString('fa-IR')} قطعه
                 </p>
               </div>
@@ -313,16 +313,16 @@ export default function CreateOwnerForm({
             <div className="mt-2 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-medium">
+                  <h3 className="text-sm font-medium text-foreground">
                     قطعات تحت مالکیت
                   </h3>
 
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-foreground">
                     قطعات و درصد سهم مالک را مشخص کنید.
                   </p>
                 </div>
 
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-foreground">
                   {selectedParcels.length.toLocaleString('fa-IR')} قطعه
                 </span>
               </div>
@@ -351,7 +351,7 @@ export default function CreateOwnerForm({
                     className="flex flex-col gap-3 rounded-xl border border-border p-3"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">
+                      <span className="text-sm font-medium text-foreground">
                         قطعه {index + 1}
                       </span>
 
@@ -366,7 +366,7 @@ export default function CreateOwnerForm({
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-3 items-end text-foreground">
                       <form.AppField
                         name={`parcelShares[${index}].parcelId` as any}
                       >
@@ -400,7 +400,7 @@ export default function CreateOwnerForm({
                     </div>
 
                     {item.parcelId && (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-foreground">
                         مساحت سهم:{' '}
                         {shareArea.toLocaleString('fa-IR')}{' '}
                         متر مربع
@@ -413,7 +413,7 @@ export default function CreateOwnerForm({
               <button
                 type="button"
                 onClick={addParcel}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border py-3 text-sm transition hover:bg-muted/50"
+                className="flex w-full text-foreground cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border py-3 text-sm transition hover:opacity-80"
               >
                 <span>+</span>
                 افزودن قطعه
