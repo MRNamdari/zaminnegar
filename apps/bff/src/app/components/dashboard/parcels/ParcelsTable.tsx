@@ -23,7 +23,7 @@ import {
 } from "react-icons/fi";
 import type { IParcel } from "@/app/features/parcels/interface";
 import { toPersianNumber } from "@/app/util";
-import { SvgPolygon } from "../SvgMultiPolygon";
+import { SvgPolygon } from "../SvgPolygon";
 import Link from "next/link";
 
 export type Parcel = IParcel;
@@ -66,7 +66,7 @@ export default function ParcelsTable({
         header: "نام قطعه",
         cell({ row }) {
           return (
-            <SvgPolygon height="3rem" multiPolygon={row.original.geometry} />
+            <SvgPolygon height="3rem" polygon={row.original.geometry} />
           );
         },
       },
