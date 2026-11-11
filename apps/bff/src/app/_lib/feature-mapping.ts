@@ -3,6 +3,7 @@ import {
   type AreaFeature,
   type Level,
   type PolygonGeometry,
+  type Position,
 } from '@/app/features/map-editor';
 import { z } from 'zod';
 
@@ -24,11 +25,14 @@ export function parseFeatureId(
 ): { level: Level; id: string } | null {
   const separator = featureId.indexOf(':');
   if (separator === -1) return null;
+
   const level = featureId.slice(0, separator);
   const id = featureId.slice(separator + 1);
+
   if (!id || (level !== 'region' && level !== 'block' && level !== 'parcel')) {
     return null;
   }
+
   return { level, id };
 }
 
@@ -63,7 +67,7 @@ export const blockSchema = z.object({ ...baseEntity, regionId: z.string() });
 export const parcelSchema = z.object({
   ...baseEntity,
   regionId: z.string(),
-  blockId: z.string().nullable(),
+  blockId: z.string().nullable().optional(),
 });
 export type ApiRegion = z.infer<typeof regionSchema>;
 export type ApiBlock = z.infer<typeof blockSchema>;
@@ -78,14 +82,30 @@ export const pageSchema = <S extends z.ZodType>(item: S) =>
     limit: z.number(),
   });
 
+/** The only statuses the API accepts for regions, blocks and parcels. */
+export type EntityStatus = 'active' | 'inactive';
+
+export const toEntityStatus = (value: unknown): EntityStatus | undefined =>
+  value === 'active' || value === 'inactive' ? value : undefined;
+
 /* -------------------------------------------------------------------------- */
 /*  Geometry                                                                  */
 /* -------------------------------------------------------------------------- */
 
+/** The API rejects open rings; drawing tools close them, but a stray one must not reach it. */
+const closeRing = (ring: Position[]): Position[] => {
+  const first = ring[0];
+  const last = ring[ring.length - 1];
+
+  return first && last && (first[0] !== last[0] || first[1] !== last[1])
+    ? [...ring, first]
+    : ring;
+};
+
 /** The editor draws single polygons; the API stores MultiPolygons. */
 export const toMultiPolygon = (polygon: PolygonGeometry): MultiPolygon => ({
   type: 'MultiPolygon',
-  coordinates: [polygon.coordinates],
+  coordinates: [polygon.coordinates.map(closeRing)],
 });
 
 /**
@@ -95,6 +115,7 @@ export const toMultiPolygon = (polygon: PolygonGeometry): MultiPolygon => ({
 export function toPolygon(multi: MultiPolygon): PolygonGeometry | null {
   const [only, ...rest] = multi.coordinates;
   if (!only || rest.length > 0) return null;
+
   return { type: 'Polygon', coordinates: only };
 }
 
@@ -112,7 +133,9 @@ function parentOf(level: Level, entity: ApiEntity): string | null {
   if (level === 'block') {
     return toFeatureId('region', (entity as ApiBlock).regionId);
   }
+
   const parcel = entity as ApiParcel;
+
   return parcel.blockId
     ? toFeatureId('block', parcel.blockId)
     : toFeatureId('region', parcel.regionId);
@@ -120,8 +143,10 @@ function parentOf(level: Level, entity: ApiEntity): string | null {
 
 /**
  * `version` is the newest `updatedAt` of the entity and its boundary (geometry edits touch
- * the boundary row), as epoch milliseconds. The API does not enforce it (see README note),
- * but the editor's conflict detection compares it between refetches.
+ * the boundary row), as epoch milliseconds. The API does not enforce it, but the editor's
+ * conflict detection compares it between refetches.
+ *
+ * Returns `null` when the boundary has several parts (see `toPolygon`).
  */
 export function toFeature(
   level: Level,
@@ -130,6 +155,7 @@ export function toFeature(
 ): AreaFeature | null {
   const geometry = toPolygon(boundary.geometry);
   if (!geometry) return null;
+
   return {
     type: 'Feature',
     id: toFeatureId(level, entity.id),
@@ -137,6 +163,9 @@ export function toFeature(
     properties: {
       level,
       name: entity.name,
+      ...(entity.description !== undefined
+        ? { description: entity.description }
+        : {}),
       areaHa: boundary.areaM2 / 10_000,
       version: Math.max(
         timestamp(entity.updatedAt),

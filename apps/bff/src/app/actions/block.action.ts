@@ -1,6 +1,6 @@
 'use server';
 
-import { api } from '@/app/_lib/api';
+import { getServerApi } from '@/app/_lib/api.server';
 
 interface CreateBlockInput {
   projectId: string;
@@ -13,15 +13,13 @@ interface CreateBlockInput {
 
 export async function createBlockAction(values: CreateBlockInput) {
   try {
-    const { data, error, response } = await api.POST('/blocks', {
-      body: {
-        ...values,
-        description: values.description ?? '',
-      },
+    const response = await getServerApi().client.post('/blocks', {
+      body: { ...values, description: values.description ?? '' },
+      withResponse: true,
     });
 
-    if (error || !response.ok) {
-      console.error('Create block error:', error);
+    if (!response.ok) {
+      console.error('Create block error:', response.status, response.data);
 
       return {
         success: false,
@@ -31,7 +29,7 @@ export async function createBlockAction(values: CreateBlockInput) {
 
     return {
       success: true,
-      data,
+      data: response.data,
     };
   } catch (error) {
     console.error('Create block error:', error);
