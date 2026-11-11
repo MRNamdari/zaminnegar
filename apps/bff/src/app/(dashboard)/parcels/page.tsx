@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -51,17 +50,15 @@ export default function Page() {
     const newId = crypto.randomUUID();
     const now = new Date();
 
-    const newParcel = {
+    const newParcel: Parcel = {
       ...template,
       id: newId,
       name: values.nameParcel,
-      block: values.nameBlock,
+      block: template.block,
       status: values.parcelStatus,
 
       owners: values.owners.map((item) => {
-        const owner = initialOwners.find(
-          (owner) => owner.id === item.ownerId,
-        );
+        const owner = initialOwners.find((owner) => owner.id === item.ownerId);
 
         return {
           parcelId: newId,
@@ -69,15 +66,21 @@ export default function Page() {
           share: item.share,
           createdAt: now,
           updatedAt: now,
-          owner,
+          owner: owner
+            ? {
+                id: owner.id,
+                name: owner.name,
+                phone: owner.phoneNumber,
+                createdAt: now,
+                updatedAt: now,
+              }
+            : undefined,
         };
       }),
-    } as unknown as Parcel;
+    };
 
-    // اضافه کردن قطعه جدید به جدول
     setParcels((previous) => [...previous, newParcel]);
 
-    // بستن فرم افزودن
     setIsAddModalOpen(false);
   };
 
@@ -91,17 +94,45 @@ export default function Page() {
   const handleUpdateParcel = (values: UpdateParcelFormValues) => {
     if (!selectedParcel) return;
 
+    const now = new Date();
+
     setParcels((previous) =>
-      previous.map((parcel) =>
-        parcel.id === selectedParcel.id
-          ? {
-              ...parcel,
-              name: values.nameParcel,
-              block: values.nameBlock,
-              status: values.parcelStatus,
-            }
-          : parcel,
-      ),
+      previous.map((parcel) => {
+        if (parcel.id !== selectedParcel.id) return parcel;
+
+        return {
+          ...parcel,
+          name: values.nameParcel,
+          status: values.parcelStatus,
+
+          owners: values.owners.map((item) => {
+            const owner = initialOwners.find(
+              (owner) => owner.id === item.ownerId,
+            );
+
+            const existingOwner = parcel.owners?.find(
+              (relation) => relation.ownerId === item.ownerId,
+            );
+
+            return {
+              parcelId: parcel.id,
+              ownerId: item.ownerId,
+              share: Number(item.share),
+              createdAt: existingOwner?.createdAt ?? now,
+              updatedAt: now,
+              owner: owner
+                ? {
+                    id: owner.id,
+                    name: owner.name,
+                    phone: owner.phoneNumber,
+                    createdAt: existingOwner?.owner?.createdAt ?? now,
+                    updatedAt: now,
+                  }
+                : undefined,
+            };
+          }),
+        };
+      }),
     );
 
     setIsUpdateModalOpen(false);
@@ -129,7 +160,6 @@ export default function Page() {
   return (
     <div className="w-full h-full overflow-y-auto">
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-4 items-center pb-4 pt-6 pr-4">
-
         <h2 className="w-full text-right text-3xl leading-loose font-normal">
           قطعه ها
         </h2>
@@ -215,6 +245,7 @@ export default function Page() {
           {selectedParcel && (
             <ParcelsFormUpdate
               parcel={selectedParcel}
+              owners={initialOwners}
               onSubmit={handleUpdateParcel}
               onCancel={() => {
                 setIsUpdateModalOpen(false);
@@ -271,7 +302,6 @@ export default function Page() {
             </div>
           )}
         </Dialog>
-
       </div>
     </div>
   );
