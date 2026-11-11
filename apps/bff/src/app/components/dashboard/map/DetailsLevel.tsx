@@ -5,6 +5,12 @@ import { PolygonIcon } from './LevelManagement';
 import { GoChevronDown, GoChevronRight } from 'react-icons/go';
 import { CiGrid42 } from 'react-icons/ci';
 import { useState } from 'react';
+import {
+  useWorkspaceActions,
+  useWorkspaceState,
+} from '@/app/features/map-editor';
+import { faNum } from '@/app/util';
+import { SvgPolygon } from '../SvgPolygon';
 
 const owners = [
   { id: 1, name: 'علی صادقی', count: 5 },
@@ -19,6 +25,21 @@ export default function DetailsLevel() {
   const filteredOwners = owners.filter((owner) =>
     owner.name.toLowerCase().includes(searchValue.trim().toLowerCase()),
   );
+
+  const actions = useWorkspaceActions();
+  const { features, selectedFeatureId } = useWorkspaceState();
+  const blocksRegion = features.features.filter(
+    (f) => 
+      f.properties.parentId === selectedFeatureId &&
+      f.properties.level === 'block'
+  );
+  const getBlockParcelCount = (blockId: string) => {
+    return features.features.filter(
+      (f) => 
+        f.properties.parentId === blockId &&
+      f.properties.level === 'parcel'
+    ).length
+  }
 
   return (
     <aside className="h-full min-h-0 min-w-0 flex-1 py-3 pl-2 pr-3 ">
@@ -85,63 +106,49 @@ export default function DetailsLevel() {
         <div
           className={`blooks_wrapper ${isOpen ? `relative visible` : `absolute hidden`} mt-2`}
         >
-          <div className="blooks_item_wrapper rounded-xl py-1.5 px-2 flex items-center justify-between cursor-pointer hover:bg-slate-200/5 transition duration-300">
-            <GoChevronRight />
-            <div className="plyg_dsc flex items-center gap-3">
-              <div className="desc flex-col flex items-end">
-                <h3 className="text-xs font-normal">بلوک - 1</h3>
-                <div className="desc flex flex-col mt-2 gap-1 items-end">
-                  <span className="text-xs text-slate-400">
-                    مساحت: 45.2 هکتار
-                  </span>
-                  <span className="text-xs text-slate-400">تعداد‌قطعات: 5</span>
+          {blocksRegion.length > 0 ? (
+            blocksRegion.map((block) => (
+              <div
+                onClick={() => actions.focusFeature(block.id)}
+                key={block.id}
+                className="blooks_item_wrapper rounded-xl py-1.5 px-2 flex items-center justify-between cursor-pointer hover:bg-slate-200/5 transition duration-300"
+              >
+                <GoChevronRight />
+                <div className="plyg_dsc flex items-center gap-3">
+                  <div className="desc flex-col flex items-end">
+                    <h3 className="text-xs font-normal">
+                      {block.properties.name}
+                    </h3>
+                    <div className="desc flex flex-col mt-2 gap-1 items-end">
+                      <span className="text-xs text-slate-400">
+                        مساحت:{' '}
+                        {faNum((block.properties.areaHa ?? 0).toFixed(2))} هکتار
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        تعداد‌قطعات: {faNum(getBlockParcelCount(block.id))}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="plyg">
+                    <div className="w-12 h-12 border border-border rounded-lg flex items-center justify-center">
+                      <SvgPolygon
+                        polygon={block.geometry}
+                        height="35"
+                        stroke="var(--map-blue)"
+                        fill="color-mix(var(--map-blue) 50%, transparent 50%)"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="plyg">
-                <div className="w-12 h-12 border border-border rounded-lg flex items-center justify-center">
-                  <PolygonIcon width="28px" fillColor="#2b7fff" />
-                </div>
-              </div>
+            ))
+          ) : (
+            <div className="flex items-center justify-center w-full text-xs text-slate-400">
+              {selectedFeatureId
+                ? 'هیچ قطعه‌ای برای این بخش پیدا نشد'
+                : 'برای مشاهده قطعات، ابتدا یک بلوک یا منطقه انتخاب کنید'}
             </div>
-          </div>
-          <div className="blooks_item_wrapper rounded-xl py-1.5 px-2 flex items-center justify-between cursor-pointer hover:bg-slate-200/5 transition duration-300">
-            <GoChevronRight />
-            <div className="plyg_dsc flex items-center gap-3">
-              <div className="desc flex-col flex items-end">
-                <h3 className="text-xs font-normal">بلوک - 1</h3>
-                <div className="desc flex flex-col mt-2 gap-1 items-end">
-                  <span className="text-xs text-slate-400">
-                    مساحت: 45.2 هکتار
-                  </span>
-                  <span className="text-xs text-slate-400">تعداد‌قطعات: 5</span>
-                </div>
-              </div>
-              <div className="plyg">
-                <div className="w-12 h-12 border border-border rounded-lg flex items-center justify-center">
-                  <PolygonIcon width="28px" fillColor="#2b7fff" />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="blooks_item_wrapper rounded-xl py-1.5 px-2 flex items-center justify-between cursor-pointer hover:bg-slate-200/5 transition duration-300">
-            <GoChevronRight />
-            <div className="plyg_dsc flex items-center gap-3">
-              <div className="desc flex-col flex items-end">
-                <h3 className="text-xs font-normal">بلوک - 1</h3>
-                <div className="desc flex flex-col mt-2 gap-1 items-end">
-                  <span className="text-xs text-slate-400">
-                    مساحت: 45.2 هکتار
-                  </span>
-                  <span className="text-xs text-slate-400">تعداد‌قطعات: 5</span>
-                </div>
-              </div>
-              <div className="plyg">
-                <div className="w-12 h-12 border border-border rounded-lg flex items-center justify-center">
-                  <PolygonIcon width="28px" fillColor="#2b7fff" />
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
       <div className="details_users border border-border rounded-xl mt-3 p-1.5">
