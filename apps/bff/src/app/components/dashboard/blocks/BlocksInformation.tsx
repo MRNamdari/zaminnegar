@@ -9,7 +9,6 @@ import Link from "next/link";
 import { toPersianNumber } from "@/app/util";
 import ParcelsTable, { Parcel } from "../parcels/ParcelsTable";
 import { parcelMockData } from "@/app/(dashboard)/parcels/ParcelMockData";
-import { MapEditor, MapEditorProvider } from "@/app/features/map-editor";
 import UpdateBlockForm from "./BlockFormUpdate";
 import { UpdateBlockFormValues } from "./schemas/BlockUpdate.schema";
 import ParcelsFormUpdate from "../parcels/ParcelsFormUpdate";
@@ -97,7 +96,7 @@ export default function BlockInformation({ block }: BlockInformationProps) {
 
   return (
     <div className="w-full">
-      <MapEditorProvider>
+
         <div className="w-full flex mb-2">
           <button
             onClick={() => setActiveTab("info")}
@@ -178,12 +177,7 @@ export default function BlockInformation({ block }: BlockInformationProps) {
             </div>
 
             <div className="w-1/2 rounded-2xl overflow-hidden">
-              <MapEditor
-                controls={false}
-                toolbar={false}
-                miniMap={false}
-                viewModeToggle={false}
-              />
+
             </div>
           </div>
           <div
@@ -199,7 +193,7 @@ export default function BlockInformation({ block }: BlockInformationProps) {
             />
           </div>
         </div>
-      </MapEditorProvider>
+  
 
       {/* Delete block dialog */}
       <Dialog
@@ -268,6 +262,7 @@ export default function BlockInformation({ block }: BlockInformationProps) {
       >
         {selectedParcel && (
           <ParcelsFormUpdate
+          owners={[]}
             parcel={selectedParcel}
             onSubmit={handleUpdateParcel}
             onCancel={() => {

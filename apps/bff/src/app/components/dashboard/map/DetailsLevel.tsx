@@ -2,8 +2,8 @@
 import { IoTrashOutline } from 'react-icons/io5';
 import { HiOutlinePencil } from 'react-icons/hi2';
 import { PolygonIcon } from './LevelManagement';
-import { GoChevronDown, GoChevronRight } from 'react-icons/go';
-import { CiGrid42 } from 'react-icons/ci';
+import { GoChevronDown } from 'react-icons/go';
+import { CiGrid42, CiShare1 } from 'react-icons/ci';
 import { useState } from 'react';
 import {
   useWorkspaceActions,
@@ -11,6 +11,7 @@ import {
 } from '@/app/features/map-editor';
 import { faNum } from '@/app/util';
 import { SvgPolygon } from '../SvgPolygon';
+import Link from 'next/link';
 
 const owners = [
   { id: 1, name: 'علی صادقی', count: 5 },
@@ -113,22 +114,7 @@ export default function DetailsLevel() {
                 key={block.id}
                 className="blooks_item_wrapper rounded-xl py-1.5 px-2 flex items-center justify-between cursor-pointer hover:bg-slate-200/5 transition duration-300"
               >
-                <GoChevronRight />
                 <div className="plyg_dsc flex items-center gap-3">
-                  <div className="desc flex-col flex items-end">
-                    <h3 className="text-xs font-normal">
-                      {block.properties.name}
-                    </h3>
-                    <div className="desc flex flex-col mt-2 gap-1 items-end">
-                      <span className="text-xs text-slate-400">
-                        مساحت:{' '}
-                        {faNum((block.properties.areaHa ?? 0).toFixed(2))} هکتار
-                      </span>
-                      <span className="text-xs text-slate-400">
-                        تعداد‌قطعات: {faNum(getBlockParcelCount(block.id))}
-                      </span>
-                    </div>
-                  </div>
                   <div className="plyg">
                     <div className="w-12 h-12 border border-border rounded-lg flex items-center justify-center">
                       <SvgPolygon
@@ -139,7 +125,27 @@ export default function DetailsLevel() {
                       />
                     </div>
                   </div>
+                  <div className="desc flex-col flex items-start">
+                    <h3 className="text-xs font-normal">
+                      {block.properties.name}
+                    </h3>
+                    <div className="desc flex flex-col mt-2 gap-1 items-start">
+                      <span className="text-xs text-slate-400">
+                        مساحت:{' '}
+                        {faNum((block.properties.areaHa ?? 0).toFixed(2))} هکتار
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        تعداد‌قطعات: {faNum(getBlockParcelCount(block.id))}
+                      </span>
+                    </div>
+                  </div>
                 </div>
+                <Link
+                  href={`/blocks/${block.id.replace(/\w+:/g, '')}`}
+                  className="isolate cursor-pointer rounded-full p-4 hover:text-blue-600 hover:bg-surface-raised transition duration-300"
+                >
+                  <CiShare1 className="scale-x-[-1]" />
+                </Link>
               </div>
             ))
           ) : (
