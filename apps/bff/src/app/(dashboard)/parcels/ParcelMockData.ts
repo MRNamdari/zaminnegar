@@ -8,14 +8,14 @@ export const parcelMockData: IParcel[] = [
     blockId: "1",
     name: "قطعه شماره 1",
     geometry: {
-      type: "MultiPolygon",
-      coordinates: [[[
+      type: "Polygon",
+      coordinates: [[
         [49.58, 37.28],
         [49.581, 37.28],
         [49.581, 37.281],
         [49.58, 37.281],
         [49.58, 37.28],
-      ]]],
+      ]],
     },
     fillColor: "#22c55e",
     fillOpacity: 0.3,
@@ -110,14 +110,14 @@ export const parcelMockData: IParcel[] = [
     blockId: "2",
     name: "قطعه شماره 2",
     geometry: {
-      type: "MultiPolygon",
-      coordinates: [[[
+      type: "Polygon",
+      coordinates: [[
         [49.581, 37.28],
         [49.582, 37.28],
         [49.582, 37.281],
         [49.581, 37.281],
         [49.581, 37.28],
-      ]]],
+      ]],
     },
     fillColor: "#3b82f6",
     fillOpacity: 0.3,
@@ -205,14 +205,14 @@ export const parcelMockData: IParcel[] = [
     blockId: "3",
     name: "قطعه شماره 3",
     geometry: {
-      type: "MultiPolygon",
-      coordinates: [[[
+      type: "Polygon",
+      coordinates: [[
         [49.582, 37.28],
         [49.583, 37.28],
         [49.583, 37.281],
         [49.582, 37.281],
         [49.582, 37.28],
-      ]]],
+      ]],
     },
     fillColor: "#f59e0b",
     fillOpacity: 0.3,
@@ -293,14 +293,14 @@ export const parcelMockData: IParcel[] = [
     blockId: "4",
     name: "قطعه شماره 4",
     geometry: {
-      type: "MultiPolygon",
-      coordinates: [[[
+      type: "Polygon",
+      coordinates: [[
         [49.583, 37.28],
         [49.584, 37.28],
         [49.584, 37.281],
         [49.583, 37.281],
         [49.583, 37.28],
-      ]]],
+      ]],
     },
     fillColor: "#a855f7",
     fillOpacity: 0.3,
