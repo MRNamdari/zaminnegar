@@ -26,6 +26,6 @@ export type Position = [longitude: number, latitude: number];
 
 /** A GeoJSON MultiPolygon: polygons → rings → positions. Rings are closed (first == last). */
 export interface IMultiPolygon {
-  type: "MultiPolygon";
-  coordinates: Position[][][];
+  type: "Polygon";
+  coordinates: Position[][];
 }
