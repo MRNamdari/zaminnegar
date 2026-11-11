@@ -1,14 +1,7 @@
-"use client";
+'use client';
+import type { BlockResponseDto as Block, BlockStatus } from '@zaminnegar/api-client';
 
-export interface Block {
-  id: string;
-  code: string;
-  region: "شمال" | "جنوب" | "شرق" | "غرب" | "مرکز";
-  parcelCount: number;
-  status: "پیشنهادیه" | "پیش‌نویس" | "نهایی";
-}
-
-import { useMemo } from "react";
+import { useMemo } from 'react';
 import {
   useTable,
   tableFeatures,
@@ -22,7 +15,7 @@ import {
   columnVisibilityFeature,
   sortFns,
   type ColumnDef,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 
 import {
   FiEdit2,
@@ -31,9 +24,11 @@ import {
   FiChevronRight,
   FiArrowUp,
   FiArrowDown,
-} from "react-icons/fi";
-import { toPersianNumber } from "@/app/util";
-import Link from "next/link";
+} from 'react-icons/fi';
+import { toPersianNumber } from '@/app/util';
+import Link from 'next/link';
+
+const blockStatusMap = new Map<BlockStatus, string>([["active", "فعال"], ["inactive", "غیر فعال"]])
 
 interface BlocksTableProps {
   data: Block[];
@@ -60,7 +55,6 @@ const features = tableFeatures({
   paginatedRowModel: createPaginatedRowModel(),
 });
 
-
 export default function BlocksTable({
   data,
   searchValue,
@@ -72,64 +66,77 @@ export default function BlocksTable({
   const columns = useMemo<ColumnDef<typeof features, Block>[]>(
     () => [
       {
-        accessorKey: "code",
-        header: "کد بلوک",
-        sortingFn: "alphanumeric",
-        filterFn: "includesString",
+        accessorKey: 'code',
+        header: 'کد بلوک',
+        sortingFn: 'alphanumeric',
+        filterFn: 'includesString',
         cell({ row }) {
           return (
             <Link
               className="w-full inline-block h-full text-blue-400 hover:underline underline-offset-4"
-              href={{ pathname: "/blocks/" + row.original.id }}
+              href={{ pathname: '/blocks/' + row.original.id }}
             >
-              {row.original.code}
+              {row.original.name}
             </Link>
           );
         },
       },
       {
-        accessorKey: "region",
-        header: "منطقه",
-      },
-      {
-        accessorKey: "parcelCount",
-        header: "قطعه",
-        sortingFn: "basic",
+        accessorKey: 'region',
+        header: 'منطقه',
         cell({ row }) {
-          const parcelCount = row.original.parcelCount;
-          return toPersianNumber(parcelCount);
+          const { region } = row.original;
+          if (!region) return;
+          return (
+            <Link
+              className="w-full inline-block h-full text-blue-400 hover:underline underline-offset-4"
+              href={`/regions/${region?.id}`}
+            >
+              {region.name}
+            </Link>
+          );
         },
       },
       {
-        accessorKey: "status",
-        header: "وضعیت",
+        accessorKey: 'parcelCount',
+        header: 'قطعه',
+        sortingFn: 'basic',
+        cell({ row }) {
+          const { parcelsCount } = row.original;
+          if (typeof parcelsCount === 'number')
+            return toPersianNumber(parcelsCount);
+        },
+      },
+      {
+        accessorKey: 'status',
+        header: 'وضعیت',
         cell: ({ row }) => {
-          const status = row.original.status;
+          const { status } = row.original;
 
           return (
             <span
               className={`min-w-18 text-center rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${
-                status === "نهایی"
-                  ? "bg-map-green text-surface"
-                  : status === "پیشنهادیه"
-                    ? "bg-action-warning/90 text-surface"
-                    : "bg-surface-muted text-foreground"
+                status === 'active'
+                  ? 'bg-map-green text-surface'
+                  : status === 'inactive'
+                    ? 'bg-action-warning/90 text-surface'
+                    : 'bg-surface-muted text-foreground'
               }`}
             >
-              {status}
+              {blockStatusMap.get(status)}
             </span>
           );
         },
       },
       {
-        id: "actions",
-        header: "",
+        id: 'actions',
+        header: '',
         enableSorting: false,
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
             <button
               type="button"
-              aria-label={`Edit ${row.original.code}`}
+              aria-label={`Edit ${row.original.name}`}
               onClick={(event) => {
                 event.stopPropagation();
                 onEdit(row.original);
@@ -141,7 +148,7 @@ export default function BlocksTable({
 
             <button
               type="button"
-              aria-label={`Delete ${row.original.code}`}
+              aria-label={`Delete ${row.original.name}`}
               onClick={(event) => {
                 event.stopPropagation();
                 onDelete(row.original);
@@ -159,7 +166,7 @@ export default function BlocksTable({
 
   const columnFilters = useMemo(
     () =>
-      searchValue.trim() ? [{ id: "code", value: searchValue.trim() }] : [],
+      searchValue.trim() ? [{ id: 'code', value: searchValue.trim() }] : [],
     [searchValue],
   );
 
@@ -176,7 +183,7 @@ export default function BlocksTable({
         pageSize,
       },
     },
-    getRowId: (row) => row.code,
+    getRowId: (row) => row.id,
   });
 
   const rows = table.getRowModel().rows;
@@ -205,9 +212,9 @@ export default function BlocksTable({
                         <table.FlexRender header={header} />
 
                         {header.column.getCanSort() &&
-                          (header.column.getIsSorted() === "asc" ? (
+                          (header.column.getIsSorted() === 'asc' ? (
                             <FiArrowUp />
-                          ) : header.column.getIsSorted() === "desc" ? (
+                          ) : header.column.getIsSorted() === 'desc' ? (
                             <FiArrowDown />
                           ) : null)}
                       </button>
@@ -233,7 +240,7 @@ export default function BlocksTable({
                 <tr
                   key={row.id}
                   tabIndex={0}
-                  aria-label={`Open block ${row.original.code}`}
+                  aria-label={`Open block ${row.original.name}`}
                   className="even:bg-surface transition hover:bg-surface-muted border-t border-border focus-visible:outline-2 "
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -265,7 +272,7 @@ export default function BlocksTable({
           </button>
 
           <span className="text-sm">
-            صفحه {toPersianNumber(table.state.pagination.pageIndex + 1)} از{" "}
+            صفحه {toPersianNumber(table.state.pagination.pageIndex + 1)} از{' '}
             {toPersianNumber(Math.max(1, pageCount))}
           </span>
 
