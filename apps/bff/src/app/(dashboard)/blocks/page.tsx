@@ -1,19 +1,23 @@
-"use client";
-import { AiOutlinePlus } from "react-icons/ai";
-import BlocksTable from "@/app/components/dashboard/blocks/BlocksTable";
-import { useState } from "react";
-import { Dialog } from "@/app/components/Dialog";
-import { type Block } from "@/app/components/dashboard/blocks/BlocksTable";
-import { useRouter } from "next/navigation";
-import { mockBlocks } from "@/app/(dashboard)/mockData";
-import { CgSearch } from "react-icons/cg";
-import CreateBlockForm from "@/app/components/dashboard/blocks/BlockFormCreate";
-import { BlockFormValue } from "@/app/components/dashboard/blocks/schemas/BlockCreate.schema";
-import UpdateBlockForm from "@/app/components/dashboard/blocks/BlockFormUpdate";
+'use client';
+import { BlockResponseDto as Block } from '@zaminnegar/api-client';
+import { AiOutlinePlus } from 'react-icons/ai';
+import BlocksTable from '@/app/components/dashboard/blocks/BlocksTable';
+import { useState } from 'react';
+import { Dialog } from '@/app/components/Dialog';
+import { useRouter } from 'next/navigation';
+import { mockBlocks } from '@/app/(dashboard)/mockData';
+import { CgSearch } from 'react-icons/cg';
+import CreateBlockForm from '@/app/components/dashboard/blocks/BlockFormCreate';
+import { BlockFormValue } from '@/app/components/dashboard/blocks/schemas/BlockCreate.schema';
+import UpdateBlockForm from '@/app/components/dashboard/blocks/BlockFormUpdate';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/app/_lib/api.client';
 
 export default function BlockPage() {
   const [blocks, setBlocks] = useState<Block[]>(mockBlocks);
-  const [searchValue, setSearchValue] = useState("");
+  const { data, error, isLoading } = useQuery(api.get('/blocks').queryOptions);
+
+  const [searchValue, setSearchValue] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
@@ -24,7 +28,7 @@ export default function BlockPage() {
     const newBlockData: any = {
       id: String(blocks.length + 1),
       ...values,
-    }
+    };
     setBlocks((prevOwners) => [...prevOwners, newBlockData]);
     setIsAddModalOpen(false);
   };
@@ -62,7 +66,7 @@ export default function BlockPage() {
     if (!selectedBlock) return;
 
     setBlocks((prevBlocks) =>
-      prevBlocks.filter((item) => item.code !== selectedBlock.code),
+      prevBlocks.filter((item) => item.id !== selectedBlock.id),
     );
 
     setIsDeleteModalOpen(false);
@@ -112,15 +116,21 @@ export default function BlockPage() {
             <span className="text-sm text-white">افزودن بلوک</span>
           </button>
         </div>
-        <BlocksTable
-          data={blocks}
-          onDelete={handleDelete}
-          onEdit={handleEditBlock}
-          searchValue={searchValue}
-          onRowClick={(block) => {
-            router.push(`/blocks/${encodeURIComponent(block.code)}`);
-          }}
-        />
+        {isLoading ? (
+          <p>{'در حال بارگذاری...'}</p>
+        ) : error ?(
+          <p>{'خطا در بارگذاری!'}</p>
+        ):(
+          <BlocksTable
+            data={data?.items ?? []}
+            onDelete={handleDelete}
+            onEdit={handleEditBlock}
+            searchValue={searchValue}
+            onRowClick={(block) => {
+              router.push(`/blocks/${encodeURIComponent(block.id)}`);
+            }}
+          />
+        )}
       </div>
 
       <Dialog
@@ -171,7 +181,7 @@ export default function BlockPage() {
             <p className="text-sm text-slate-300">
               آیا مطمئن هستید که می‌خواهید بلوک
               <span className="text-white font-semibold mx-1">
-                {selectedBlock.code}
+                {selectedBlock.id}
               </span>
               را حذف کنید؟
             </p>
