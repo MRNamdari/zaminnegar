@@ -2245,6 +2245,44 @@
           "name"
         ]
       },
+      "PartialRegionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "boundaryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RegionStatus"
+              }
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        }
+      },
       "BlockResponseDto": {
         "type": "object",
         "properties": {
@@ -2263,6 +2301,22 @@
           "boundaryId": {
             "type": "string",
             "format": "uuid"
+          },
+          "areaM2": {
+            "type": "number"
+          },
+          "parcelsCount": {
+            "type": "number",
+            "nullable": true
+          },
+          "region": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PartialRegionResponseDto"
+              }
+            ]
           },
           "name": {
             "type": "string"
@@ -2291,6 +2345,7 @@
           "projectId",
           "regionId",
           "boundaryId",
+          "areaM2",
           "name",
           "description",
           "status",
@@ -2400,6 +2455,22 @@
             "type": "string",
             "format": "uuid"
           },
+          "areaM2": {
+            "type": "number"
+          },
+          "parcelsCount": {
+            "type": "number",
+            "nullable": true
+          },
+          "region": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PartialRegionResponseDto"
+              }
+            ]
+          },
           "name": {
             "type": "string"
           },
@@ -2430,6 +2501,7 @@
           "projectId",
           "regionId",
           "boundaryId",
+          "areaM2",
           "name",
           "description",
           "status",

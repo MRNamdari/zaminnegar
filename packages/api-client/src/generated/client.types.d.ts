@@ -124,11 +124,24 @@ export namespace Schemas {
      */
     geometry?: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
   };
+  export type PartialRegionResponseDto = Partial<{
+    id: string;
+    projectId: string;
+    boundaryId: string;
+    name: string;
+    description: string;
+    status: RegionStatus;
+    createdAt: Date;
+    updatedAt: Date;
+  }>;
   export type BlockResponseDto = {
     id: string;
     projectId: string;
     regionId: string;
     boundaryId: string;
+    areaM2: number;
+    parcelsCount?: number | null;
+    region?: (PartialRegionResponseDto & (Record<string, unknown> | null)) | null;
     name: string;
     description: string;
     status: BlockStatus;
@@ -150,6 +163,9 @@ export namespace Schemas {
     projectId: string;
     regionId: string;
     boundaryId: string;
+    areaM2: number;
+    parcelsCount?: number | null;
+    region?: (PartialRegionResponseDto & (Record<string, unknown> | null)) | null;
     name: string;
     description: string;
     status: BlockStatus;

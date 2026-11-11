@@ -213,12 +213,37 @@ export const CreateBlockDto = z.strictObject({
     .optional(),
 });
 
+export type PartialRegionResponseDto = __TypedOpenapi.Schemas.PartialRegionResponseDto;
+export const PartialRegionResponseDto = z
+  .strictObject({
+    id: z.uuid(),
+    projectId: z.uuid(),
+    boundaryId: z.uuid(),
+    name: z.string(),
+    description: z.string(),
+    status: RegionStatus,
+    createdAt: z.iso.datetime().transform((s) => {
+      const d = new Date(s);
+      if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+      return d;
+    }),
+    updatedAt: z.iso.datetime().transform((s) => {
+      const d = new Date(s);
+      if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+      return d;
+    }),
+  })
+  .partial();
+
 export type BlockResponseDto = __TypedOpenapi.Schemas.BlockResponseDto;
 export const BlockResponseDto = z.strictObject({
   id: z.uuid(),
   projectId: z.uuid(),
   regionId: z.uuid(),
   boundaryId: z.uuid(),
+  areaM2: z.number(),
+  parcelsCount: z.number().nullable().optional(),
+  region: PartialRegionResponseDto.and(z.record(z.string(), z.unknown()).nullable()).nullable().optional(),
   name: z.string(),
   description: z.string(),
   status: BlockStatus,
@@ -257,6 +282,9 @@ export const BlockWithParcelsResponse = z.strictObject({
   projectId: z.uuid(),
   regionId: z.uuid(),
   boundaryId: z.uuid(),
+  areaM2: z.number(),
+  parcelsCount: z.number().nullable().optional(),
+  region: PartialRegionResponseDto.and(z.record(z.string(), z.unknown()).nullable()).nullable().optional(),
   name: z.string(),
   description: z.string(),
   status: BlockStatus,

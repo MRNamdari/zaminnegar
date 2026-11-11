@@ -95,4 +95,6 @@ export class Block extends TimestampedEntity implements IBlock {
 
   @OneToMany(() => Parcel, (parcel) => parcel.block)
   parcels?: Relation<Parcel>[];
+
+  parcelsCount?: number;
 }
