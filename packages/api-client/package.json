@@ -2,29 +2,28 @@
   "name": "@zaminnegar/api-client",
   "version": "1.0.1",
   "private": true,
-  "description": "Type-safe HTTP client generated from the @zaminnegar/api OpenAPI document.",
+  "description": "Type-safe API client generated from the @zaminnegar/api OpenAPI document.",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./src/index.ts",
+      "import": "./src/index.ts",
       "default": "./src/index.ts"
     }
   },
   "scripts": {
-    "generate": "openapi-typescript ./openapi.json --output ./src/generated/schema.d.ts",
-    "schema": "typed-openapi openapi.json --output src/api/openapi.zod.ts --runtime zod --validation strict --client promise --validate-side both --coerce --runtime-types --tanstack",
+    "generate": "typed-openapi",
     "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "openapi-fetch": "^0.14.1",
-    "typed-openapi": "^4.1.0"
   },
   "peerDependencies": {
     "@tanstack/react-query": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "openapi-typescript": "^7.13.0",
-    "typescript": "catalog:"
+    "@tanstack/react-query": "catalog:",
+    "typed-openapi": "^4.1.0",
+    "typescript": "catalog:",
+    "zod": "catalog:"
   }
 }
