@@ -1,6 +1,6 @@
-import { useSelector } from "@tanstack/react-form";
-import { useFieldContext } from "../hooks/formContext";
-import React from "react";
+import { useSelector } from '@tanstack/react-form';
+import { useFieldContext } from '../hooks/formContext';
+import React from 'react';
 
 interface TextFieldProps {
   label: string;
@@ -13,7 +13,7 @@ interface TextFieldProps {
 export function TextField({
   label,
   placeholder,
-  type = "text",
+  type = 'text',
   required = false,
   disabled = false,
 }: TextFieldProps) {
@@ -28,7 +28,7 @@ export function TextField({
       <input
         type={type}
         required={required}
-        value={field.state.value}
+        value={field.state.value ?? ''}
         disabled={disabled}
         onBlur={field.handleBlur}
         onChange={(e) => field.handleChange(e.target.value)}
@@ -38,8 +38,8 @@ export function TextField({
       {errors.length > 0 && (
         <span className="text-xs text-red-400">
           {errors
-            .map((error) => (typeof error === "string" ? error : error.message))
-            .join("، ")}
+            .map((error) => (typeof error === 'string' ? error : error.message))
+            .join('، ')}
         </span>
       )}
     </div>
