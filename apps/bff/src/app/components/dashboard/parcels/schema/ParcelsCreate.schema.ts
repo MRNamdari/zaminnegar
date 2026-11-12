@@ -24,4 +24,4 @@ export const createFormParcel = z.object({
     .min(1, 'حداقل یک مالک برای قطعه انتخاب کنید'),
 });
 
-export type ParcelFormValue = z.infer<typeof createFormParcel>;
+export type createFormParcel = z.infer<typeof createFormParcel>;
