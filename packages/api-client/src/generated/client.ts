@@ -1,11 +1,14 @@
 // @ts-nocheck
-import type * as __TypedOpenapi from "./client.types.js";
+import type * as __TypedOpenapi from './client.types.js';
 
-import { z } from "zod";
+import { z } from 'zod';
 
 // <Schemas>
 export type LoginDto = __TypedOpenapi.Schemas.LoginDto;
-export const LoginDto = z.strictObject({ email: z.email().max(320), password: z.string().max(128) });
+export const LoginDto = z.strictObject({
+  email: z.email().max(320),
+  password: z.string().max(128),
+});
 
 export type UserResponseDto = __TypedOpenapi.Schemas.UserResponseDto;
 export const UserResponseDto = z.strictObject({
@@ -15,69 +18,83 @@ export const UserResponseDto = z.strictObject({
   isActive: z.boolean(),
   globalRoleId: z
     .uuid()
-    .describe("Role of scope `global`, if any")
+    .describe('Role of scope `global`, if any')
     .nullable()
-    .describe("Role of scope `global`, if any"),
+    .describe('Role of scope `global`, if any'),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
 });
 
 export type LoginResponseDto = __TypedOpenapi.Schemas.LoginResponseDto;
 export const LoginResponseDto = z.strictObject({
-  token: z.string().describe("Send as `Authorization: Bearer <token>`. Shown once."),
+  token: z
+    .string()
+    .describe('Send as `Authorization: Bearer <token>`. Shown once.'),
   expiresAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   user: UserResponseDto,
 });
 
 export type RoleSummaryDto = __TypedOpenapi.Schemas.RoleSummaryDto;
-export const RoleSummaryDto = z.strictObject({ id: z.uuid(), name: z.string() });
+export const RoleSummaryDto = z.strictObject({
+  id: z.uuid(),
+  name: z.string(),
+});
 
 export type Resource = __TypedOpenapi.Schemas.Resource;
 export const Resource = z.enum([
-  "project",
-  "boundary",
-  "region",
-  "block",
-  "parcel",
-  "owner",
-  "ownership",
-  "member",
-  "user",
-  "role",
+  'project',
+  'boundary',
+  'region',
+  'block',
+  'parcel',
+  'owner',
+  'ownership',
+  'member',
+  'user',
+  'role',
 ]);
 
 export type Action = __TypedOpenapi.Schemas.Action;
-export const Action = z.enum(["create", "read", "update", "delete"]);
+export const Action = z.enum(['create', 'read', 'update', 'delete']);
 
 export type PermissionDto = __TypedOpenapi.Schemas.PermissionDto;
-export const PermissionDto = z.strictObject({ resource: Resource, action: Action });
+export const PermissionDto = z.strictObject({
+  resource: Resource,
+  action: Action,
+});
 
-export type MembershipPermissionsDto = __TypedOpenapi.Schemas.MembershipPermissionsDto;
+export type MembershipPermissionsDto =
+  __TypedOpenapi.Schemas.MembershipPermissionsDto;
 export const MembershipPermissionsDto = z.strictObject({
   projectId: z.uuid(),
   role: RoleSummaryDto,
   permissions: z.array(PermissionDto),
 });
 
-export type CurrentUserResponseDto = __TypedOpenapi.Schemas.CurrentUserResponseDto;
+export type CurrentUserResponseDto =
+  __TypedOpenapi.Schemas.CurrentUserResponseDto;
 export const CurrentUserResponseDto = z.strictObject({
   id: z.uuid(),
   email: z.email(),
   name: z.string(),
-  globalRole: RoleSummaryDto.and(z.record(z.string(), z.unknown()).nullable()).nullable(),
-  globalPermissions: z.array(PermissionDto).describe("Granted on every project"),
+  globalRole: RoleSummaryDto.and(
+    z.record(z.string(), z.unknown()).nullable(),
+  ).nullable(),
+  globalPermissions: z
+    .array(PermissionDto)
+    .describe('Granted on every project'),
   memberships: z.array(MembershipPermissionsDto),
 });
 
@@ -88,16 +105,16 @@ export const CreateUserDto = z.strictObject({
   password: z.string().min(8).max(128),
   globalRoleId: z
     .uuid()
-    .describe("A role of scope `global`")
+    .describe('A role of scope `global`')
     .nullable()
-    .describe("A role of scope `global`")
+    .describe('A role of scope `global`')
     .optional(),
 });
 
 export type PaginatedResponseDto = __TypedOpenapi.Schemas.PaginatedResponseDto;
 export const PaginatedResponseDto = z.strictObject({
   items: z.array(z.record(z.string(), z.unknown())),
-  total: z.number().describe("Total number of matches across all pages"),
+  total: z.number().describe('Total number of matches across all pages'),
   page: z.number(),
   limit: z.number(),
 });
@@ -106,18 +123,22 @@ export type UpdateUserDto = __TypedOpenapi.Schemas.UpdateUserDto;
 export const UpdateUserDto = z
   .strictObject({
     name: z.string().max(200),
-    password: z.string().min(8).max(128).describe("Revokes all sessions of the user"),
-    isActive: z.boolean().describe("Deactivating a user revokes all sessions"),
+    password: z
+      .string()
+      .min(8)
+      .max(128)
+      .describe('Revokes all sessions of the user'),
+    isActive: z.boolean().describe('Deactivating a user revokes all sessions'),
     globalRoleId: z
       .uuid()
-      .describe("A role of scope `global`; null removes it")
+      .describe('A role of scope `global`; null removes it')
       .nullable()
-      .describe("A role of scope `global`; null removes it"),
+      .describe('A role of scope `global`; null removes it'),
   })
   .partial();
 
 export type RoleScope = __TypedOpenapi.Schemas.RoleScope;
-export const RoleScope = z.enum(["global", "project"]);
+export const RoleScope = z.enum(['global', 'project']);
 
 export type RoleResponseDto = __TypedOpenapi.Schemas.RoleResponseDto;
 export const RoleResponseDto = z.strictObject({
@@ -125,16 +146,18 @@ export const RoleResponseDto = z.strictObject({
   name: z.string(),
   description: z.string(),
   scope: RoleScope,
-  isSystem: z.boolean().describe("System roles are seeded and cannot be changed or deleted"),
+  isSystem: z
+    .boolean()
+    .describe('System roles are seeded and cannot be changed or deleted'),
   permissions: z.array(PermissionDto),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
 });
@@ -142,7 +165,7 @@ export const RoleResponseDto = z.strictObject({
 export type CreateRoleDto = __TypedOpenapi.Schemas.CreateRoleDto;
 export const CreateRoleDto = z.strictObject({
   name: z.string().max(100),
-  description: z.string().default(""),
+  description: z.string().default(''),
   scope: RoleScope,
   permissions: z.array(PermissionDto).max(100),
 });
@@ -151,7 +174,7 @@ export type UpdateRoleDto = __TypedOpenapi.Schemas.UpdateRoleDto;
 export const UpdateRoleDto = z
   .strictObject({
     name: z.string().max(100),
-    description: z.string().default(""),
+    description: z.string().default(''),
     permissions: z.array(PermissionDto).max(100),
   })
   .partial();
@@ -166,12 +189,12 @@ export const MemberResponseDto = z.strictObject({
   roleName: z.string(),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
 });
@@ -179,14 +202,19 @@ export const MemberResponseDto = z.strictObject({
 export type AddMemberDto = __TypedOpenapi.Schemas.AddMemberDto;
 export const AddMemberDto = z.strictObject({
   userId: z.uuid(),
-  roleId: z.uuid().describe("A role of scope `project`"),
+  roleId: z.uuid().describe('A role of scope `project`'),
 });
 
 export type UpdateMemberDto = __TypedOpenapi.Schemas.UpdateMemberDto;
-export const UpdateMemberDto = z.strictObject({ roleId: z.uuid().describe("A role of scope `project`") });
+export const UpdateMemberDto = z.strictObject({
+  roleId: z.uuid().describe('A role of scope `project`'),
+});
 
 export type CreateProjectDto = __TypedOpenapi.Schemas.CreateProjectDto;
-export const CreateProjectDto = z.strictObject({ name: z.string().max(200), description: z.string().default("") });
+export const CreateProjectDto = z.strictObject({
+  name: z.string().max(200),
+  description: z.string().default(''),
+});
 
 export type ProjectResponseDto = __TypedOpenapi.Schemas.ProjectResponseDto;
 export const ProjectResponseDto = z.strictObject({
@@ -195,19 +223,22 @@ export const ProjectResponseDto = z.strictObject({
   description: z.string(),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
 });
 
 export type UpdateProjectDto = __TypedOpenapi.Schemas.UpdateProjectDto;
 export const UpdateProjectDto = z
-  .strictObject({ name: z.string().max(200), description: z.string().default("") })
+  .strictObject({
+    name: z.string().max(200),
+    description: z.string().default(''),
+  })
   .partial();
 
 export type CreateBoundaryDto = __TypedOpenapi.Schemas.CreateBoundaryDto;
@@ -216,11 +247,11 @@ export const CreateBoundaryDto = z.strictObject({
   name: z.string().max(200),
   geometry: z
     .strictObject({
-      type: z.enum(["MultiPolygon", "Polygon"]),
+      type: z.enum(['MultiPolygon', 'Polygon']),
       coordinates: z.array(z.array(z.array(z.array(z.number())))),
     })
     .partial()
-    .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]"),
+    .describe('GeoJSON MultiPolygon, WGS 84, [longitude, latitude]'),
 });
 
 export type BoundaryResponseDto = __TypedOpenapi.Schemas.BoundaryResponseDto;
@@ -229,15 +260,15 @@ export const BoundaryResponseDto = z.strictObject({
   projectId: z.uuid(),
   name: z.string(),
   geometry: z.record(z.string(), z.unknown()),
-  areaM2: z.number().describe("Geodesic area in square meters"),
+  areaM2: z.number().describe('Geodesic area in square meters'),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
 });
@@ -248,31 +279,34 @@ export const UpdateBoundaryDto = z
     name: z.string().max(200),
     geometry: z
       .strictObject({
-        type: z.enum(["MultiPolygon", "Polygon"]),
+        type: z.enum(['MultiPolygon', 'Polygon']),
         coordinates: z.array(z.array(z.array(z.array(z.number())))),
       })
       .partial()
-      .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]"),
+      .describe('GeoJSON MultiPolygon, WGS 84, [longitude, latitude]'),
   })
   .partial();
 
 export type RegionStatus = __TypedOpenapi.Schemas.RegionStatus;
-export const RegionStatus = z.enum(["active", "inactive"]);
+export const RegionStatus = z.enum(['active', 'inactive']);
 
 export type CreateRegionDto = __TypedOpenapi.Schemas.CreateRegionDto;
 export const CreateRegionDto = z.strictObject({
   projectId: z.uuid(),
   name: z.string().max(200),
-  description: z.string().default(""),
+  description: z.string().default(''),
   status: RegionStatus.optional(),
-  boundaryId: z.uuid().describe("Existing draft boundary to use instead of geometry").optional(),
+  boundaryId: z
+    .uuid()
+    .describe('Existing draft boundary to use instead of geometry')
+    .optional(),
   geometry: z
     .strictObject({
-      type: z.enum(["MultiPolygon", "Polygon"]),
+      type: z.enum(['MultiPolygon', 'Polygon']),
       coordinates: z.array(z.array(z.array(z.array(z.number())))),
     })
     .partial()
-    .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]")
+    .describe('GeoJSON MultiPolygon, WGS 84, [longitude, latitude]')
     .optional(),
 });
 
@@ -284,99 +318,128 @@ export const RegionResponseDto = z.strictObject({
   name: z.string(),
   description: z.string(),
   status: RegionStatus,
-  areaM2: z.number().describe("Geodesic area in square meters"),
+  areaM2: z.number().describe('Geodesic area in square meters'),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
-  blocksCount: z.number().int().describe("Number of blocks in the region. Only present in list responses").optional(),
-  parcelsCount: z.number().int().describe("Number of parcels in the region. Only present in list responses").optional(),
+  blocksCount: z
+    .number()
+    .int()
+    .describe('Number of blocks in the region. Only present in list responses')
+    .optional(),
+  parcelsCount: z
+    .number()
+    .int()
+    .describe('Number of parcels in the region. Only present in list responses')
+    .optional(),
 });
 
 export type BlockStatus = __TypedOpenapi.Schemas.BlockStatus;
-export const BlockStatus = z.enum(["active", "inactive"]);
+export const BlockStatus = z.enum(['active', 'inactive']);
 
 export type BlockResponseDto = __TypedOpenapi.Schemas.BlockResponseDto;
 export const BlockResponseDto = z.strictObject({
   id: z.uuid(),
   projectId: z.uuid(),
-  regionId: z.uuid().describe("Derived from the block outline by the database"),
+  regionId: z.uuid().describe('Derived from the block outline by the database'),
   boundaryId: z.uuid(),
   name: z.string(),
   description: z.string(),
   status: BlockStatus,
-  areaM2: z.number().describe("Geodesic area in square meters"),
+  areaM2: z.number().describe('Geodesic area in square meters'),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
-  parcelsCount: z.number().int().describe("Number of parcels in the block. Only present in list responses").optional(),
+  parcelsCount: z
+    .number()
+    .int()
+    .describe('Number of parcels in the block. Only present in list responses')
+    .optional(),
   region: RegionResponseDto.optional(),
 });
 
 export type ParcelStatus = __TypedOpenapi.Schemas.ParcelStatus;
-export const ParcelStatus = z.enum(["active", "inactive"]);
+export const ParcelStatus = z.enum(['active', 'inactive']);
 
 export type ParcelResponseDto = __TypedOpenapi.Schemas.ParcelResponseDto;
 export const ParcelResponseDto = z.strictObject({
   id: z.uuid(),
   projectId: z.uuid(),
-  regionId: z.uuid().describe("Derived from the parcel outline by the database"),
+  regionId: z
+    .uuid()
+    .describe('Derived from the parcel outline by the database'),
   blockId: z
     .uuid()
-    .describe("Derived from the parcel outline by the database; null when no block contains the parcel")
+    .describe(
+      'Derived from the parcel outline by the database; null when no block contains the parcel',
+    )
     .nullable()
-    .describe("Derived from the parcel outline by the database; null when no block contains the parcel")
+    .describe(
+      'Derived from the parcel outline by the database; null when no block contains the parcel',
+    )
     .optional(),
   boundaryId: z.uuid(),
   name: z.string(),
   status: ParcelStatus,
-  areaM2: z.number().describe("Geodesic area in square meters"),
-  regionOccupancyPct: z.number().min(0).max(100).describe("% of the region this parcel occupies"),
+  areaM2: z.number().describe('Geodesic area in square meters'),
+  regionOccupancyPct: z
+    .number()
+    .min(0)
+    .max(100)
+    .describe('% of the region this parcel occupies'),
   blockOccupancyPct: z
     .number()
     .min(0)
     .max(100)
-    .describe("% of the block this parcel occupies")
+    .describe('% of the block this parcel occupies')
     .nullable()
-    .describe("% of the block this parcel occupies")
+    .describe('% of the block this parcel occupies')
     .optional(),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   ownershipsCount: z
     .number()
     .int()
-    .describe("Number of owners holding a share. Only present in list responses")
+    .describe(
+      'Number of owners holding a share. Only present in list responses',
+    )
     .optional(),
   region: RegionResponseDto.optional(),
   block: BlockResponseDto.and(z.record(z.string(), z.unknown()).nullable())
-    .describe("Only present in list responses; null when the parcel is in no block")
+    .describe(
+      'Only present in list responses; null when the parcel is in no block',
+    )
     .nullable()
-    .describe("Only present in list responses; null when the parcel is in no block")
+    .describe(
+      'Only present in list responses; null when the parcel is in no block',
+    )
     .optional(),
 });
 
-export type RegionDetailResponseDto = __TypedOpenapi.Schemas.RegionDetailResponseDto;
+export type RegionDetailResponseDto =
+  __TypedOpenapi.Schemas.RegionDetailResponseDto;
 export const RegionDetailResponseDto = z.strictObject({
   id: z.uuid(),
   projectId: z.uuid(),
@@ -384,19 +447,27 @@ export const RegionDetailResponseDto = z.strictObject({
   name: z.string(),
   description: z.string(),
   status: RegionStatus,
-  areaM2: z.number().describe("Geodesic area in square meters"),
+  areaM2: z.number().describe('Geodesic area in square meters'),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
-  blocksCount: z.number().int().describe("Number of blocks in the region. Only present in list responses").optional(),
-  parcelsCount: z.number().int().describe("Number of parcels in the region. Only present in list responses").optional(),
+  blocksCount: z
+    .number()
+    .int()
+    .describe('Number of blocks in the region. Only present in list responses')
+    .optional(),
+  parcelsCount: z
+    .number()
+    .int()
+    .describe('Number of parcels in the region. Only present in list responses')
+    .optional(),
   project: ProjectResponseDto,
   boundary: BoundaryResponseDto,
   blocks: z.array(BlockResponseDto),
@@ -407,15 +478,15 @@ export type UpdateRegionDto = __TypedOpenapi.Schemas.UpdateRegionDto;
 export const UpdateRegionDto = z
   .strictObject({
     name: z.string().max(200),
-    description: z.string().default(""),
+    description: z.string().default(''),
     status: RegionStatus,
     geometry: z
       .strictObject({
-        type: z.enum(["MultiPolygon", "Polygon"]),
+        type: z.enum(['MultiPolygon', 'Polygon']),
         coordinates: z.array(z.array(z.array(z.array(z.number())))),
       })
       .partial()
-      .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]"),
+      .describe('GeoJSON MultiPolygon, WGS 84, [longitude, latitude]'),
   })
   .partial();
 
@@ -423,40 +494,48 @@ export type CreateBlockDto = __TypedOpenapi.Schemas.CreateBlockDto;
 export const CreateBlockDto = z.strictObject({
   projectId: z.uuid(),
   name: z.string().max(200),
-  description: z.string().default(""),
+  description: z.string().default(''),
   status: BlockStatus.optional(),
-  boundaryId: z.uuid().describe("Existing draft boundary to use instead of geometry").optional(),
+  boundaryId: z
+    .uuid()
+    .describe('Existing draft boundary to use instead of geometry')
+    .optional(),
   geometry: z
     .strictObject({
-      type: z.enum(["MultiPolygon", "Polygon"]),
+      type: z.enum(['MultiPolygon', 'Polygon']),
       coordinates: z.array(z.array(z.array(z.array(z.number())))),
     })
     .partial()
-    .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]")
+    .describe('GeoJSON MultiPolygon, WGS 84, [longitude, latitude]')
     .optional(),
 });
 
-export type BlockDetailResponseDto = __TypedOpenapi.Schemas.BlockDetailResponseDto;
+export type BlockDetailResponseDto =
+  __TypedOpenapi.Schemas.BlockDetailResponseDto;
 export const BlockDetailResponseDto = z.strictObject({
   id: z.uuid(),
   projectId: z.uuid(),
-  regionId: z.uuid().describe("Derived from the block outline by the database"),
+  regionId: z.uuid().describe('Derived from the block outline by the database'),
   boundaryId: z.uuid(),
   name: z.string(),
   description: z.string(),
   status: BlockStatus,
-  areaM2: z.number().describe("Geodesic area in square meters"),
+  areaM2: z.number().describe('Geodesic area in square meters'),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
-  parcelsCount: z.number().int().describe("Number of parcels in the block. Only present in list responses").optional(),
+  parcelsCount: z
+    .number()
+    .int()
+    .describe('Number of parcels in the block. Only present in list responses')
+    .optional(),
   project: ProjectResponseDto,
   region: RegionResponseDto,
   boundary: BoundaryResponseDto,
@@ -467,15 +546,15 @@ export type UpdateBlockDto = __TypedOpenapi.Schemas.UpdateBlockDto;
 export const UpdateBlockDto = z
   .strictObject({
     name: z.string().max(200),
-    description: z.string().default(""),
+    description: z.string().default(''),
     status: BlockStatus,
     geometry: z
       .strictObject({
-        type: z.enum(["MultiPolygon", "Polygon"]),
+        type: z.enum(['MultiPolygon', 'Polygon']),
         coordinates: z.array(z.array(z.array(z.array(z.number())))),
       })
       .partial()
-      .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]"),
+      .describe('GeoJSON MultiPolygon, WGS 84, [longitude, latitude]'),
   })
   .partial();
 
@@ -484,14 +563,17 @@ export const CreateParcelDto = z.strictObject({
   projectId: z.uuid(),
   name: z.string().max(200),
   status: ParcelStatus.optional(),
-  boundaryId: z.uuid().describe("Existing draft boundary to use instead of geometry").optional(),
+  boundaryId: z
+    .uuid()
+    .describe('Existing draft boundary to use instead of geometry')
+    .optional(),
   geometry: z
     .strictObject({
-      type: z.enum(["MultiPolygon", "Polygon"]),
+      type: z.enum(['MultiPolygon', 'Polygon']),
       coordinates: z.array(z.array(z.array(z.array(z.number())))),
     })
     .partial()
-    .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]")
+    .describe('GeoJSON MultiPolygon, WGS 84, [longitude, latitude]')
     .optional(),
 });
 
@@ -507,76 +589,92 @@ export const OwnerResponseDto = z.strictObject({
   status: z.string(),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
 });
 
-export type OwnershipWithOwnerResponseDto = __TypedOpenapi.Schemas.OwnershipWithOwnerResponseDto;
+export type OwnershipWithOwnerResponseDto =
+  __TypedOpenapi.Schemas.OwnershipWithOwnerResponseDto;
 export const OwnershipWithOwnerResponseDto = z.strictObject({
   parcelId: z.uuid(),
   ownerId: z.uuid(),
   sharePct: z.number().min(0.0001).max(100),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   owner: OwnerResponseDto,
 });
 
-export type ParcelDetailResponseDto = __TypedOpenapi.Schemas.ParcelDetailResponseDto;
+export type ParcelDetailResponseDto =
+  __TypedOpenapi.Schemas.ParcelDetailResponseDto;
 export const ParcelDetailResponseDto = z.strictObject({
   id: z.uuid(),
   projectId: z.uuid(),
-  regionId: z.uuid().describe("Derived from the parcel outline by the database"),
+  regionId: z
+    .uuid()
+    .describe('Derived from the parcel outline by the database'),
   blockId: z
     .uuid()
-    .describe("Derived from the parcel outline by the database; null when no block contains the parcel")
+    .describe(
+      'Derived from the parcel outline by the database; null when no block contains the parcel',
+    )
     .nullable()
-    .describe("Derived from the parcel outline by the database; null when no block contains the parcel")
+    .describe(
+      'Derived from the parcel outline by the database; null when no block contains the parcel',
+    )
     .optional(),
   boundaryId: z.uuid(),
   name: z.string(),
   status: ParcelStatus,
-  areaM2: z.number().describe("Geodesic area in square meters"),
-  regionOccupancyPct: z.number().min(0).max(100).describe("% of the region this parcel occupies"),
+  areaM2: z.number().describe('Geodesic area in square meters'),
+  regionOccupancyPct: z
+    .number()
+    .min(0)
+    .max(100)
+    .describe('% of the region this parcel occupies'),
   blockOccupancyPct: z
     .number()
     .min(0)
     .max(100)
-    .describe("% of the block this parcel occupies")
+    .describe('% of the block this parcel occupies')
     .nullable()
-    .describe("% of the block this parcel occupies")
+    .describe('% of the block this parcel occupies')
     .optional(),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   ownershipsCount: z
     .number()
     .int()
-    .describe("Number of owners holding a share. Only present in list responses")
+    .describe(
+      'Number of owners holding a share. Only present in list responses',
+    )
     .optional(),
   project: ProjectResponseDto,
   region: RegionResponseDto,
-  block: BlockResponseDto.and(z.record(z.string(), z.unknown()).nullable()).nullable(),
+  block: BlockResponseDto.and(
+    z.record(z.string(), z.unknown()).nullable(),
+  ).nullable(),
   boundary: BoundaryResponseDto,
   ownerships: z.array(OwnershipWithOwnerResponseDto),
 });
@@ -588,18 +686,22 @@ export const UpdateParcelDto = z
     status: ParcelStatus,
     geometry: z
       .strictObject({
-        type: z.enum(["MultiPolygon", "Polygon"]),
+        type: z.enum(['MultiPolygon', 'Polygon']),
         coordinates: z.array(z.array(z.array(z.array(z.number())))),
       })
       .partial()
-      .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]"),
+      .describe('GeoJSON MultiPolygon, WGS 84, [longitude, latitude]'),
   })
   .partial();
 
 export type AssignOwnerDto = __TypedOpenapi.Schemas.AssignOwnerDto;
 export const AssignOwnerDto = z.strictObject({
-  ownerId: z.uuid().describe("Must belong to the same project as the parcel"),
-  sharePct: z.number().min(0.0001).max(100).describe("Percent of the parcel; all shares of a parcel sum to ≤ 100"),
+  ownerId: z.uuid().describe('Must belong to the same project as the parcel'),
+  sharePct: z
+    .number()
+    .min(0.0001)
+    .max(100)
+    .describe('Percent of the parcel; all shares of a parcel sum to ≤ 100'),
 });
 
 export type OwnershipResponseDto = __TypedOpenapi.Schemas.OwnershipResponseDto;
@@ -609,19 +711,23 @@ export const OwnershipResponseDto = z.strictObject({
   sharePct: z.number().min(0.0001).max(100),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
 });
 
 export type UpdateOwnershipDto = __TypedOpenapi.Schemas.UpdateOwnershipDto;
 export const UpdateOwnershipDto = z.strictObject({
-  sharePct: z.number().min(0.0001).max(100).describe("Percent of the parcel; all shares of a parcel sum to ≤ 100"),
+  sharePct: z
+    .number()
+    .min(0.0001)
+    .max(100)
+    .describe('Percent of the parcel; all shares of a parcel sum to ≤ 100'),
 });
 
 export type CreateOwnerDto = __TypedOpenapi.Schemas.CreateOwnerDto;
@@ -632,7 +738,7 @@ export const CreateOwnerDto = z.strictObject({
   email: z.string().max(320).nullable().optional(),
   notes: z.string().nullable().optional(),
   nationalId: z.string(),
-  status: z.enum(["active", "inactive", "pending"]).default("pending"),
+  status: z.enum(['active', 'inactive', 'pending']).default('pending'),
 });
 
 export type UpdateOwnerDto = __TypedOpenapi.Schemas.UpdateOwnerDto;
@@ -643,23 +749,24 @@ export const UpdateOwnerDto = z
     email: z.string().max(320).nullable(),
     notes: z.string().nullable(),
     nationalId: z.string(),
-    status: z.enum(["active", "inactive", "pending"]).default("pending"),
+    status: z.enum(['active', 'inactive', 'pending']).default('pending'),
   })
   .partial();
 
-export type OwnershipWithParcelResponseDto = __TypedOpenapi.Schemas.OwnershipWithParcelResponseDto;
+export type OwnershipWithParcelResponseDto =
+  __TypedOpenapi.Schemas.OwnershipWithParcelResponseDto;
 export const OwnershipWithParcelResponseDto = z.strictObject({
   parcelId: z.uuid(),
   ownerId: z.uuid(),
   sharePct: z.number().min(0.0001).max(100),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   updatedAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    if (Number.isNaN(d.getTime())) throw new Error('Invalid Date');
     return d;
   }),
   parcel: ParcelResponseDto,
@@ -668,52 +775,60 @@ export const OwnershipWithParcelResponseDto = z.strictObject({
 // </Schemas>
 
 // <Endpoints>
-export type post_AuthController_login = __TypedOpenapi.Endpoints.post_AuthController_login;
+export type post_AuthController_login =
+  __TypedOpenapi.Endpoints.post_AuthController_login;
 export const post_AuthController_login = {
-  method: z.literal("POST"),
-  path: z.literal("/auth/login"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
-  parameters: { header: z.strictObject({ "user-agent": z.string() }), body: LoginDto },
+  method: z.literal('POST'),
+  path: z.literal('/auth/login'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
+  parameters: {
+    header: z.strictObject({ 'user-agent': z.string() }),
+    body: LoginDto,
+  },
   responses: { 200: LoginResponseDto },
 };
 
-export type post_AuthController_logout = __TypedOpenapi.Endpoints.post_AuthController_logout;
+export type post_AuthController_logout =
+  __TypedOpenapi.Endpoints.post_AuthController_logout;
 export const post_AuthController_logout = {
-  method: z.literal("POST"),
-  path: z.literal("/auth/logout"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('POST'),
+  path: z.literal('/auth/logout'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: z.never(),
   responses: { 204: z.unknown() },
 };
 
-export type get_AuthController_me = __TypedOpenapi.Endpoints.get_AuthController_me;
+export type get_AuthController_me =
+  __TypedOpenapi.Endpoints.get_AuthController_me;
 export const get_AuthController_me = {
-  method: z.literal("GET"),
-  path: z.literal("/auth/me"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/auth/me'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: z.never(),
   responses: { 200: CurrentUserResponseDto },
 };
 
-export type post_UsersController_create = __TypedOpenapi.Endpoints.post_UsersController_create;
+export type post_UsersController_create =
+  __TypedOpenapi.Endpoints.post_UsersController_create;
 export const post_UsersController_create = {
-  method: z.literal("POST"),
-  path: z.literal("/users"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('POST'),
+  path: z.literal('/users'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { body: CreateUserDto },
   responses: { 201: UserResponseDto },
 };
 
-export type get_UsersController_list = __TypedOpenapi.Endpoints.get_UsersController_list;
+export type get_UsersController_list =
+  __TypedOpenapi.Endpoints.get_UsersController_list;
 export const get_UsersController_list = {
-  method: z.literal("GET"),
-  path: z.literal("/users"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/users'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: {
     query: z
       .strictObject({
@@ -724,145 +839,171 @@ export const get_UsersController_list = {
       .partial()
       .optional(),
   },
-  responses: { 200: PaginatedResponseDto.and(z.strictObject({ items: z.array(UserResponseDto) }).partial()) },
+  responses: {
+    200: PaginatedResponseDto.and(
+      z.strictObject({ items: z.array(UserResponseDto) }).partial(),
+    ),
+  },
 };
 
-export type get_UsersController_get = __TypedOpenapi.Endpoints.get_UsersController_get;
+export type get_UsersController_get =
+  __TypedOpenapi.Endpoints.get_UsersController_get;
 export const get_UsersController_get = {
-  method: z.literal("GET"),
-  path: z.literal("/users/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/users/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: UserResponseDto },
 };
 
-export type patch_UsersController_update = __TypedOpenapi.Endpoints.patch_UsersController_update;
+export type patch_UsersController_update =
+  __TypedOpenapi.Endpoints.patch_UsersController_update;
 export const patch_UsersController_update = {
-  method: z.literal("PATCH"),
-  path: z.literal("/users/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('PATCH'),
+  path: z.literal('/users/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }), body: UpdateUserDto },
   responses: { 200: UserResponseDto },
 };
 
-export type delete_UsersController_remove = __TypedOpenapi.Endpoints.delete_UsersController_remove;
+export type delete_UsersController_remove =
+  __TypedOpenapi.Endpoints.delete_UsersController_remove;
 export const delete_UsersController_remove = {
-  method: z.literal("DELETE"),
-  path: z.literal("/users/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('DELETE'),
+  path: z.literal('/users/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 204: z.unknown() },
 };
 
-export type get_RolesController_list = __TypedOpenapi.Endpoints.get_RolesController_list;
+export type get_RolesController_list =
+  __TypedOpenapi.Endpoints.get_RolesController_list;
 export const get_RolesController_list = {
-  method: z.literal("GET"),
-  path: z.literal("/roles"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/roles'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: z.never(),
   responses: { 200: z.array(RoleResponseDto) },
 };
 
-export type post_RolesController_create = __TypedOpenapi.Endpoints.post_RolesController_create;
+export type post_RolesController_create =
+  __TypedOpenapi.Endpoints.post_RolesController_create;
 export const post_RolesController_create = {
-  method: z.literal("POST"),
-  path: z.literal("/roles"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('POST'),
+  path: z.literal('/roles'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { body: CreateRoleDto },
   responses: { 201: RoleResponseDto },
 };
 
-export type get_RolesController_get = __TypedOpenapi.Endpoints.get_RolesController_get;
+export type get_RolesController_get =
+  __TypedOpenapi.Endpoints.get_RolesController_get;
 export const get_RolesController_get = {
-  method: z.literal("GET"),
-  path: z.literal("/roles/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/roles/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: RoleResponseDto },
 };
 
-export type patch_RolesController_update = __TypedOpenapi.Endpoints.patch_RolesController_update;
+export type patch_RolesController_update =
+  __TypedOpenapi.Endpoints.patch_RolesController_update;
 export const patch_RolesController_update = {
-  method: z.literal("PATCH"),
-  path: z.literal("/roles/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('PATCH'),
+  path: z.literal('/roles/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }), body: UpdateRoleDto },
   responses: { 200: RoleResponseDto },
 };
 
-export type delete_RolesController_remove = __TypedOpenapi.Endpoints.delete_RolesController_remove;
+export type delete_RolesController_remove =
+  __TypedOpenapi.Endpoints.delete_RolesController_remove;
 export const delete_RolesController_remove = {
-  method: z.literal("DELETE"),
-  path: z.literal("/roles/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('DELETE'),
+  path: z.literal('/roles/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 204: z.unknown() },
 };
 
-export type get_ProjectMembersController_list = __TypedOpenapi.Endpoints.get_ProjectMembersController_list;
+export type get_ProjectMembersController_list =
+  __TypedOpenapi.Endpoints.get_ProjectMembersController_list;
 export const get_ProjectMembersController_list = {
-  method: z.literal("GET"),
-  path: z.literal("/projects/{projectId}/members"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/projects/{projectId}/members'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ projectId: z.string() }) },
   responses: { 200: z.array(MemberResponseDto) },
 };
 
-export type post_ProjectMembersController_add = __TypedOpenapi.Endpoints.post_ProjectMembersController_add;
+export type post_ProjectMembersController_add =
+  __TypedOpenapi.Endpoints.post_ProjectMembersController_add;
 export const post_ProjectMembersController_add = {
-  method: z.literal("POST"),
-  path: z.literal("/projects/{projectId}/members"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
-  parameters: { path: z.strictObject({ projectId: z.string() }), body: AddMemberDto },
+  method: z.literal('POST'),
+  path: z.literal('/projects/{projectId}/members'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
+  parameters: {
+    path: z.strictObject({ projectId: z.string() }),
+    body: AddMemberDto,
+  },
   responses: { 201: MemberResponseDto },
 };
 
-export type patch_ProjectMembersController_update = __TypedOpenapi.Endpoints.patch_ProjectMembersController_update;
+export type patch_ProjectMembersController_update =
+  __TypedOpenapi.Endpoints.patch_ProjectMembersController_update;
 export const patch_ProjectMembersController_update = {
-  method: z.literal("PATCH"),
-  path: z.literal("/projects/{projectId}/members/{userId}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
-  parameters: { path: z.strictObject({ projectId: z.string(), userId: z.string() }), body: UpdateMemberDto },
+  method: z.literal('PATCH'),
+  path: z.literal('/projects/{projectId}/members/{userId}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
+  parameters: {
+    path: z.strictObject({ projectId: z.string(), userId: z.string() }),
+    body: UpdateMemberDto,
+  },
   responses: { 200: MemberResponseDto },
 };
 
-export type delete_ProjectMembersController_remove = __TypedOpenapi.Endpoints.delete_ProjectMembersController_remove;
+export type delete_ProjectMembersController_remove =
+  __TypedOpenapi.Endpoints.delete_ProjectMembersController_remove;
 export const delete_ProjectMembersController_remove = {
-  method: z.literal("DELETE"),
-  path: z.literal("/projects/{projectId}/members/{userId}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
-  parameters: { path: z.strictObject({ projectId: z.string(), userId: z.string() }) },
+  method: z.literal('DELETE'),
+  path: z.literal('/projects/{projectId}/members/{userId}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
+  parameters: {
+    path: z.strictObject({ projectId: z.string(), userId: z.string() }),
+  },
   responses: { 204: z.unknown() },
 };
 
-export type post_ProjectController_create = __TypedOpenapi.Endpoints.post_ProjectController_create;
+export type post_ProjectController_create =
+  __TypedOpenapi.Endpoints.post_ProjectController_create;
 export const post_ProjectController_create = {
-  method: z.literal("POST"),
-  path: z.literal("/projects"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('POST'),
+  path: z.literal('/projects'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { body: CreateProjectDto },
   responses: { 201: ProjectResponseDto },
 };
 
-export type get_ProjectController_list = __TypedOpenapi.Endpoints.get_ProjectController_list;
+export type get_ProjectController_list =
+  __TypedOpenapi.Endpoints.get_ProjectController_list;
 export const get_ProjectController_list = {
-  method: z.literal("GET"),
-  path: z.literal("/projects"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/projects'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: {
     query: z
       .strictObject({
@@ -873,55 +1014,67 @@ export const get_ProjectController_list = {
       .partial()
       .optional(),
   },
-  responses: { 200: PaginatedResponseDto.and(z.strictObject({ items: z.array(ProjectResponseDto) }).partial()) },
+  responses: {
+    200: PaginatedResponseDto.and(
+      z.strictObject({ items: z.array(ProjectResponseDto) }).partial(),
+    ),
+  },
 };
 
-export type get_ProjectController_get = __TypedOpenapi.Endpoints.get_ProjectController_get;
+export type get_ProjectController_get =
+  __TypedOpenapi.Endpoints.get_ProjectController_get;
 export const get_ProjectController_get = {
-  method: z.literal("GET"),
-  path: z.literal("/projects/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/projects/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: ProjectResponseDto },
 };
 
-export type patch_ProjectController_update = __TypedOpenapi.Endpoints.patch_ProjectController_update;
+export type patch_ProjectController_update =
+  __TypedOpenapi.Endpoints.patch_ProjectController_update;
 export const patch_ProjectController_update = {
-  method: z.literal("PATCH"),
-  path: z.literal("/projects/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
-  parameters: { path: z.strictObject({ id: z.string() }), body: UpdateProjectDto },
+  method: z.literal('PATCH'),
+  path: z.literal('/projects/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
+  parameters: {
+    path: z.strictObject({ id: z.string() }),
+    body: UpdateProjectDto,
+  },
   responses: { 200: ProjectResponseDto },
 };
 
-export type delete_ProjectController_remove = __TypedOpenapi.Endpoints.delete_ProjectController_remove;
+export type delete_ProjectController_remove =
+  __TypedOpenapi.Endpoints.delete_ProjectController_remove;
 export const delete_ProjectController_remove = {
-  method: z.literal("DELETE"),
-  path: z.literal("/projects/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('DELETE'),
+  path: z.literal('/projects/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 204: z.unknown() },
 };
 
-export type post_BoundaryController_create = __TypedOpenapi.Endpoints.post_BoundaryController_create;
+export type post_BoundaryController_create =
+  __TypedOpenapi.Endpoints.post_BoundaryController_create;
 export const post_BoundaryController_create = {
-  method: z.literal("POST"),
-  path: z.literal("/boundaries"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('POST'),
+  path: z.literal('/boundaries'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { body: CreateBoundaryDto },
   responses: { 201: BoundaryResponseDto },
 };
 
-export type get_BoundaryController_list = __TypedOpenapi.Endpoints.get_BoundaryController_list;
+export type get_BoundaryController_list =
+  __TypedOpenapi.Endpoints.get_BoundaryController_list;
 export const get_BoundaryController_list = {
-  method: z.literal("GET"),
-  path: z.literal("/boundaries"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/boundaries'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: {
     query: z
       .strictObject({
@@ -933,55 +1086,67 @@ export const get_BoundaryController_list = {
       .partial()
       .optional(),
   },
-  responses: { 200: PaginatedResponseDto.and(z.strictObject({ items: z.array(BoundaryResponseDto) }).partial()) },
+  responses: {
+    200: PaginatedResponseDto.and(
+      z.strictObject({ items: z.array(BoundaryResponseDto) }).partial(),
+    ),
+  },
 };
 
-export type get_BoundaryController_get = __TypedOpenapi.Endpoints.get_BoundaryController_get;
+export type get_BoundaryController_get =
+  __TypedOpenapi.Endpoints.get_BoundaryController_get;
 export const get_BoundaryController_get = {
-  method: z.literal("GET"),
-  path: z.literal("/boundaries/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/boundaries/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: BoundaryResponseDto },
 };
 
-export type patch_BoundaryController_update = __TypedOpenapi.Endpoints.patch_BoundaryController_update;
+export type patch_BoundaryController_update =
+  __TypedOpenapi.Endpoints.patch_BoundaryController_update;
 export const patch_BoundaryController_update = {
-  method: z.literal("PATCH"),
-  path: z.literal("/boundaries/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
-  parameters: { path: z.strictObject({ id: z.string() }), body: UpdateBoundaryDto },
+  method: z.literal('PATCH'),
+  path: z.literal('/boundaries/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
+  parameters: {
+    path: z.strictObject({ id: z.string() }),
+    body: UpdateBoundaryDto,
+  },
   responses: { 200: BoundaryResponseDto },
 };
 
-export type delete_BoundaryController_remove = __TypedOpenapi.Endpoints.delete_BoundaryController_remove;
+export type delete_BoundaryController_remove =
+  __TypedOpenapi.Endpoints.delete_BoundaryController_remove;
 export const delete_BoundaryController_remove = {
-  method: z.literal("DELETE"),
-  path: z.literal("/boundaries/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('DELETE'),
+  path: z.literal('/boundaries/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 204: z.unknown() },
 };
 
-export type post_RegionController_create = __TypedOpenapi.Endpoints.post_RegionController_create;
+export type post_RegionController_create =
+  __TypedOpenapi.Endpoints.post_RegionController_create;
 export const post_RegionController_create = {
-  method: z.literal("POST"),
-  path: z.literal("/regions"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('POST'),
+  path: z.literal('/regions'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { body: CreateRegionDto },
   responses: { 201: RegionResponseDto },
 };
 
-export type get_RegionController_list = __TypedOpenapi.Endpoints.get_RegionController_list;
+export type get_RegionController_list =
+  __TypedOpenapi.Endpoints.get_RegionController_list;
 export const get_RegionController_list = {
-  method: z.literal("GET"),
-  path: z.literal("/regions"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/regions'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: {
     query: z
       .strictObject({
@@ -994,75 +1159,89 @@ export const get_RegionController_list = {
       .partial()
       .optional(),
   },
-  responses: { 200: PaginatedResponseDto.and(z.strictObject({ items: z.array(RegionResponseDto) }).partial()) },
+  responses: {
+    200: PaginatedResponseDto.and(
+      z.strictObject({ items: z.array(RegionResponseDto) }).partial(),
+    ),
+  },
 };
 
-export type get_RegionController_get = __TypedOpenapi.Endpoints.get_RegionController_get;
+export type get_RegionController_get =
+  __TypedOpenapi.Endpoints.get_RegionController_get;
 export const get_RegionController_get = {
-  method: z.literal("GET"),
-  path: z.literal("/regions/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/regions/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: RegionResponseDto },
 };
 
-export type patch_RegionController_update = __TypedOpenapi.Endpoints.patch_RegionController_update;
+export type patch_RegionController_update =
+  __TypedOpenapi.Endpoints.patch_RegionController_update;
 export const patch_RegionController_update = {
-  method: z.literal("PATCH"),
-  path: z.literal("/regions/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
-  parameters: { path: z.strictObject({ id: z.string() }), body: UpdateRegionDto },
+  method: z.literal('PATCH'),
+  path: z.literal('/regions/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
+  parameters: {
+    path: z.strictObject({ id: z.string() }),
+    body: UpdateRegionDto,
+  },
   responses: { 200: RegionResponseDto },
 };
 
-export type delete_RegionController_remove = __TypedOpenapi.Endpoints.delete_RegionController_remove;
+export type delete_RegionController_remove =
+  __TypedOpenapi.Endpoints.delete_RegionController_remove;
 export const delete_RegionController_remove = {
-  method: z.literal("DELETE"),
-  path: z.literal("/regions/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('DELETE'),
+  path: z.literal('/regions/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 204: z.unknown() },
 };
 
-export type get_RegionController_getDetail = __TypedOpenapi.Endpoints.get_RegionController_getDetail;
+export type get_RegionController_getDetail =
+  __TypedOpenapi.Endpoints.get_RegionController_getDetail;
 export const get_RegionController_getDetail = {
-  method: z.literal("GET"),
-  path: z.literal("/regions/{id}/detail"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/regions/{id}/detail'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: RegionDetailResponseDto },
 };
 
-export type get_RegionController_listParcels = __TypedOpenapi.Endpoints.get_RegionController_listParcels;
+export type get_RegionController_listParcels =
+  __TypedOpenapi.Endpoints.get_RegionController_listParcels;
 export const get_RegionController_listParcels = {
-  method: z.literal("GET"),
-  path: z.literal("/regions/{id}/parcels"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/regions/{id}/parcels'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: z.array(ParcelResponseDto) },
 };
 
-export type post_BlockController_create = __TypedOpenapi.Endpoints.post_BlockController_create;
+export type post_BlockController_create =
+  __TypedOpenapi.Endpoints.post_BlockController_create;
 export const post_BlockController_create = {
-  method: z.literal("POST"),
-  path: z.literal("/blocks"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('POST'),
+  path: z.literal('/blocks'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { body: CreateBlockDto },
   responses: { 201: BlockResponseDto },
 };
 
-export type get_BlockController_list = __TypedOpenapi.Endpoints.get_BlockController_list;
+export type get_BlockController_list =
+  __TypedOpenapi.Endpoints.get_BlockController_list;
 export const get_BlockController_list = {
-  method: z.literal("GET"),
-  path: z.literal("/blocks"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/blocks'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: {
     query: z
       .strictObject({
@@ -1076,75 +1255,89 @@ export const get_BlockController_list = {
       .partial()
       .optional(),
   },
-  responses: { 200: PaginatedResponseDto.and(z.strictObject({ items: z.array(BlockResponseDto) }).partial()) },
+  responses: {
+    200: PaginatedResponseDto.and(
+      z.strictObject({ items: z.array(BlockResponseDto) }).partial(),
+    ),
+  },
 };
 
-export type get_BlockController_get = __TypedOpenapi.Endpoints.get_BlockController_get;
+export type get_BlockController_get =
+  __TypedOpenapi.Endpoints.get_BlockController_get;
 export const get_BlockController_get = {
-  method: z.literal("GET"),
-  path: z.literal("/blocks/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/blocks/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: BlockResponseDto },
 };
 
-export type patch_BlockController_update = __TypedOpenapi.Endpoints.patch_BlockController_update;
+export type patch_BlockController_update =
+  __TypedOpenapi.Endpoints.patch_BlockController_update;
 export const patch_BlockController_update = {
-  method: z.literal("PATCH"),
-  path: z.literal("/blocks/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
-  parameters: { path: z.strictObject({ id: z.string() }), body: UpdateBlockDto },
+  method: z.literal('PATCH'),
+  path: z.literal('/blocks/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
+  parameters: {
+    path: z.strictObject({ id: z.string() }),
+    body: UpdateBlockDto,
+  },
   responses: { 200: BlockResponseDto },
 };
 
-export type delete_BlockController_remove = __TypedOpenapi.Endpoints.delete_BlockController_remove;
+export type delete_BlockController_remove =
+  __TypedOpenapi.Endpoints.delete_BlockController_remove;
 export const delete_BlockController_remove = {
-  method: z.literal("DELETE"),
-  path: z.literal("/blocks/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('DELETE'),
+  path: z.literal('/blocks/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 204: z.unknown() },
 };
 
-export type get_BlockController_getDetail = __TypedOpenapi.Endpoints.get_BlockController_getDetail;
+export type get_BlockController_getDetail =
+  __TypedOpenapi.Endpoints.get_BlockController_getDetail;
 export const get_BlockController_getDetail = {
-  method: z.literal("GET"),
-  path: z.literal("/blocks/{id}/detail"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/blocks/{id}/detail'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: BlockDetailResponseDto },
 };
 
-export type get_BlockController_listParcels = __TypedOpenapi.Endpoints.get_BlockController_listParcels;
+export type get_BlockController_listParcels =
+  __TypedOpenapi.Endpoints.get_BlockController_listParcels;
 export const get_BlockController_listParcels = {
-  method: z.literal("GET"),
-  path: z.literal("/blocks/{id}/parcels"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/blocks/{id}/parcels'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: z.array(ParcelResponseDto) },
 };
 
-export type post_ParcelController_create = __TypedOpenapi.Endpoints.post_ParcelController_create;
+export type post_ParcelController_create =
+  __TypedOpenapi.Endpoints.post_ParcelController_create;
 export const post_ParcelController_create = {
-  method: z.literal("POST"),
-  path: z.literal("/parcels"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('POST'),
+  path: z.literal('/parcels'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { body: CreateParcelDto },
   responses: { 201: ParcelResponseDto },
 };
 
-export type get_ParcelController_list = __TypedOpenapi.Endpoints.get_ParcelController_list;
+export type get_ParcelController_list =
+  __TypedOpenapi.Endpoints.get_ParcelController_list;
 export const get_ParcelController_list = {
-  method: z.literal("GET"),
-  path: z.literal("/parcels"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/parcels'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: {
     query: z
       .strictObject({
@@ -1159,105 +1352,128 @@ export const get_ParcelController_list = {
       .partial()
       .optional(),
   },
-  responses: { 200: PaginatedResponseDto.and(z.strictObject({ items: z.array(ParcelResponseDto) }).partial()) },
+  responses: {
+    200: PaginatedResponseDto.and(
+      z.strictObject({ items: z.array(ParcelResponseDto) }).partial(),
+    ),
+  },
 };
 
-export type get_ParcelController_get = __TypedOpenapi.Endpoints.get_ParcelController_get;
+export type get_ParcelController_get =
+  __TypedOpenapi.Endpoints.get_ParcelController_get;
 export const get_ParcelController_get = {
-  method: z.literal("GET"),
-  path: z.literal("/parcels/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/parcels/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: ParcelResponseDto },
 };
 
-export type patch_ParcelController_update = __TypedOpenapi.Endpoints.patch_ParcelController_update;
+export type patch_ParcelController_update =
+  __TypedOpenapi.Endpoints.patch_ParcelController_update;
 export const patch_ParcelController_update = {
-  method: z.literal("PATCH"),
-  path: z.literal("/parcels/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
-  parameters: { path: z.strictObject({ id: z.string() }), body: UpdateParcelDto },
+  method: z.literal('PATCH'),
+  path: z.literal('/parcels/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
+  parameters: {
+    path: z.strictObject({ id: z.string() }),
+    body: UpdateParcelDto,
+  },
   responses: { 200: ParcelResponseDto },
 };
 
-export type delete_ParcelController_remove = __TypedOpenapi.Endpoints.delete_ParcelController_remove;
+export type delete_ParcelController_remove =
+  __TypedOpenapi.Endpoints.delete_ParcelController_remove;
 export const delete_ParcelController_remove = {
-  method: z.literal("DELETE"),
-  path: z.literal("/parcels/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('DELETE'),
+  path: z.literal('/parcels/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 204: z.unknown() },
 };
 
-export type get_ParcelController_getDetail = __TypedOpenapi.Endpoints.get_ParcelController_getDetail;
+export type get_ParcelController_getDetail =
+  __TypedOpenapi.Endpoints.get_ParcelController_getDetail;
 export const get_ParcelController_getDetail = {
-  method: z.literal("GET"),
-  path: z.literal("/parcels/{id}/detail"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/parcels/{id}/detail'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: ParcelDetailResponseDto },
 };
 
-export type get_ParcelController_listOwners = __TypedOpenapi.Endpoints.get_ParcelController_listOwners;
+export type get_ParcelController_listOwners =
+  __TypedOpenapi.Endpoints.get_ParcelController_listOwners;
 export const get_ParcelController_listOwners = {
-  method: z.literal("GET"),
-  path: z.literal("/parcels/{id}/owners"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/parcels/{id}/owners'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: z.array(OwnershipWithOwnerResponseDto) },
 };
 
-export type post_ParcelController_assignOwner = __TypedOpenapi.Endpoints.post_ParcelController_assignOwner;
+export type post_ParcelController_assignOwner =
+  __TypedOpenapi.Endpoints.post_ParcelController_assignOwner;
 export const post_ParcelController_assignOwner = {
-  method: z.literal("POST"),
-  path: z.literal("/parcels/{id}/owners"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
-  parameters: { path: z.strictObject({ id: z.string() }), body: AssignOwnerDto },
+  method: z.literal('POST'),
+  path: z.literal('/parcels/{id}/owners'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
+  parameters: {
+    path: z.strictObject({ id: z.string() }),
+    body: AssignOwnerDto,
+  },
   responses: { 201: OwnershipResponseDto },
 };
 
-export type patch_ParcelController_updateOwnership = __TypedOpenapi.Endpoints.patch_ParcelController_updateOwnership;
+export type patch_ParcelController_updateOwnership =
+  __TypedOpenapi.Endpoints.patch_ParcelController_updateOwnership;
 export const patch_ParcelController_updateOwnership = {
-  method: z.literal("PATCH"),
-  path: z.literal("/parcels/{id}/owners/{ownerId}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
-  parameters: { path: z.strictObject({ id: z.string(), ownerId: z.string() }), body: UpdateOwnershipDto },
+  method: z.literal('PATCH'),
+  path: z.literal('/parcels/{id}/owners/{ownerId}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
+  parameters: {
+    path: z.strictObject({ id: z.string(), ownerId: z.string() }),
+    body: UpdateOwnershipDto,
+  },
   responses: { 200: OwnershipResponseDto },
 };
 
-export type delete_ParcelController_removeOwner = __TypedOpenapi.Endpoints.delete_ParcelController_removeOwner;
+export type delete_ParcelController_removeOwner =
+  __TypedOpenapi.Endpoints.delete_ParcelController_removeOwner;
 export const delete_ParcelController_removeOwner = {
-  method: z.literal("DELETE"),
-  path: z.literal("/parcels/{id}/owners/{ownerId}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('DELETE'),
+  path: z.literal('/parcels/{id}/owners/{ownerId}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string(), ownerId: z.string() }) },
   responses: { 204: z.unknown() },
 };
 
-export type post_OwnerController_create = __TypedOpenapi.Endpoints.post_OwnerController_create;
+export type post_OwnerController_create =
+  __TypedOpenapi.Endpoints.post_OwnerController_create;
 export const post_OwnerController_create = {
-  method: z.literal("POST"),
-  path: z.literal("/owners"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('POST'),
+  path: z.literal('/owners'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { body: CreateOwnerDto },
   responses: { 201: OwnerResponseDto },
 };
 
-export type get_OwnerController_list = __TypedOpenapi.Endpoints.get_OwnerController_list;
+export type get_OwnerController_list =
+  __TypedOpenapi.Endpoints.get_OwnerController_list;
 export const get_OwnerController_list = {
-  method: z.literal("GET"),
-  path: z.literal("/owners"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/owners'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: {
     query: z
       .strictObject({
@@ -1269,45 +1485,56 @@ export const get_OwnerController_list = {
       .partial()
       .optional(),
   },
-  responses: { 200: PaginatedResponseDto.and(z.strictObject({ items: z.array(OwnerResponseDto) }).partial()) },
+  responses: {
+    200: PaginatedResponseDto.and(
+      z.strictObject({ items: z.array(OwnerResponseDto) }).partial(),
+    ),
+  },
 };
 
-export type get_OwnerController_get = __TypedOpenapi.Endpoints.get_OwnerController_get;
+export type get_OwnerController_get =
+  __TypedOpenapi.Endpoints.get_OwnerController_get;
 export const get_OwnerController_get = {
-  method: z.literal("GET"),
-  path: z.literal("/owners/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/owners/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: OwnerResponseDto },
 };
 
-export type patch_OwnerController_update = __TypedOpenapi.Endpoints.patch_OwnerController_update;
+export type patch_OwnerController_update =
+  __TypedOpenapi.Endpoints.patch_OwnerController_update;
 export const patch_OwnerController_update = {
-  method: z.literal("PATCH"),
-  path: z.literal("/owners/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
-  parameters: { path: z.strictObject({ id: z.string() }), body: UpdateOwnerDto },
+  method: z.literal('PATCH'),
+  path: z.literal('/owners/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
+  parameters: {
+    path: z.strictObject({ id: z.string() }),
+    body: UpdateOwnerDto,
+  },
   responses: { 200: OwnerResponseDto },
 };
 
-export type delete_OwnerController_remove = __TypedOpenapi.Endpoints.delete_OwnerController_remove;
+export type delete_OwnerController_remove =
+  __TypedOpenapi.Endpoints.delete_OwnerController_remove;
 export const delete_OwnerController_remove = {
-  method: z.literal("DELETE"),
-  path: z.literal("/owners/{id}"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('DELETE'),
+  path: z.literal('/owners/{id}'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 204: z.unknown() },
 };
 
-export type get_OwnerController_listParcels = __TypedOpenapi.Endpoints.get_OwnerController_listParcels;
+export type get_OwnerController_listParcels =
+  __TypedOpenapi.Endpoints.get_OwnerController_listParcels;
 export const get_OwnerController_listParcels = {
-  method: z.literal("GET"),
-  path: z.literal("/owners/{id}/parcels"),
-  requestFormat: z.literal("json"),
-  responseFormat: z.literal("json"),
+  method: z.literal('GET'),
+  path: z.literal('/owners/{id}/parcels'),
+  requestFormat: z.literal('json'),
+  responseFormat: z.literal('json'),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 200: z.array(OwnershipWithParcelResponseDto) },
 };
@@ -1317,81 +1544,85 @@ export const get_OwnerController_listParcels = {
 // <EndpointByMethod>
 export const EndpointByMethod = {
   post: {
-    "/auth/login": post_AuthController_login,
-    "/auth/logout": post_AuthController_logout,
-    "/users": post_UsersController_create,
-    "/roles": post_RolesController_create,
-    "/projects/{projectId}/members": post_ProjectMembersController_add,
-    "/projects": post_ProjectController_create,
-    "/boundaries": post_BoundaryController_create,
-    "/regions": post_RegionController_create,
-    "/blocks": post_BlockController_create,
-    "/parcels": post_ParcelController_create,
-    "/parcels/{id}/owners": post_ParcelController_assignOwner,
-    "/owners": post_OwnerController_create,
+    '/auth/login': post_AuthController_login,
+    '/auth/logout': post_AuthController_logout,
+    '/users': post_UsersController_create,
+    '/roles': post_RolesController_create,
+    '/projects/{projectId}/members': post_ProjectMembersController_add,
+    '/projects': post_ProjectController_create,
+    '/boundaries': post_BoundaryController_create,
+    '/regions': post_RegionController_create,
+    '/blocks': post_BlockController_create,
+    '/parcels': post_ParcelController_create,
+    '/parcels/{id}/owners': post_ParcelController_assignOwner,
+    '/owners': post_OwnerController_create,
   },
   get: {
-    "/auth/me": get_AuthController_me,
-    "/users": get_UsersController_list,
-    "/users/{id}": get_UsersController_get,
-    "/roles": get_RolesController_list,
-    "/roles/{id}": get_RolesController_get,
-    "/projects/{projectId}/members": get_ProjectMembersController_list,
-    "/projects": get_ProjectController_list,
-    "/projects/{id}": get_ProjectController_get,
-    "/boundaries": get_BoundaryController_list,
-    "/boundaries/{id}": get_BoundaryController_get,
-    "/regions": get_RegionController_list,
-    "/regions/{id}": get_RegionController_get,
-    "/regions/{id}/detail": get_RegionController_getDetail,
-    "/regions/{id}/parcels": get_RegionController_listParcels,
-    "/blocks": get_BlockController_list,
-    "/blocks/{id}": get_BlockController_get,
-    "/blocks/{id}/detail": get_BlockController_getDetail,
-    "/blocks/{id}/parcels": get_BlockController_listParcels,
-    "/parcels": get_ParcelController_list,
-    "/parcels/{id}": get_ParcelController_get,
-    "/parcels/{id}/detail": get_ParcelController_getDetail,
-    "/parcels/{id}/owners": get_ParcelController_listOwners,
-    "/owners": get_OwnerController_list,
-    "/owners/{id}": get_OwnerController_get,
-    "/owners/{id}/parcels": get_OwnerController_listParcels,
+    '/auth/me': get_AuthController_me,
+    '/users': get_UsersController_list,
+    '/users/{id}': get_UsersController_get,
+    '/roles': get_RolesController_list,
+    '/roles/{id}': get_RolesController_get,
+    '/projects/{projectId}/members': get_ProjectMembersController_list,
+    '/projects': get_ProjectController_list,
+    '/projects/{id}': get_ProjectController_get,
+    '/boundaries': get_BoundaryController_list,
+    '/boundaries/{id}': get_BoundaryController_get,
+    '/regions': get_RegionController_list,
+    '/regions/{id}': get_RegionController_get,
+    '/regions/{id}/detail': get_RegionController_getDetail,
+    '/regions/{id}/parcels': get_RegionController_listParcels,
+    '/blocks': get_BlockController_list,
+    '/blocks/{id}': get_BlockController_get,
+    '/blocks/{id}/detail': get_BlockController_getDetail,
+    '/blocks/{id}/parcels': get_BlockController_listParcels,
+    '/parcels': get_ParcelController_list,
+    '/parcels/{id}': get_ParcelController_get,
+    '/parcels/{id}/detail': get_ParcelController_getDetail,
+    '/parcels/{id}/owners': get_ParcelController_listOwners,
+    '/owners': get_OwnerController_list,
+    '/owners/{id}': get_OwnerController_get,
+    '/owners/{id}/parcels': get_OwnerController_listParcels,
   },
   patch: {
-    "/users/{id}": patch_UsersController_update,
-    "/roles/{id}": patch_RolesController_update,
-    "/projects/{projectId}/members/{userId}": patch_ProjectMembersController_update,
-    "/projects/{id}": patch_ProjectController_update,
-    "/boundaries/{id}": patch_BoundaryController_update,
-    "/regions/{id}": patch_RegionController_update,
-    "/blocks/{id}": patch_BlockController_update,
-    "/parcels/{id}": patch_ParcelController_update,
-    "/parcels/{id}/owners/{ownerId}": patch_ParcelController_updateOwnership,
-    "/owners/{id}": patch_OwnerController_update,
+    '/users/{id}': patch_UsersController_update,
+    '/roles/{id}': patch_RolesController_update,
+    '/projects/{projectId}/members/{userId}':
+      patch_ProjectMembersController_update,
+    '/projects/{id}': patch_ProjectController_update,
+    '/boundaries/{id}': patch_BoundaryController_update,
+    '/regions/{id}': patch_RegionController_update,
+    '/blocks/{id}': patch_BlockController_update,
+    '/parcels/{id}': patch_ParcelController_update,
+    '/parcels/{id}/owners/{ownerId}': patch_ParcelController_updateOwnership,
+    '/owners/{id}': patch_OwnerController_update,
   },
   delete: {
-    "/users/{id}": delete_UsersController_remove,
-    "/roles/{id}": delete_RolesController_remove,
-    "/projects/{projectId}/members/{userId}": delete_ProjectMembersController_remove,
-    "/projects/{id}": delete_ProjectController_remove,
-    "/boundaries/{id}": delete_BoundaryController_remove,
-    "/regions/{id}": delete_RegionController_remove,
-    "/blocks/{id}": delete_BlockController_remove,
-    "/parcels/{id}": delete_ParcelController_remove,
-    "/parcels/{id}/owners/{ownerId}": delete_ParcelController_removeOwner,
-    "/owners/{id}": delete_OwnerController_remove,
+    '/users/{id}': delete_UsersController_remove,
+    '/roles/{id}': delete_RolesController_remove,
+    '/projects/{projectId}/members/{userId}':
+      delete_ProjectMembersController_remove,
+    '/projects/{id}': delete_ProjectController_remove,
+    '/boundaries/{id}': delete_BoundaryController_remove,
+    '/regions/{id}': delete_RegionController_remove,
+    '/blocks/{id}': delete_BlockController_remove,
+    '/parcels/{id}': delete_ParcelController_remove,
+    '/parcels/{id}/owners/{ownerId}': delete_ParcelController_removeOwner,
+    '/owners/{id}': delete_OwnerController_remove,
   },
 } satisfies {
-  [M in keyof __TypedOpenapi.EndpointByMethod]: { [P in keyof __TypedOpenapi.EndpointByMethod[M]]: unknown };
+  [M in keyof __TypedOpenapi.EndpointByMethod]: {
+    [P in keyof __TypedOpenapi.EndpointByMethod[M]]: unknown;
+  };
 };
 export type EndpointByMethod = __TypedOpenapi.EndpointByMethod;
 // </EndpointByMethod>
 
 // <EndpointByMethod.Shorthands>
-export type PostEndpoints = EndpointByMethod["post"];
-export type GetEndpoints = EndpointByMethod["get"];
-export type PatchEndpoints = EndpointByMethod["patch"];
-export type DeleteEndpoints = EndpointByMethod["delete"];
+export type PostEndpoints = EndpointByMethod['post'];
+export type GetEndpoints = EndpointByMethod['get'];
+export type PatchEndpoints = EndpointByMethod['patch'];
+export type DeleteEndpoints = EndpointByMethod['delete'];
 // </EndpointByMethod.Shorthands>
 
 // <ApiClientTypes>
@@ -1403,153 +1634,239 @@ export type EndpointParameters = {
   cookie?: unknown;
 };
 
-export type MutationMethod = "post" | "put" | "patch" | "delete";
-export type Method = "get" | "head" | "options" | "trace" | MutationMethod;
+export type MutationMethod = 'post' | 'put' | 'patch' | 'delete';
+export type Method = 'get' | 'head' | 'options' | 'trace' | MutationMethod;
 
-export type RequestFormat = "json" | "form-data" | "form-url" | "binary" | "text";
-export type ResponseFormat = "json" | "sse";
+export type RequestFormat =
+  'json' | 'form-data' | 'form-url' | 'binary' | 'text';
+export type ResponseFormat = 'json' | 'sse';
 export type SecurityRequirements = readonly (readonly string[])[];
 
 // <EndpointRequestFormats>
 /** Non-json request body encodings; missing entries default to `"json"`. */
 export const endpointRequestFormats = {} as Partial<{
-  [M in keyof EndpointByMethod]: Partial<{ [P in keyof EndpointByMethod[M]]: RequestFormat }>;
+  [M in keyof EndpointByMethod]: Partial<{
+    [P in keyof EndpointByMethod[M]]: RequestFormat;
+  }>;
 }>;
 // </EndpointRequestFormats>
 
 // <EndpointParameterStyles>
-export type ParameterSerialization = { style: string; explode: boolean; allowReserved: boolean };
+export type ParameterSerialization = {
+  style: string;
+  explode: boolean;
+  allowReserved: boolean;
+};
 export type EndpointParameterStyles = Partial<
-  Record<"query" | "path" | "header" | "cookie", Record<string, ParameterSerialization>>
+  Record<
+    'query' | 'path' | 'header' | 'cookie',
+    Record<string, ParameterSerialization>
+  >
 >;
 /** OpenAPI parameter styles used by the built-in encoders. */
 export const endpointParameterStyles = {
   post: {
-    "/auth/login": { header: { "user-agent": { style: "simple", explode: false, allowReserved: false } } },
-    "/projects/{projectId}/members": { path: { projectId: { style: "simple", explode: false, allowReserved: false } } },
-    "/parcels/{id}/owners": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    '/auth/login': {
+      header: {
+        'user-agent': { style: 'simple', explode: false, allowReserved: false },
+      },
+    },
+    '/projects/{projectId}/members': {
+      path: {
+        projectId: { style: 'simple', explode: false, allowReserved: false },
+      },
+    },
+    '/parcels/{id}/owners': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
   },
   get: {
-    "/users": {
+    '/users': {
       query: {
-        page: { style: "form", explode: true, allowReserved: false },
-        limit: { style: "form", explode: true, allowReserved: false },
-        search: { style: "form", explode: true, allowReserved: false },
+        page: { style: 'form', explode: true, allowReserved: false },
+        limit: { style: 'form', explode: true, allowReserved: false },
+        search: { style: 'form', explode: true, allowReserved: false },
       },
     },
-    "/users/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/roles/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/projects/{projectId}/members": { path: { projectId: { style: "simple", explode: false, allowReserved: false } } },
-    "/projects": {
-      query: {
-        page: { style: "form", explode: true, allowReserved: false },
-        limit: { style: "form", explode: true, allowReserved: false },
-        search: { style: "form", explode: true, allowReserved: false },
+    '/users/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/roles/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/projects/{projectId}/members': {
+      path: {
+        projectId: { style: 'simple', explode: false, allowReserved: false },
       },
     },
-    "/projects/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/boundaries": {
+    '/projects': {
       query: {
-        page: { style: "form", explode: true, allowReserved: false },
-        limit: { style: "form", explode: true, allowReserved: false },
-        projectId: { style: "form", explode: true, allowReserved: false },
-        search: { style: "form", explode: true, allowReserved: false },
+        page: { style: 'form', explode: true, allowReserved: false },
+        limit: { style: 'form', explode: true, allowReserved: false },
+        search: { style: 'form', explode: true, allowReserved: false },
       },
     },
-    "/boundaries/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/regions": {
+    '/projects/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/boundaries': {
       query: {
-        page: { style: "form", explode: true, allowReserved: false },
-        limit: { style: "form", explode: true, allowReserved: false },
-        projectId: { style: "form", explode: true, allowReserved: false },
-        status: { style: "form", explode: true, allowReserved: false },
-        search: { style: "form", explode: true, allowReserved: false },
+        page: { style: 'form', explode: true, allowReserved: false },
+        limit: { style: 'form', explode: true, allowReserved: false },
+        projectId: { style: 'form', explode: true, allowReserved: false },
+        search: { style: 'form', explode: true, allowReserved: false },
       },
     },
-    "/regions/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/regions/{id}/detail": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/regions/{id}/parcels": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/blocks": {
+    '/boundaries/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/regions': {
       query: {
-        page: { style: "form", explode: true, allowReserved: false },
-        limit: { style: "form", explode: true, allowReserved: false },
-        projectId: { style: "form", explode: true, allowReserved: false },
-        regionId: { style: "form", explode: true, allowReserved: false },
-        status: { style: "form", explode: true, allowReserved: false },
-        search: { style: "form", explode: true, allowReserved: false },
+        page: { style: 'form', explode: true, allowReserved: false },
+        limit: { style: 'form', explode: true, allowReserved: false },
+        projectId: { style: 'form', explode: true, allowReserved: false },
+        status: { style: 'form', explode: true, allowReserved: false },
+        search: { style: 'form', explode: true, allowReserved: false },
       },
     },
-    "/blocks/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/blocks/{id}/detail": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/blocks/{id}/parcels": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/parcels": {
+    '/regions/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/regions/{id}/detail': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/regions/{id}/parcels': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/blocks': {
       query: {
-        page: { style: "form", explode: true, allowReserved: false },
-        limit: { style: "form", explode: true, allowReserved: false },
-        projectId: { style: "form", explode: true, allowReserved: false },
-        regionId: { style: "form", explode: true, allowReserved: false },
-        blockId: { style: "form", explode: true, allowReserved: false },
-        status: { style: "form", explode: true, allowReserved: false },
-        search: { style: "form", explode: true, allowReserved: false },
+        page: { style: 'form', explode: true, allowReserved: false },
+        limit: { style: 'form', explode: true, allowReserved: false },
+        projectId: { style: 'form', explode: true, allowReserved: false },
+        regionId: { style: 'form', explode: true, allowReserved: false },
+        status: { style: 'form', explode: true, allowReserved: false },
+        search: { style: 'form', explode: true, allowReserved: false },
       },
     },
-    "/parcels/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/parcels/{id}/detail": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/parcels/{id}/owners": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/owners": {
+    '/blocks/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/blocks/{id}/detail': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/blocks/{id}/parcels': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/parcels': {
       query: {
-        page: { style: "form", explode: true, allowReserved: false },
-        limit: { style: "form", explode: true, allowReserved: false },
-        projectId: { style: "form", explode: true, allowReserved: false },
-        search: { style: "form", explode: true, allowReserved: false },
+        page: { style: 'form', explode: true, allowReserved: false },
+        limit: { style: 'form', explode: true, allowReserved: false },
+        projectId: { style: 'form', explode: true, allowReserved: false },
+        regionId: { style: 'form', explode: true, allowReserved: false },
+        blockId: { style: 'form', explode: true, allowReserved: false },
+        status: { style: 'form', explode: true, allowReserved: false },
+        search: { style: 'form', explode: true, allowReserved: false },
       },
     },
-    "/owners/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/owners/{id}/parcels": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    '/parcels/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/parcels/{id}/detail': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/parcels/{id}/owners': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/owners': {
+      query: {
+        page: { style: 'form', explode: true, allowReserved: false },
+        limit: { style: 'form', explode: true, allowReserved: false },
+        projectId: { style: 'form', explode: true, allowReserved: false },
+        search: { style: 'form', explode: true, allowReserved: false },
+      },
+    },
+    '/owners/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/owners/{id}/parcels': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
   },
   patch: {
-    "/users/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/roles/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/projects/{projectId}/members/{userId}": {
+    '/users/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/roles/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/projects/{projectId}/members/{userId}': {
       path: {
-        projectId: { style: "simple", explode: false, allowReserved: false },
-        userId: { style: "simple", explode: false, allowReserved: false },
+        projectId: { style: 'simple', explode: false, allowReserved: false },
+        userId: { style: 'simple', explode: false, allowReserved: false },
       },
     },
-    "/projects/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/boundaries/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/regions/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/blocks/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/parcels/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/parcels/{id}/owners/{ownerId}": {
+    '/projects/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/boundaries/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/regions/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/blocks/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/parcels/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/parcels/{id}/owners/{ownerId}': {
       path: {
-        id: { style: "simple", explode: false, allowReserved: false },
-        ownerId: { style: "simple", explode: false, allowReserved: false },
+        id: { style: 'simple', explode: false, allowReserved: false },
+        ownerId: { style: 'simple', explode: false, allowReserved: false },
       },
     },
-    "/owners/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    '/owners/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
   },
   delete: {
-    "/users/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/roles/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/projects/{projectId}/members/{userId}": {
+    '/users/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/roles/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/projects/{projectId}/members/{userId}': {
       path: {
-        projectId: { style: "simple", explode: false, allowReserved: false },
-        userId: { style: "simple", explode: false, allowReserved: false },
+        projectId: { style: 'simple', explode: false, allowReserved: false },
+        userId: { style: 'simple', explode: false, allowReserved: false },
       },
     },
-    "/projects/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/boundaries/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/regions/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/blocks/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/parcels/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
-    "/parcels/{id}/owners/{ownerId}": {
+    '/projects/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/boundaries/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/regions/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/blocks/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/parcels/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
+    '/parcels/{id}/owners/{ownerId}': {
       path: {
-        id: { style: "simple", explode: false, allowReserved: false },
-        ownerId: { style: "simple", explode: false, allowReserved: false },
+        id: { style: 'simple', explode: false, allowReserved: false },
+        ownerId: { style: 'simple', explode: false, allowReserved: false },
       },
     },
-    "/owners/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    '/owners/{id}': {
+      path: { id: { style: 'simple', explode: false, allowReserved: false } },
+    },
   },
 } as Partial<Record<string, Partial<Record<string, EndpointParameterStyles>>>>;
 // </EndpointParameterStyles>
@@ -1557,17 +1874,23 @@ export const endpointParameterStyles = {
 // <EndpointResponseFormats>
 /** Non-json response body modes; missing entries default to `"json"`. SSE skips JSON parse + output validation. */
 export const endpointResponseFormats = {} as Partial<{
-  [M in keyof EndpointByMethod]: Partial<{ [P in keyof EndpointByMethod[M]]: ResponseFormat }>;
+  [M in keyof EndpointByMethod]: Partial<{
+    [P in keyof EndpointByMethod[M]]: ResponseFormat;
+  }>;
 }>;
 // </EndpointResponseFormats>
 
 // <EndpointSecurityRequirements>
 /** OpenAPI security requirements applied when an endpoint has no explicit entry. */
-export const defaultSecurityRequirements = [["bearer"]] as SecurityRequirements;
+export const defaultSecurityRequirements = [['bearer']] as SecurityRequirements;
 /** Endpoint-specific security requirements that differ from the default. */
 export const endpointSecurityRequirements = {
-  post: { "/auth/login": [] },
-} as Partial<{ [M in keyof EndpointByMethod]: Partial<{ [P in keyof EndpointByMethod[M]]: SecurityRequirements }> }>;
+  post: { '/auth/login': [] },
+} as Partial<{
+  [M in keyof EndpointByMethod]: Partial<{
+    [P in keyof EndpointByMethod[M]]: SecurityRequirements;
+  }>;
+}>;
 // </EndpointSecurityRequirements>
 
 export type DefaultEndpoint = {
@@ -1582,14 +1905,14 @@ export type Endpoint<TConfig extends DefaultEndpoint = DefaultEndpoint> = {
   path: string;
   requestFormat: RequestFormat;
   responseFormat: ResponseFormat;
-  parameters?: TConfig["parameters"];
+  parameters?: TConfig['parameters'];
   meta: {
     alias: string;
     hasParameters: boolean;
     areParametersRequired: boolean;
   };
-  responses?: TConfig["responses"];
-  responseHeaders?: TConfig["responseHeaders"];
+  responses?: TConfig['responses'];
+  responseHeaders?: TConfig['responseHeaders'];
 };
 
 /**
@@ -1613,7 +1936,11 @@ export interface FetcherResponse {
 }
 
 export interface Fetcher {
-  decodePathParams?: (path: string, pathParams: unknown, styles?: Record<string, ParameterSerialization>) => string;
+  decodePathParams?: (
+    path: string,
+    pathParams: unknown,
+    styles?: Record<string, ParameterSerialization>,
+  ) => string;
   encodeSearchParams?: (
     searchParams: unknown,
     styles?: Record<string, ParameterSerialization>,
@@ -1640,40 +1967,58 @@ export interface Fetcher {
 }
 
 export const successStatusCodes = [
-  200, 201, 202, 203, 204, 205, 206, 207, 208, 226, 300, 301, 302, 303, 304, 305, 306, 307, 308,
+  200, 201, 202, 203, 204, 205, 206, 207, 208, 226, 300, 301, 302, 303, 304,
+  305, 306, 307, 308,
 ] as const;
 export type SuccessStatusCode = (typeof successStatusCodes)[number];
 
 export const errorStatusCodes = [
-  400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423, 424,
-  425, 426, 428, 429, 431, 451, 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511,
+  400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414,
+  415, 416, 417, 418, 421, 422, 423, 424, 425, 426, 428, 429, 431, 451, 500,
+  501, 502, 503, 504, 505, 506, 507, 508, 510, 511,
 ] as const;
 export type ErrorStatusCode = (typeof errorStatusCodes)[number];
 
 // Taken from https://github.com/unjs/fetchdts/blob/ec4eaeab5d287116171fc1efd61f4a1ad34e4609/src/fetch.ts#L3
 export interface TypedHeaders<TypedHeaderValues = unknown> extends Omit<
   Headers,
-  "append" | "delete" | "get" | "getSetCookie" | "has" | "set" | "forEach"
+  'append' | 'delete' | 'get' | 'getSetCookie' | 'has' | 'set' | 'forEach'
 > {
   /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/append) */
-  append: <Name extends Extract<keyof TypedHeaderValues, string> | (string & {})>(
+  append: <
+    Name extends Extract<keyof TypedHeaderValues, string> | (string & {}),
+  >(
     name: Name,
-    value: Lowercase<Name> extends keyof TypedHeaderValues ? TypedHeaderValues[Lowercase<Name>] : string,
+    value: Lowercase<Name> extends keyof TypedHeaderValues
+      ? TypedHeaderValues[Lowercase<Name>]
+      : string,
   ) => void;
   /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/delete) */
-  delete: <Name extends Extract<keyof TypedHeaderValues, string> | (string & {})>(name: Name) => void;
+  delete: <
+    Name extends Extract<keyof TypedHeaderValues, string> | (string & {}),
+  >(
+    name: Name,
+  ) => void;
   /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/get) */
   get: <Name extends Extract<keyof TypedHeaderValues, string> | (string & {})>(
     name: Name,
-  ) => (Lowercase<Name> extends keyof TypedHeaderValues ? TypedHeaderValues[Lowercase<Name>] : string) | null;
+  ) =>
+    | (Lowercase<Name> extends keyof TypedHeaderValues
+        ? TypedHeaderValues[Lowercase<Name>]
+        : string)
+    | null;
   /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/getSetCookie) */
   getSetCookie: () => string[];
   /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/has) */
-  has: <Name extends Extract<keyof TypedHeaderValues, string> | (string & {})>(name: Name) => boolean;
+  has: <Name extends Extract<keyof TypedHeaderValues, string> | (string & {})>(
+    name: Name,
+  ) => boolean;
   /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/set) */
   set: <Name extends Extract<keyof TypedHeaderValues, string> | (string & {})>(
     name: Name,
-    value: Lowercase<Name> extends keyof TypedHeaderValues ? TypedHeaderValues[Lowercase<Name>] : string,
+    value: Lowercase<Name> extends keyof TypedHeaderValues
+      ? TypedHeaderValues[Lowercase<Name>]
+      : string,
   ) => void;
   forEach: (
     callbackfn: (
@@ -1686,13 +2031,16 @@ export interface TypedHeaders<TypedHeaderValues = unknown> extends Omit<
 }
 
 /** @see https://developer.mozilla.org/en-US/docs/Web/API/Response */
-export interface TypedSuccessResponse<TSuccess, TStatusCode, THeaders> extends Omit<
-  FetcherResponse,
-  "ok" | "status" | "json" | "headers"
-> {
+export interface TypedSuccessResponse<
+  TSuccess,
+  TStatusCode,
+  THeaders,
+> extends Omit<FetcherResponse, 'ok' | 'status' | 'json' | 'headers'> {
   ok: true;
   status: TStatusCode;
-  headers: never extends THeaders ? FetcherResponse["headers"] : TypedHeaders<THeaders>;
+  headers: never extends THeaders
+    ? FetcherResponse['headers']
+    : TypedHeaders<THeaders>;
   data: TSuccess;
   /** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/json) */
   json: () => Promise<TSuccess>;
@@ -1701,27 +2049,40 @@ export interface TypedSuccessResponse<TSuccess, TStatusCode, THeaders> extends O
 /** @see https://developer.mozilla.org/en-US/docs/Web/API/Response */
 export interface TypedErrorResponse<TData, TStatusCode, THeaders> extends Omit<
   FetcherResponse,
-  "ok" | "status" | "json" | "headers"
+  'ok' | 'status' | 'json' | 'headers'
 > {
   ok: false;
   status: TStatusCode;
-  headers: never extends THeaders ? FetcherResponse["headers"] : TypedHeaders<THeaders>;
+  headers: never extends THeaders
+    ? FetcherResponse['headers']
+    : TypedHeaders<THeaders>;
   data: TData;
   /** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/json) */
   json: () => Promise<TData>;
 }
 
-type StatusCodeFromKey<TKey> = TKey extends `${infer TStatusCode extends number}`
-  ? TStatusCode
-  : TKey extends number
-    ? TKey
-    : never;
+type StatusCodeFromKey<TKey> =
+  TKey extends `${infer TStatusCode extends number}`
+    ? TStatusCode
+    : TKey extends number
+      ? TKey
+      : never;
 
 export type TypedApiResponse<TAllResponses = {}, THeaders = {}> = {
-  [K in keyof TAllResponses]: StatusCodeFromKey<K> extends infer TStatusCode extends number
+  [
+    K in keyof TAllResponses
+  ]: StatusCodeFromKey<K> extends infer TStatusCode extends number
     ? TStatusCode extends SuccessStatusCode
-      ? TypedSuccessResponse<TAllResponses[K], TStatusCode, K extends keyof THeaders ? THeaders[K] : never>
-      : TypedErrorResponse<TAllResponses[K], TStatusCode, K extends keyof THeaders ? THeaders[K] : never>
+      ? TypedSuccessResponse<
+          TAllResponses[K],
+          TStatusCode,
+          K extends keyof THeaders ? THeaders[K] : never
+        >
+      : TypedErrorResponse<
+          TAllResponses[K],
+          TStatusCode,
+          K extends keyof THeaders ? THeaders[K] : never
+        >
     : never;
 }[keyof TAllResponses];
 
@@ -1732,9 +2093,13 @@ type __TypedOpenapiSchema<TOutput, TInput = TOutput> = {
 type OptionalUndefinedKeys<T> = {
   [K in keyof T as undefined extends T[K] ? never : K]: T[K];
 } & {
-  [K in keyof T as undefined extends T[K] ? K : never]?: Exclude<T[K], undefined>;
+  [K in keyof T as undefined extends T[K] ? K : never]?: Exclude<
+    T[K],
+    undefined
+  >;
 };
-export type InferSchemaValue<T> = T extends string | number | boolean | bigint | symbol | null | undefined
+export type InferSchemaValue<T> = T extends
+  string | number | boolean | bigint | symbol | null | undefined
   ? T
   : T extends __TypedOpenapiSchema<infer O>
     ? O
@@ -1745,7 +2110,8 @@ export type InferSchemaValue<T> = T extends string | number | boolean | bigint |
         : T extends object
           ? { [K in keyof T]: InferSchemaValue<T[K]> }
           : T;
-type InferSchemaInputRaw<T> = T extends string | number | boolean | bigint | symbol | null | undefined
+type InferSchemaInputRaw<T> = T extends
+  string | number | boolean | bigint | symbol | null | undefined
   ? T
   : T extends __TypedOpenapiSchema<infer _O, infer I>
     ? I
@@ -1758,11 +2124,15 @@ type InferSchemaInputRaw<T> = T extends string | number | boolean | bigint | sym
           : T;
 type InferSchemaInput<T> = OptionalUndefinedKeys<InferSchemaInputRaw<T>>;
 
-export type SafeApiResponse<TEndpoint> = TEndpoint extends { responses: infer TResponses }
+export type SafeApiResponse<TEndpoint> = TEndpoint extends {
+  responses: infer TResponses;
+}
   ? TResponses extends Record<string | number, unknown>
     ? TypedApiResponse<
         InferSchemaValue<TResponses>,
-        TEndpoint extends { responseHeaders: infer THeaders } ? InferSchemaValue<THeaders> : never
+        TEndpoint extends { responseHeaders: infer THeaders }
+          ? InferSchemaValue<THeaders>
+          : never
       >
     : never
   : never;
@@ -1776,9 +2146,13 @@ export type InferResponseByStatus<TEndpoint, TStatusCode> = Extract<
  * Success-body payload — InferSchemaValue only on success statuses.
  * Filter with extends {} like the old Extract { data: {} } so unknown bodies (e.g. 304) drop out.
  */
-export type InferSuccessData<TEndpoint> = TEndpoint extends { responses: infer TResponses }
+export type InferSuccessData<TEndpoint> = TEndpoint extends {
+  responses: infer TResponses;
+}
   ? {
-      [K in keyof TResponses]: StatusCodeFromKey<K> extends infer TStatusCode extends number
+      [
+        K in keyof TResponses
+      ]: StatusCodeFromKey<K> extends infer TStatusCode extends number
         ? TStatusCode extends SuccessStatusCode
           ? Extract<InferSchemaValue<TResponses[K]>, {}>
           : never
@@ -1790,7 +2164,8 @@ type RequiredKeys<T> = {
   [P in keyof T]-?: undefined extends T[P] ? never : P;
 }[keyof T];
 
-type MaybeOptionalArg<T> = RequiredKeys<T> extends never ? [config?: T] : [config: T];
+type MaybeOptionalArg<T> =
+  RequiredKeys<T> extends never ? [config?: T] : [config: T];
 type NotNever<T> = [T] extends [never] ? false : true;
 
 export type ApiQueryOptions = {
@@ -1808,20 +2183,24 @@ type ApiRequestOptions = {
 };
 
 /** Parameter bag for an endpoint + request options. */
-export type ApiCallParams<TEndpoint> = TEndpoint extends { parameters: infer UParams }
+export type ApiCallParams<TEndpoint> = TEndpoint extends {
+  parameters: infer UParams;
+}
   ? NotNever<InferSchemaInput<UParams>> extends true
     ? InferSchemaInput<UParams> & ApiRequestOptions
     : ApiRequestOptions
   : ApiRequestOptions;
 
 /** Resolve response type from withResponse flag on the call config. */
-export type ApiCallResult<TEndpoint, TParams> = TParams extends { withResponse: true }
+export type ApiCallResult<TEndpoint, TParams> = TParams extends {
+  withResponse: true;
+}
   ? SafeApiResponse<TEndpoint>
   : InferSuccessData<TEndpoint>;
 
-export type ValidateSide = "none" | "input" | "output" | "both";
+export type ValidateSide = 'none' | 'input' | 'output' | 'both';
 export type OnValidate = (ctx: {
-  side: "input" | "output";
+  side: 'input' | 'output';
   method: string;
   path: string;
   schema: unknown;
@@ -1836,7 +2215,7 @@ export class TypedStatusError<TData = unknown> extends Error {
   status: number;
   constructor(response: TypedErrorResponse<TData, ErrorStatusCode, unknown>) {
     super(`HTTP ${response.status}: ${response.statusText}`);
-    this.name = "TypedStatusError";
+    this.name = 'TypedStatusError';
     this.response = response;
     this.status = response.status;
   }
@@ -1849,7 +2228,7 @@ const defaultParse = (schema: unknown, value: unknown): unknown => {
 };
 
 const runValidate = async (ctx: {
-  side: "input" | "output";
+  side: 'input' | 'output';
   method: string;
   path: string;
   schema: unknown;
@@ -1863,16 +2242,16 @@ const runValidate = async (ctx: {
 
 // <ApiClient>
 const isPlainObject = (value: unknown): value is Record<string, unknown> => {
-  if (value === null || typeof value !== "object") return false;
+  if (value === null || typeof value !== 'object') return false;
   const prototype = Object.getPrototypeOf(value);
   return prototype === Object.prototype || prototype === null;
 };
 
 export class ApiClient {
-  baseUrl: string = "";
+  baseUrl: string = '';
   successStatusCodes = successStatusCodes;
   errorStatusCodes = errorStatusCodes;
-  validate: ValidateSide = "both";
+  validate: ValidateSide = 'both';
   onValidate?: OnValidate;
 
   constructor(
@@ -1906,71 +2285,96 @@ export class ApiClient {
    * Replace path parameters in URL
    * Supports both OpenAPI format {param} and Express format :param
    */
-  defaultDecodePathParams = (url: string, params: unknown, styles?: Record<string, ParameterSerialization>): string => {
+  defaultDecodePathParams = (
+    url: string,
+    params: unknown,
+    styles?: Record<string, ParameterSerialization>,
+  ): string => {
     const record = (params ?? {}) as Record<string, unknown>;
     const encode = (value: unknown) => encodeURIComponent(String(value));
     const serialize = (key: string, value: unknown): string => {
       const parameterStyle = styles?.[key];
-      const style = parameterStyle?.style ?? "simple";
+      const style = parameterStyle?.style ?? 'simple';
       const explode = parameterStyle?.explode ?? false;
-      if (style === "label") {
+      if (style === 'label') {
         if (Array.isArray(value))
           return (
-            "." +
+            '.' +
             value
               .filter((item) => item != null)
               .map(encode)
-              .join(explode ? "." : ",")
+              .join(explode ? '.' : ',')
           );
         if (isPlainObject(value)) {
-          const entries = Object.entries(value as Record<string, unknown>).filter(([, item]) => item != null);
+          const entries = Object.entries(
+            value as Record<string, unknown>,
+          ).filter(([, item]) => item != null);
           return (
-            "." +
+            '.' +
             (explode
-              ? entries.map(([name, item]) => encode(name) + "=" + encode(item)).join(".")
-              : entries.flatMap(([name, item]) => [encode(name), encode(item)]).join(","))
+              ? entries
+                  .map(([name, item]) => encode(name) + '=' + encode(item))
+                  .join('.')
+              : entries
+                  .flatMap(([name, item]) => [encode(name), encode(item)])
+                  .join(','))
           );
         }
-        return "." + encode(value);
+        return '.' + encode(value);
       }
-      if (style === "matrix") {
+      if (style === 'matrix') {
         if (Array.isArray(value))
           return explode
             ? value
                 .filter((item) => item != null)
-                .map((item) => ";" + key + "=" + encode(item))
-                .join("")
-            : ";" +
+                .map((item) => ';' + key + '=' + encode(item))
+                .join('')
+            : ';' +
                 key +
-                "=" +
+                '=' +
                 value
                   .filter((item) => item != null)
                   .map(encode)
-                  .join(",");
+                  .join(',');
         if (isPlainObject(value)) {
-          const entries = Object.entries(value as Record<string, unknown>).filter(([, item]) => item != null);
+          const entries = Object.entries(
+            value as Record<string, unknown>,
+          ).filter(([, item]) => item != null);
           return explode
-            ? entries.map(([name, item]) => ";" + encode(name) + "=" + encode(item)).join("")
-            : ";" + key + "=" + entries.flatMap(([name, item]) => [encode(name), encode(item)]).join(",");
+            ? entries
+                .map(([name, item]) => ';' + encode(name) + '=' + encode(item))
+                .join('')
+            : ';' +
+                key +
+                '=' +
+                entries
+                  .flatMap(([name, item]) => [encode(name), encode(item)])
+                  .join(',');
         }
-        return ";" + key + "=" + encode(value);
+        return ';' + key + '=' + encode(value);
       }
       if (Array.isArray(value))
         return value
           .filter((item) => item != null)
           .map(encode)
-          .join(",");
+          .join(',');
       if (isPlainObject(value)) {
         return Object.entries(value as Record<string, unknown>)
           .filter(([, item]) => item != null)
-          .map(([name, item]) => (explode ? encode(name) + "=" + encode(item) : [encode(name), encode(item)]))
+          .map(([name, item]) =>
+            explode
+              ? encode(name) + '=' + encode(item)
+              : [encode(name), encode(item)],
+          )
           .flat()
-          .join(",");
+          .join(',');
       }
       return encode(value);
     };
     return url
-      .replace(/{([^}]+)}/g, (_, key: string) => (record[key] != null ? serialize(key, record[key]) : `{${key}}`))
+      .replace(/{([^}]+)}/g, (_, key: string) =>
+        record[key] != null ? serialize(key, record[key]) : `{${key}}`,
+      )
       .replace(/:([a-zA-Z0-9_]+)/g, (_, key: string) =>
         record[key] != null ? serialize(key, record[key]) : `:${key}`,
       );
@@ -1981,10 +2385,14 @@ export class ApiClient {
     queryParams: unknown,
     styles?: Record<string, ParameterSerialization>,
   ): URLSearchParams | undefined => {
-    if (!queryParams || typeof queryParams !== "object") return;
+    if (!queryParams || typeof queryParams !== 'object') return;
 
     const searchParams = new URLSearchParams();
-    const rawEntries: Array<{ key: string; value: string; allowReserved: boolean }> = [];
+    const rawEntries: Array<{
+      key: string;
+      value: string;
+      allowReserved: boolean;
+    }> = [];
     const append = (key: string, value: unknown, allowReserved = false) => {
       const stringValue = String(value);
       searchParams.append(key, stringValue);
@@ -1993,123 +2401,144 @@ export class ApiClient {
     const encodeQueryComponent = (value: string, allowReserved: boolean) => {
       const encoded = encodeURIComponent(value);
       return allowReserved
-        ? encoded.replace(/%3A|%2F|%3F|%40|%21|%24|%26|%27|%28|%29|%2A|%2B|%2C|%3B|%3D|%5B|%5D/gi, (part) =>
-            decodeURIComponent(part),
+        ? encoded.replace(
+            /%3A|%2F|%3F|%40|%21|%24|%26|%27|%28|%29|%2A|%2B|%2C|%3B|%3D|%5B|%5D/gi,
+            (part) => decodeURIComponent(part),
           )
         : encoded;
     };
-    Object.defineProperty(searchParams, "toString", {
+    Object.defineProperty(searchParams, 'toString', {
       value: () =>
         rawEntries
           .map(
             ({ key, value, allowReserved }) =>
               `${encodeQueryComponent(key, false)}=${encodeQueryComponent(value, allowReserved)}`,
           )
-          .join("&"),
+          .join('&'),
     });
-    Object.entries(queryParams as Record<string, unknown>).forEach(([key, value]) => {
-      if (value != null) {
-        // Skip null/undefined values
-        const parameterStyle = styles?.[key];
-        const style = parameterStyle?.style ?? "form";
-        const explode = parameterStyle?.explode ?? true;
-        const allowReserved = parameterStyle?.allowReserved === true;
-        if (Array.isArray(value)) {
-          if (style === "spaceDelimited")
-            append(
-              key,
-              value
-                .filter((item) => item != null)
-                .map(String)
-                .join(" "),
-              allowReserved,
-            );
-          else if (style === "pipeDelimited")
-            append(
-              key,
-              value
-                .filter((item) => item != null)
-                .map(String)
-                .join("|"),
-              allowReserved,
-            );
-          else if (explode) value.forEach((val) => val != null && append(key, val, allowReserved));
-          else
-            append(
-              key,
-              value
-                .filter((item) => item != null)
-                .map(String)
-                .join(","),
-              allowReserved,
-            );
-        } else if (isPlainObject(value)) {
-          const entries = Object.entries(value as Record<string, unknown>).filter(
-            ([, nestedValue]) => nestedValue != null,
-          );
-          if (style === "deepObject") {
-            for (const [nestedKey, nestedValue] of entries) {
-              if (Array.isArray(nestedValue))
-                nestedValue.forEach((item) => item != null && append(`${key}[${nestedKey}]`, item, allowReserved));
-              else append(`${key}[${nestedKey}]`, nestedValue, allowReserved);
-            }
-          } else if (explode) {
-            for (const [nestedKey, nestedValue] of entries) {
-              if (Array.isArray(nestedValue))
-                nestedValue.forEach((item) => item != null && append(nestedKey, item, allowReserved));
-              else append(nestedKey, nestedValue, allowReserved);
+    Object.entries(queryParams as Record<string, unknown>).forEach(
+      ([key, value]) => {
+        if (value != null) {
+          // Skip null/undefined values
+          const parameterStyle = styles?.[key];
+          const style = parameterStyle?.style ?? 'form';
+          const explode = parameterStyle?.explode ?? true;
+          const allowReserved = parameterStyle?.allowReserved === true;
+          if (Array.isArray(value)) {
+            if (style === 'spaceDelimited')
+              append(
+                key,
+                value
+                  .filter((item) => item != null)
+                  .map(String)
+                  .join(' '),
+                allowReserved,
+              );
+            else if (style === 'pipeDelimited')
+              append(
+                key,
+                value
+                  .filter((item) => item != null)
+                  .map(String)
+                  .join('|'),
+                allowReserved,
+              );
+            else if (explode)
+              value.forEach(
+                (val) => val != null && append(key, val, allowReserved),
+              );
+            else
+              append(
+                key,
+                value
+                  .filter((item) => item != null)
+                  .map(String)
+                  .join(','),
+                allowReserved,
+              );
+          } else if (isPlainObject(value)) {
+            const entries = Object.entries(
+              value as Record<string, unknown>,
+            ).filter(([, nestedValue]) => nestedValue != null);
+            if (style === 'deepObject') {
+              for (const [nestedKey, nestedValue] of entries) {
+                if (Array.isArray(nestedValue))
+                  nestedValue.forEach(
+                    (item) =>
+                      item != null &&
+                      append(`${key}[${nestedKey}]`, item, allowReserved),
+                  );
+                else append(`${key}[${nestedKey}]`, nestedValue, allowReserved);
+              }
+            } else if (explode) {
+              for (const [nestedKey, nestedValue] of entries) {
+                if (Array.isArray(nestedValue))
+                  nestedValue.forEach(
+                    (item) =>
+                      item != null && append(nestedKey, item, allowReserved),
+                  );
+                else append(nestedKey, nestedValue, allowReserved);
+              }
+            } else {
+              append(
+                key,
+                entries
+                  .flatMap(([nestedKey, nestedValue]) => [
+                    nestedKey,
+                    ...(Array.isArray(nestedValue)
+                      ? nestedValue
+                      : [nestedValue]),
+                  ])
+                  .map(String)
+                  .join(','),
+                allowReserved,
+              );
             }
           } else {
-            append(
-              key,
-              entries
-                .flatMap(([nestedKey, nestedValue]) => [
-                  nestedKey,
-                  ...(Array.isArray(nestedValue) ? nestedValue : [nestedValue]),
-                ])
-                .map(String)
-                .join(","),
-              allowReserved,
-            );
+            append(key, value, allowReserved);
           }
-        } else {
-          append(key, value, allowReserved);
         }
-      }
-    });
+      },
+    );
 
     return searchParams;
   };
 
   /** Append cookie params as a Cookie header (or merge into existing). */
   defaultEncodeCookies = (cookies: unknown, headers: Headers): void => {
-    if (!cookies || typeof cookies !== "object") return;
+    if (!cookies || typeof cookies !== 'object') return;
     const parts = Object.entries(cookies as Record<string, unknown>)
       .filter(([, value]) => value != null)
       .map(([key, value]) => `${key}=${String(value)}`);
     if (!parts.length) return;
-    const existing = headers.get("cookie");
-    headers.set("cookie", existing ? `${existing}; ${parts.join("; ")}` : parts.join("; "));
+    const existing = headers.get('cookie');
+    headers.set(
+      'cookie',
+      existing ? `${existing}; ${parts.join('; ')}` : parts.join('; '),
+    );
   };
 
-  defaultParseResponseData = async (response: FetcherResponse): Promise<unknown> => {
-    const contentType = response.headers.get("content-type") ?? "";
+  defaultParseResponseData = async (
+    response: FetcherResponse,
+  ): Promise<unknown> => {
+    const contentType = response.headers.get('content-type') ?? '';
     const normalizedContentType = contentType.toLowerCase();
-    if (normalizedContentType.includes("text/event-stream")) {
+    if (normalizedContentType.includes('text/event-stream')) {
       return response.body ?? null;
     }
-    if (normalizedContentType.startsWith("text/")) {
+    if (normalizedContentType.startsWith('text/')) {
       return await response.text();
     }
 
-    if (normalizedContentType.startsWith("application/octet-stream")) {
+    if (normalizedContentType.startsWith('application/octet-stream')) {
       return new Blob([await response.arrayBuffer()]);
     }
 
     if (
-      normalizedContentType.includes("application/json") ||
-      (normalizedContentType.includes("application/") && normalizedContentType.includes("json")) ||
-      normalizedContentType === "*/*"
+      normalizedContentType.includes('application/json') ||
+      (normalizedContentType.includes('application/') &&
+        normalizedContentType.includes('json')) ||
+      normalizedContentType === '*/*'
     ) {
       try {
         return await response.json();
@@ -2180,8 +2609,11 @@ export class ApiClient {
     >
   ): Promise<InferSuccessData<TEndpoint>>;
 
-  post<Path extends keyof PostEndpoints>(path: Path, ...params: [config?: unknown]): Promise<unknown> {
-    return this.request("post", path, params[0] as never) as Promise<unknown>;
+  post<Path extends keyof PostEndpoints>(
+    path: Path,
+    ...params: [config?: unknown]
+  ): Promise<unknown> {
+    return this.request('post', path, params[0] as never) as Promise<unknown>;
   }
   // </ApiClient.post>
 
@@ -2244,13 +2676,19 @@ export class ApiClient {
     >
   ): Promise<InferSuccessData<TEndpoint>>;
 
-  get<Path extends keyof GetEndpoints>(path: Path, ...params: [config?: unknown]): Promise<unknown> {
-    return this.request("get", path, params[0] as never) as Promise<unknown>;
+  get<Path extends keyof GetEndpoints>(
+    path: Path,
+    ...params: [config?: unknown]
+  ): Promise<unknown> {
+    return this.request('get', path, params[0] as never) as Promise<unknown>;
   }
   // </ApiClient.get>
 
   // <ApiClient.patch>
-  patch<Path extends keyof PatchEndpoints, TEndpoint extends PatchEndpoints[Path]>(
+  patch<
+    Path extends keyof PatchEndpoints,
+    TEndpoint extends PatchEndpoints[Path],
+  >(
     path: Path,
     ...params: MaybeOptionalArg<
       TEndpoint extends { parameters: infer UParams }
@@ -2279,7 +2717,10 @@ export class ApiClient {
     >
   ): Promise<SafeApiResponse<TEndpoint>>;
 
-  patch<Path extends keyof PatchEndpoints, TEndpoint extends PatchEndpoints[Path]>(
+  patch<
+    Path extends keyof PatchEndpoints,
+    TEndpoint extends PatchEndpoints[Path],
+  >(
     path: Path,
     ...params: MaybeOptionalArg<
       TEndpoint extends { parameters: infer UParams }
@@ -2308,13 +2749,19 @@ export class ApiClient {
     >
   ): Promise<InferSuccessData<TEndpoint>>;
 
-  patch<Path extends keyof PatchEndpoints>(path: Path, ...params: [config?: unknown]): Promise<unknown> {
-    return this.request("patch", path, params[0] as never) as Promise<unknown>;
+  patch<Path extends keyof PatchEndpoints>(
+    path: Path,
+    ...params: [config?: unknown]
+  ): Promise<unknown> {
+    return this.request('patch', path, params[0] as never) as Promise<unknown>;
   }
   // </ApiClient.patch>
 
   // <ApiClient.delete>
-  delete<Path extends keyof DeleteEndpoints, TEndpoint extends DeleteEndpoints[Path]>(
+  delete<
+    Path extends keyof DeleteEndpoints,
+    TEndpoint extends DeleteEndpoints[Path],
+  >(
     path: Path,
     ...params: MaybeOptionalArg<
       TEndpoint extends { parameters: infer UParams }
@@ -2343,7 +2790,10 @@ export class ApiClient {
     >
   ): Promise<SafeApiResponse<TEndpoint>>;
 
-  delete<Path extends keyof DeleteEndpoints, TEndpoint extends DeleteEndpoints[Path]>(
+  delete<
+    Path extends keyof DeleteEndpoints,
+    TEndpoint extends DeleteEndpoints[Path],
+  >(
     path: Path,
     ...params: MaybeOptionalArg<
       TEndpoint extends { parameters: infer UParams }
@@ -2372,8 +2822,11 @@ export class ApiClient {
     >
   ): Promise<InferSuccessData<TEndpoint>>;
 
-  delete<Path extends keyof DeleteEndpoints>(path: Path, ...params: [config?: unknown]): Promise<unknown> {
-    return this.request("delete", path, params[0] as never) as Promise<unknown>;
+  delete<Path extends keyof DeleteEndpoints>(
+    path: Path,
+    ...params: [config?: unknown]
+  ): Promise<unknown> {
+    return this.request('delete', path, params[0] as never) as Promise<unknown>;
   }
   // </ApiClient.delete>
 
@@ -2453,7 +2906,11 @@ export class ApiClient {
     TMethod extends keyof EndpointByMethod,
     TPath extends keyof EndpointByMethod[TMethod],
     TEndpoint extends EndpointByMethod[TMethod][TPath],
-  >(method: TMethod, path: TPath, ...params: [config?: unknown]): Promise<unknown> {
+  >(
+    method: TMethod,
+    path: TPath,
+    ...params: [config?: unknown]
+  ): Promise<unknown> {
     return (async () => {
       const requestParams = params[0] as
         | (EndpointParameters & {
@@ -2465,31 +2922,47 @@ export class ApiClient {
           })
         | undefined;
       const withResponse = requestParams?.withResponse;
-      const throwOnStatusError = requestParams?.throwOnStatusError ?? (withResponse ? false : true);
+      const throwOnStatusError =
+        requestParams?.throwOnStatusError ?? (withResponse ? false : true);
       let overrides = requestParams?.overrides;
-      const validateSide: ValidateSide = requestParams?.validate ?? this.validate;
+      const validateSide: ValidateSide =
+        requestParams?.validate ?? this.validate;
 
       const parametersToSend: EndpointParameters = {};
-      if (requestParams?.body !== undefined) parametersToSend.body = requestParams.body;
-      if (requestParams?.query !== undefined) parametersToSend.query = requestParams.query;
-      if (requestParams?.header !== undefined) parametersToSend.header = requestParams.header;
-      if (requestParams?.path !== undefined) parametersToSend.path = requestParams.path;
-      if (requestParams?.cookie !== undefined) parametersToSend.cookie = requestParams.cookie;
+      if (requestParams?.body !== undefined)
+        parametersToSend.body = requestParams.body;
+      if (requestParams?.query !== undefined)
+        parametersToSend.query = requestParams.query;
+      if (requestParams?.header !== undefined)
+        parametersToSend.header = requestParams.header;
+      if (requestParams?.path !== undefined)
+        parametersToSend.path = requestParams.path;
+      if (requestParams?.cookie !== undefined)
+        parametersToSend.cookie = requestParams.cookie;
 
       type RuntimeEndpoint = {
-        parameters?: Partial<Record<"body" | "query" | "header" | "path" | "cookie", unknown>>;
+        parameters?: Partial<
+          Record<'body' | 'query' | 'header' | 'path' | 'cookie', unknown>
+        >;
         responses?: Record<string, unknown>;
       };
       const endpointSchema = EndpointByMethod[method][path] as RuntimeEndpoint;
-      const shouldValidateInput = validateSide === "input" || validateSide === "both";
+      const shouldValidateInput =
+        validateSide === 'input' || validateSide === 'both';
       if (shouldValidateInput && endpointSchema.parameters) {
         const paramSchema = endpointSchema.parameters;
-        for (const key of ["body", "query", "header", "path", "cookie"] as const) {
+        for (const key of [
+          'body',
+          'query',
+          'header',
+          'path',
+          'cookie',
+        ] as const) {
           const schema = paramSchema[key];
           const value = parametersToSend[key];
           if (schema !== undefined && value !== undefined) {
             parametersToSend[key] = await runValidate({
-              side: "input",
+              side: 'input',
               method: String(method),
               path: String(path),
               schema,
@@ -2500,20 +2973,26 @@ export class ApiClient {
         }
       }
 
-      const resolvedPath = (this.fetcher.decodePathParams ?? this.defaultDecodePathParams)(
+      const resolvedPath = (
+        this.fetcher.decodePathParams ?? this.defaultDecodePathParams
+      )(
         this.baseUrl + (path as string),
         parametersToSend.path ?? {},
         endpointParameterStyles[method]?.[path]?.path,
       );
       const url = new URL(resolvedPath);
-      const urlSearchParams = (this.fetcher.encodeSearchParams ?? this.defaultEncodeSearchParams)(
-        parametersToSend.query,
-        endpointParameterStyles[method]?.[path]?.query,
-      );
+      const urlSearchParams = (
+        this.fetcher.encodeSearchParams ?? this.defaultEncodeSearchParams
+      )(parametersToSend.query, endpointParameterStyles[method]?.[path]?.query);
 
       if (parametersToSend.cookie) {
-        const headers = new Headers((overrides as RequestInit | undefined)?.headers);
-        (this.fetcher.encodeCookies ?? this.defaultEncodeCookies)(parametersToSend.cookie, headers);
+        const headers = new Headers(
+          (overrides as RequestInit | undefined)?.headers,
+        );
+        (this.fetcher.encodeCookies ?? this.defaultEncodeCookies)(
+          parametersToSend.cookie,
+          headers,
+        );
         overrides = { ...overrides, headers };
       }
 
@@ -2523,33 +3002,45 @@ export class ApiClient {
         path: path as string,
         url,
         ...(urlSearchParams ? { urlSearchParams } : {}),
-        ...(Object.keys(parametersToSend).length ? { parameters: parametersToSend } : {}),
-        requestFormat: endpointRequestFormats[method]?.[path] ?? "json",
+        ...(Object.keys(parametersToSend).length
+          ? { parameters: parametersToSend }
+          : {}),
+        requestFormat: endpointRequestFormats[method]?.[path] ?? 'json',
         ...(parameterStyles ? { parameterStyles } : {}),
-        security: endpointSecurityRequirements[method]?.[path] ?? defaultSecurityRequirements,
+        security:
+          endpointSecurityRequirements[method]?.[path] ??
+          defaultSecurityRequirements,
         ...(overrides ? { overrides } : {}),
         throwOnStatusError,
       });
-      const responseFormat = endpointResponseFormats[method]?.[path] ?? "json";
+      const responseFormat = endpointResponseFormats[method]?.[path] ?? 'json';
       let data =
-        responseFormat === "sse"
+        responseFormat === 'sse'
           ? (response.body ?? null)
-          : await (this.fetcher.parseResponseData ?? this.defaultParseResponseData)(response);
-      const shouldValidateOutput = validateSide === "output" || validateSide === "both";
+          : await (
+              this.fetcher.parseResponseData ?? this.defaultParseResponseData
+            )(response);
+      const shouldValidateOutput =
+        validateSide === 'output' || validateSide === 'both';
       if (
         shouldValidateOutput &&
-        responseFormat !== "sse" &&
-        (response.ok || !(errorStatusCodes as readonly number[]).includes(response.status)) &&
+        responseFormat !== 'sse' &&
+        (response.ok ||
+          !(errorStatusCodes as readonly number[]).includes(response.status)) &&
         endpointSchema?.responses
       ) {
         const responseSchema =
           endpointSchema.responses[String(response.status)] ??
-          endpointSchema.responses[String(Math.floor(response.status / 100)) + "xx"] ??
-          endpointSchema.responses[String(Math.floor(response.status / 100)) + "XX"] ??
-          endpointSchema.responses["default"];
+          endpointSchema.responses[
+            String(Math.floor(response.status / 100)) + 'xx'
+          ] ??
+          endpointSchema.responses[
+            String(Math.floor(response.status / 100)) + 'XX'
+          ] ??
+          endpointSchema.responses['default'];
         if (responseSchema) {
           data = await runValidate({
-            side: "output",
+            side: 'output',
             method: String(method),
             path: String(path),
             schema: responseSchema,
@@ -2563,8 +3054,17 @@ export class ApiClient {
         json: () => Promise.resolve(data),
       }) as SafeApiResponse<TEndpoint>;
 
-      if (throwOnStatusError && (errorStatusCodes as readonly number[]).includes(response.status)) {
-        throw new TypedStatusError(typedResponse as TypedErrorResponse<unknown, ErrorStatusCode, unknown>);
+      if (
+        throwOnStatusError &&
+        (errorStatusCodes as readonly number[]).includes(response.status)
+      ) {
+        throw new TypedStatusError(
+          typedResponse as TypedErrorResponse<
+            unknown,
+            ErrorStatusCode,
+            unknown
+          >,
+        );
       }
 
       return withResponse ? typedResponse : data;
@@ -2578,7 +3078,7 @@ export function createApiClient(
   baseUrl?: string,
   options?: { validate?: ValidateSide; onValidate?: OnValidate },
 ) {
-  return new ApiClient(fetcher, options).setBaseUrl(baseUrl ?? "");
+  return new ApiClient(fetcher, options).setBaseUrl(baseUrl ?? '');
 }
 
 /**
