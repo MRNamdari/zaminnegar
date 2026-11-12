@@ -3,9 +3,10 @@
 import DetailsLevel from '@/app/components/dashboard/map/DetailsLevel';
 import LevelManagement from '@/app/components/dashboard/map/LevelManagement';
 import { MapWorkspace } from '@/app/components/dashboard/map/MapWorkspace';
+import { ParcelCreateForm } from '@/app/components/dashboard/map/ParcelCreateForm';
 import SelectedParcels from '@/app/components/dashboard/map/SelectedParcels';
 import SelectedParcelsOwnersTable from '@/app/components/dashboard/map/SelectedParcelsOwnersTable';
-import { MapEditor } from '@/app/features/map-editor';
+import { DraftConfigurationFlow, MapEditor } from '@/app/features/map-editor';
 
 export default function MapPage() {
   return (
@@ -18,6 +19,16 @@ export default function MapPage() {
           <div className="row-span-9 min-h-0">
             <div className="h-full">
               <MapEditor />
+              <DraftConfigurationFlow
+                steps={[
+                  {
+                    id: 'parcel-information',
+                    label: 'مشخصات قطعه',
+                    description: ' اطلاعات اولیه قطعه جدید را وارد کنید.',
+                    component: ParcelCreateForm,
+                  },
+                ]}
+              />
             </div>
           </div>
           <div className="row-span-3 grid grid-cols-12 gap-2 p-2">
