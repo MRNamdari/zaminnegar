@@ -5225,13 +5225,24 @@
       "UpdateBlockDto": {
         "type": "object",
         "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "regionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "blockId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Must belong to regionId"
+          },
           "name": {
             "type": "string",
-            "maxLength": 200
-          },
-          "description": {
-            "type": "string",
-            "default": ""
+            "maxLength": 200,
+            "minLength": 1
           },
           "status": {
             "default": "active",
@@ -5310,6 +5321,8 @@
           },
           "name": {
             "type": "string",
+            "maxLength": 200,
+            "minLength": 1
             "maxLength": 200,
             "minLength": 1
           },
