@@ -306,7 +306,7 @@ export const CreateParcelDto = z.strictObject({
   projectId: z.uuid(),
   regionId: z.uuid(),
   blockId: z.uuid().describe("Must belong to regionId").nullable().describe("Must belong to regionId").optional(),
-  name: z.string().max(200),
+  name: z.string().min(1).max(200),
   status: ParcelStatus.optional(),
   boundaryId: z.uuid().describe("Existing draft boundary to use instead of geometry").optional(),
   geometry: z
@@ -324,7 +324,7 @@ export const UpdateParcelDto = z
   .strictObject({
     regionId: z.uuid(),
     blockId: z.uuid().describe("Must belong to regionId").nullable().describe("Must belong to regionId"),
-    name: z.string().max(200),
+    name: z.string().min(1).max(200),
     status: ParcelStatus,
     geometry: z
       .strictObject({
