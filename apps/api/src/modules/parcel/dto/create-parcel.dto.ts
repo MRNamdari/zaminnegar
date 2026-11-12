@@ -38,7 +38,7 @@ export class CreateParcelDto {
   @IsUUID()
   blockId?: string | null;
 
-  @ApiProperty({ maxLength: 200 })
+  @ApiProperty({ maxLength: 200, minLength: 1 })
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
