@@ -1,14 +1,13 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
-import { SESSION_AUTH_NAME } from '../modules/access/decorators/access.decorators';
 
 /**
- * Cookie name shown in the document. The real name is configurable (SESSION_COOKIE_NAME); the cookie is set by
- * the server and sent by the browser, so clients never handle it by name.
+ * Name of the security scheme. `@ApiBearerAuth()` (no argument) refers to this exact name, so every
+ * controller that carries it shows up as protected and gets the "Authorize" button in Swagger UI.
  */
-const DOCUMENTED_COOKIE_NAME = 'sid';
+export const BEARER_AUTH_NAME = 'bearer';
 
-/** Swagger UI options shared by the server. */
+/** Swagger UI options shared by the server: keep the entered token across page reloads. */
 export const SWAGGER_UI_OPTIONS = {
   swaggerOptions: { persistAuthorization: true },
 };
@@ -19,37 +18,33 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
     .setTitle('Zaminnegar API')
     .setDescription(
       'Farmland management API. Geometry is GeoJSON in WGS 84 (EPSG:4326) with `[longitude, latitude]` ordering. ' +
-        'Errors raised by the application share one envelope (`ErrorResponseDto`); request validation errors use ' +
-        '`ValidationErrorResponseDto`.\n\n' +
-        '**Authentication.** Register with `POST /auth/register` and confirm the phone with `POST /auth/register/verify`, ' +
-        'then `POST /auth/login` with username and password. The server answers with an HTTP-only session cookie, which ' +
-        'the browser sends on every later request (the session identifier never appears in a response body). A user has ' +
-        'one session at a time; it ends after an idle period or an absolute deadline. A missing, invalid or expired ' +
-        'session gives `401`; a valid session without the required permission gives `403`.\n\n' +
-        '**Authorization.** Permissions come from roles stored in the database: a *system role* (held once, applies ' +
-        'to every project) and one *project role* per project membership (applies to that project only; custom roles ' +
-        'belong to a single project). A project or record you have no relationship with answers `404`.',
+        'Errors share one envelope (`ErrorResponseDto`).\n\n' +
+        '**Authentication.** Call `POST /auth/login` with email and password to get a session token, then send it ' +
+        'as `Authorization: Bearer <token>` on every other request (use the *Authorize* button here). ' +
+        'A missing, invalid or expired token gives `401`; a valid token without the required permission on the ' +
+        'project in question gives `403`. Permissions come from roles stored in the database and are granted ' +
+        'either globally (global role) or per project (project membership).',
     )
     .setVersion('1.0.0')
-    .addCookieAuth(
-      DOCUMENTED_COOKIE_NAME,
+    .addBearerAuth(
       {
-        type: 'apiKey',
-        in: 'cookie',
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'Opaque session token',
         description:
-          'HTTP-only session cookie set by `POST /auth/login`. Ended by `POST /auth/logout`, a password reset or deactivation.',
+          'The `token` returned by `POST /auth/login`. Revoked by `POST /auth/logout`.',
       },
-      SESSION_AUTH_NAME,
+      BEARER_AUTH_NAME,
     )
     .addTag(
       'auth',
-      'Registration, sign in / out, password reset and the current session. The registration, login and password routes are public.',
+      'Sign in / out and inspect the current session. `login` is the only public route.',
     )
     .addTag(
       'users',
-      'Account administration (system-level `user:*` permissions); every user can read their own account.',
+      'User administration (global `user:*` permissions, i.e. admin).',
     )
-    .addTag('roles', 'Permission catalogue, predefined system roles, and the roles of a project (predefined and custom).')
+    .addTag('roles', 'Roles and their permissions, stored in the database.')
     .addTag(
       'project-members',
       'Which users act in a project, and with which role.',

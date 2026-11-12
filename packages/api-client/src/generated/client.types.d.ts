@@ -1,83 +1,27 @@
 export namespace Schemas {
   // <Schemas>
-  export type ErrorResponseDto = {
-    /**
-     * Stable, machine-readable code
-     */
-    code: string;
-    message: string;
-    /**
-     * Present on rate-limit errors (429): seconds until a retry can succeed
-     */
-    retryAfterSeconds?: number;
-  };
-  export type ValidationErrorResponseDto = {
-    statusCode: number;
-    /**
-     * One message, or one per invalid property
-     */
-    message: string | Array<string>;
-    error: string;
-  };
-  export type RegisterUserDto = {
-    /**
-     * Lower case letters, digits and "_"; not only digits. Case-insensitive.
-     */
-    username: string;
-    password: string;
-    /**
-     * Iranian mobile number in any common format; stored and returned as E.164 (`+989123456789`)
-     */
-    phone: string;
-    /**
-     * Never verified and never used to sign in
-     */
-    email?: string;
-  };
-  export type OtpDispatchResponseDto = {
-    /**
-     * The code stops working at this time
-     */
-    expiresAt: Date;
-    /**
-     * A new code can be requested from this time
-     */
-    resendAvailableAt: Date;
-  };
-  export type VerifyRegistrationDto = {
-    /**
-     * Iranian mobile number in any common format; stored and returned as E.164 (`+989123456789`)
-     */
-    phone: string;
-    code: string;
-  };
-  export type LoginDto = {
-    /**
-     * Case-insensitive
-     */
-    username: string;
-    password: string;
-  };
-  export type UserSummaryDto = { id: string; username: string; phone: string; email: string | null };
-  export type SessionResponseDto = {
-    user: UserSummaryDto;
-    /**
-     * The session ends here unless it is used before
-     */
-    idleExpiresAt: Date;
-    /**
-     * The session ends here no matter how active it is
-     */
-    absoluteExpiresAt: Date;
-  };
-  export type RoleSummaryDto = {
+  export type LoginDto = { email: string; password: string };
+  export type UserResponseDto = {
     id: string;
+    email: string;
     name: string;
+    isActive: boolean;
     /**
-     * Predefined (seeded) role
+     * Role of scope `global`, if any
      */
-    isSystem: boolean;
+    globalRoleId: string | null;
+    createdAt: Date;
+    updatedAt: Date;
   };
+  export type LoginResponseDto = {
+    /**
+     * Send as `Authorization: Bearer <token>`. Shown once.
+     */
+    token: string;
+    expiresAt: Date;
+    user: UserResponseDto;
+  };
+  export type RoleSummaryDto = { id: string; name: string };
   export type Resource =
     | "project"
     | "boundary"
@@ -87,36 +31,30 @@ export namespace Schemas {
     | "owner"
     | "ownership"
     | "member"
-    | "role"
-    | "user";
-  export type Action = "create" | "read" | "update" | "delete" | "invite" | "manage";
+    | "user"
+    | "role";
+  export type Action = "create" | "read" | "update" | "delete";
   export type PermissionDto = { resource: Resource; action: Action };
-  export type CurrentMembershipDto = { projectId: string; role: RoleSummaryDto; permissions: Array<PermissionDto> };
+  export type MembershipPermissionsDto = { projectId: string; role: RoleSummaryDto; permissions: Array<PermissionDto> };
   export type CurrentUserResponseDto = {
     id: string;
-    username: string;
-    phone: string;
-    email: string | null;
-    systemRole: (RoleSummaryDto & (Record<string, unknown> | null)) | null;
+    email: string;
+    name: string;
+    globalRole: (RoleSummaryDto & (Record<string, unknown> | null)) | null;
     /**
      * Granted on every project
      */
-    systemPermissions: Array<PermissionDto>;
-    memberships: Array<CurrentMembershipDto>;
+    globalPermissions: Array<PermissionDto>;
+    memberships: Array<MembershipPermissionsDto>;
   };
-  export type ForgotPasswordDto = {
+  export type CreateUserDto = {
+    email: string;
+    name: string;
+    password: string;
     /**
-     * Username, or phone number in any common Iranian format (normalised to E.164)
+     * A role of scope `global`
      */
-    identifier: string;
-  };
-  export type ResetPasswordDto = {
-    /**
-     * The same username or phone number that requested the code
-     */
-    identifier: string;
-    code: string;
-    newPassword: string;
+    globalRoleId?: string | null;
   };
   export type PaginatedResponseDto = {
     items: Array<Record<string, unknown>>;
@@ -127,53 +65,31 @@ export namespace Schemas {
     page: number;
     limit: number;
   };
-  export type UserResponseDto = {
-    id: string;
-    username: string;
-    phone: string | null;
-    /**
-     * Null until registration is finished
-     */
-    phoneVerifiedAt: Date | null;
-    email: string | null;
-    isActive: boolean;
-    systemRoleId: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-  };
   export type UpdateUserDto = Partial<{
+    name: string;
     /**
-     * Deactivating an account also ends its session
+     * Revokes all sessions of the user
+     */
+    password: string;
+    /**
+     * Deactivating a user revokes all sessions
      */
     isActive: boolean;
     /**
-     * A system role, or null to remove it
+     * A role of scope `global`; null removes it
      */
-    systemRoleId: string | null;
+    globalRoleId: string | null;
   }>;
-  export type PermissionDefinitionResponseDto = {
-    resource: Resource;
-    action: Action;
-    description: string;
-    /**
-     * False when only a system role may hold the permission
-     */
-    projectAssignable: boolean;
-  };
-  export type RoleScope = "system" | "project";
+  export type RoleScope = "global" | "project";
   export type RoleResponseDto = {
     id: string;
     name: string;
     description: string;
     scope: RoleScope;
     /**
-     * Predefined (seeded) roles cannot be changed or deleted
+     * System roles are seeded and cannot be changed or deleted
      */
     isSystem: boolean;
-    /**
-     * The project a custom role belongs to; null for predefined roles
-     */
-    projectId: string | null;
     permissions: Array<PermissionDto>;
     createdAt: Date;
     updatedAt: Date;
@@ -181,50 +97,30 @@ export namespace Schemas {
   export type CreateRoleDto = {
     name: string;
     description?: string;
-    /**
-     * Only permissions a project role may hold, and only ones you hold yourself
-     */
+    scope: RoleScope;
     permissions: Array<PermissionDto>;
   };
-  export type UpdateRoleDto = Partial<{
-    name: string;
-    description: string;
-    /**
-     * Replaces the whole permission set
-     */
-    permissions: Array<PermissionDto>;
-  }>;
+  export type UpdateRoleDto = Partial<{ name: string; description: string; permissions: Array<PermissionDto> }>;
   export type MemberResponseDto = {
     projectId: string;
     userId: string;
-    username: string;
-    /**
-     * Present only for yourself and for callers with system-level access
-     */
-    phone?: string;
-    /**
-     * Present only for yourself and for callers with system-level access
-     */
-    email?: string | null;
+    userEmail: string;
+    userName: string;
     roleId: string;
     roleName: string;
-    roleIsSystem: boolean;
     createdAt: Date;
     updatedAt: Date;
   };
   export type AddMemberDto = {
+    userId: string;
     /**
-     * Username of an active, phone-verified account
-     */
-    username: string;
-    /**
-     * A predefined project role or a custom role of this project
+     * A role of scope `project`
      */
     roleId: string;
   };
   export type UpdateMemberDto = {
     /**
-     * A predefined project role or a custom role of this project
+     * A role of scope `project`
      */
     roleId: string;
   };
@@ -284,8 +180,20 @@ export namespace Schemas {
      * Geodesic area in square meters
      */
     areaM2: number;
+    /**
+     * Geodesic area in square meters
+     */
+    areaM2: number;
     createdAt: Date;
     updatedAt: Date;
+    /**
+     * Number of blocks in the region. Only present in list responses
+     */
+    blocksCount?: number;
+    /**
+     * Number of parcels in the region. Only present in list responses
+     */
+    parcelsCount?: number;
     /**
      * Number of blocks in the region. Only present in list responses
      */
@@ -304,10 +212,31 @@ export namespace Schemas {
      */
     regionId: string;
     boundaryId: string;
+  export type BlockStatus = "active" | "inactive";
+  export type BlockResponseDto = {
+    id: string;
+    projectId: string;
+    /**
+     * Derived from the block outline by the database
+     */
+    regionId: string;
+    boundaryId: string;
     name: string;
     description: string;
     status: BlockStatus;
+    status: BlockStatus;
     /**
+     * Geodesic area in square meters
+     */
+    areaM2: number;
+    createdAt: Date;
+    updatedAt: Date;
+    /**
+     * Number of parcels in the block. Only present in list responses
+     */
+    parcelsCount?: number;
+    region?: RegionResponseDto;
+  };
      * Geodesic area in square meters
      */
     areaM2: number;
@@ -326,7 +255,13 @@ export namespace Schemas {
     /**
      * Derived from the parcel outline by the database
      */
+    /**
+     * Derived from the parcel outline by the database
+     */
     regionId: string;
+    /**
+     * Derived from the parcel outline by the database; null when no block contains the parcel
+     */
     /**
      * Derived from the parcel outline by the database; null when no block contains the parcel
      */
@@ -346,6 +281,7 @@ export namespace Schemas {
      * % of the block this parcel occupies
      */
     blockOccupancyPct?: number | null;
+    blockOccupancyPct?: number | null;
     createdAt: Date;
     updatedAt: Date;
     /**
@@ -357,7 +293,17 @@ export namespace Schemas {
      * Only present in list responses; null when the parcel is in no block
      */
     block?: (BlockResponseDto & (Record<string, unknown> | null)) | null;
+    /**
+     * Number of owners holding a share. Only present in list responses
+     */
+    ownershipsCount?: number;
+    region?: RegionResponseDto;
+    /**
+     * Only present in list responses; null when the parcel is in no block
+     */
+    block?: (BlockResponseDto & (Record<string, unknown> | null)) | null;
   };
+  export type RegionDetailResponseDto = {
   export type RegionDetailResponseDto = {
     id: string;
     projectId: string;
@@ -365,6 +311,10 @@ export namespace Schemas {
     name: string;
     description: string;
     status: RegionStatus;
+    /**
+     * Geodesic area in square meters
+     */
+    areaM2: number;
     /**
      * Geodesic area in square meters
      */
@@ -383,7 +333,28 @@ export namespace Schemas {
     boundary: BoundaryResponseDto;
     blocks: Array<BlockResponseDto>;
     parcels: Array<ParcelResponseDto>;
+    /**
+     * Number of blocks in the region. Only present in list responses
+     */
+    blocksCount?: number;
+    /**
+     * Number of parcels in the region. Only present in list responses
+     */
+    parcelsCount?: number;
+    project: ProjectResponseDto;
+    boundary: BoundaryResponseDto;
+    blocks: Array<BlockResponseDto>;
+    parcels: Array<ParcelResponseDto>;
   };
+  export type UpdateRegionDto = Partial<{
+    name: string;
+    description: string;
+    status: RegionStatus;
+    /**
+     * GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
+     */
+    geometry: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
+  }>;
   export type UpdateRegionDto = Partial<{
     name: string;
     description: string;
@@ -408,8 +379,12 @@ export namespace Schemas {
     geometry?: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
   };
   export type BlockDetailResponseDto = {
+  export type BlockDetailResponseDto = {
     id: string;
     projectId: string;
+    /**
+     * Derived from the block outline by the database
+     */
     /**
      * Derived from the block outline by the database
      */
@@ -422,8 +397,20 @@ export namespace Schemas {
      * Geodesic area in square meters
      */
     areaM2: number;
+    /**
+     * Geodesic area in square meters
+     */
+    areaM2: number;
     createdAt: Date;
     updatedAt: Date;
+    /**
+     * Number of parcels in the block. Only present in list responses
+     */
+    parcelsCount?: number;
+    project: ProjectResponseDto;
+    region: RegionResponseDto;
+    boundary: BoundaryResponseDto;
+    parcels: Array<ParcelResponseDto>;
     /**
      * Number of parcels in the block. Only present in list responses
      */
@@ -475,6 +462,52 @@ export namespace Schemas {
     updatedAt: Date;
     owner: OwnerResponseDto;
   };
+  export type ParcelDetailResponseDto = {
+    id: string;
+    projectId: string;
+    /**
+     * Derived from the parcel outline by the database
+     */
+    regionId: string;
+    /**
+     * Derived from the parcel outline by the database; null when no block contains the parcel
+     */
+    blockId?: string | null;
+    boundaryId: string;
+    name: string;
+    status: ParcelStatus;
+    /**
+     * Geodesic area in square meters
+     */
+    areaM2: number;
+    /**
+     * % of the region this parcel occupies
+     */
+    regionOccupancyPct: number;
+    /**
+     * % of the block this parcel occupies
+     */
+    blockOccupancyPct?: number | null;
+    createdAt: Date;
+    updatedAt: Date;
+    /**
+     * Number of owners holding a share. Only present in list responses
+     */
+    ownershipsCount?: number;
+    project: ProjectResponseDto;
+    region: RegionResponseDto;
+    block: (BlockResponseDto & (Record<string, unknown> | null)) | null;
+    boundary: BoundaryResponseDto;
+    ownerships: Array<OwnershipWithOwnerResponseDto>;
+  };
+  export type UpdateParcelDto = Partial<{
+    name: string;
+    status: ParcelStatus;
+    /**
+     * GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
+     */
+    geometry: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
+  }>;
   export type ParcelDetailResponseDto = {
     id: string;
     projectId: string;
@@ -577,41 +610,7 @@ export namespace Endpoints {
   // <Endpoints>
 
   /**
-   * Sends a verification code to the phone number. The answer is the same whether or not the username or phone is already registered.
-   */
-  export type post_AuthController_register = {
-    method: "POST";
-    path: "/auth/register";
-    requestFormat: "json";
-    responseFormat: "json";
-    parameters: {
-      body: Schemas.RegisterUserDto;
-    };
-    responses: {
-      202: Schemas.OtpDispatchResponseDto;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      429: Schemas.ErrorResponseDto;
-    };
-  };
-  /**
-   * Activates the account; sign in afterwards.
-   */
-  export type post_AuthController_verifyRegistration = {
-    method: "POST";
-    path: "/auth/register/verify";
-    requestFormat: "json";
-    responseFormat: "json";
-    parameters: {
-      body: Schemas.VerifyRegistrationDto;
-    };
-    responses: {
-      204: unknown;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      429: Schemas.ErrorResponseDto;
-    };
-  };
-  /**
-   * Sets the session cookie and ends any previous session of this account.
+   * Returns an opaque session token to send as a Bearer token
    */
   export type post_AuthController_login = {
     method: "POST";
@@ -619,15 +618,11 @@ export namespace Endpoints {
     requestFormat: "json";
     responseFormat: "json";
     parameters: {
+      header: { "user-agent": string };
+
       body: Schemas.LoginDto;
     };
-    responses: {
-      200: Schemas.SessionResponseDto;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      401: Schemas.ErrorResponseDto;
-      403: Schemas.ErrorResponseDto;
-    };
-    responseHeaders: { 200: { "Set-Cookie": string } };
+    responses: { 200: Schemas.LoginResponseDto };
   };
   export type post_AuthController_logout = {
     method: "POST";
@@ -635,19 +630,7 @@ export namespace Endpoints {
     requestFormat: "json";
     responseFormat: "json";
     parameters: never;
-    responses: { 204: unknown; 401: Schemas.ErrorResponseDto; 403: Schemas.ErrorResponseDto };
-  };
-  /**
-   * Issues a new session identifier and restarts the idle timer. The absolute deadline does not move.
-   */
-  export type post_AuthController_renew = {
-    method: "POST";
-    path: "/auth/session/renew";
-    requestFormat: "json";
-    responseFormat: "json";
-    parameters: never;
-    responses: { 200: Schemas.SessionResponseDto; 401: Schemas.ErrorResponseDto; 403: Schemas.ErrorResponseDto };
-    responseHeaders: { 200: { "Set-Cookie": string } };
+    responses: { 204: unknown };
   };
   export type get_AuthController_me = {
     method: "GET";
@@ -655,41 +638,17 @@ export namespace Endpoints {
     requestFormat: "json";
     responseFormat: "json";
     parameters: never;
-    responses: { 200: Schemas.CurrentUserResponseDto; 401: Schemas.ErrorResponseDto; 403: Schemas.ErrorResponseDto };
+    responses: { 200: Schemas.CurrentUserResponseDto };
   };
-  /**
-   * Sends a code to the phone of the account. The answer is the same whether or not the account exists.
-   */
-  export type post_AuthController_forgotPassword = {
+  export type post_UsersController_create = {
     method: "POST";
-    path: "/auth/password/forgot";
+    path: "/users";
     requestFormat: "json";
     responseFormat: "json";
     parameters: {
-      body: Schemas.ForgotPasswordDto;
+      body: Schemas.CreateUserDto;
     };
-    responses: {
-      202: Schemas.OtpDispatchResponseDto;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      429: Schemas.ErrorResponseDto;
-    };
-  };
-  /**
-   * Ends the account's session. Sign in with the new password afterwards.
-   */
-  export type post_AuthController_resetPassword = {
-    method: "POST";
-    path: "/auth/password/reset";
-    requestFormat: "json";
-    responseFormat: "json";
-    parameters: {
-      body: Schemas.ResetPasswordDto;
-    };
-    responses: {
-      204: unknown;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      429: Schemas.ErrorResponseDto;
-    };
+    responses: { 201: Schemas.UserResponseDto };
   };
   export type get_UsersController_list = {
     method: "GET";
@@ -699,16 +658,8 @@ export namespace Endpoints {
     parameters: {
       query?: Partial<{ page: number; limit: number; search: string }>;
     };
-    responses: {
-      200: Schemas.PaginatedResponseDto & Partial<{ items: Array<Schemas.UserResponseDto> }>;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      401: Schemas.ErrorResponseDto;
-      403: Schemas.ErrorResponseDto;
-    };
+    responses: { 200: Schemas.PaginatedResponseDto & Partial<{ items: Array<Schemas.UserResponseDto> }> };
   };
-  /**
-   * Your own account, or any account with the system-level `user:read` permission.
-   */
   export type get_UsersController_get = {
     method: "GET";
     path: "/users/{id}";
@@ -717,17 +668,8 @@ export namespace Endpoints {
     parameters: {
       path: { id: string };
     };
-    responses: {
-      200: Schemas.UserResponseDto;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      401: Schemas.ErrorResponseDto;
-      403: Schemas.ErrorResponseDto;
-      404: Schemas.ErrorResponseDto;
-    };
+    responses: { 200: Schemas.UserResponseDto };
   };
-  /**
-   * Deactivating an account ends its session. You cannot grant a system role stronger than your own.
-   */
   export type patch_UsersController_update = {
     method: "PATCH";
     path: "/users/{id}";
@@ -738,133 +680,74 @@ export namespace Endpoints {
 
       body: Schemas.UpdateUserDto;
     };
-    responses: {
-      200: Schemas.UserResponseDto;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      401: Schemas.ErrorResponseDto;
-      403: Schemas.ErrorResponseDto;
-      404: Schemas.ErrorResponseDto;
-      409: Schemas.ErrorResponseDto;
-    };
+    responses: { 200: Schemas.UserResponseDto };
   };
-  export type get_PermissionsController_list = {
-    method: "GET";
-    path: "/permissions";
-    requestFormat: "json";
-    responseFormat: "json";
-    parameters: never;
-    responses: {
-      200: Array<Schemas.PermissionDefinitionResponseDto>;
-      401: Schemas.ErrorResponseDto;
-      403: Schemas.ErrorResponseDto;
-    };
-  };
-  export type get_SystemRolesController_list = {
-    method: "GET";
-    path: "/roles/system";
-    requestFormat: "json";
-    responseFormat: "json";
-    parameters: never;
-    responses: { 200: Array<Schemas.RoleResponseDto>; 401: Schemas.ErrorResponseDto; 403: Schemas.ErrorResponseDto };
-  };
-  export type get_ProjectRolesController_list = {
-    method: "GET";
-    path: "/projects/{projectId}/roles";
+  export type delete_UsersController_remove = {
+    method: "DELETE";
+    path: "/users/{id}";
     requestFormat: "json";
     responseFormat: "json";
     parameters: {
-      path: { projectId: string };
+      path: { id: string };
     };
-    responses: {
-      200: Array<Schemas.RoleResponseDto>;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      401: Schemas.ErrorResponseDto;
-      403: Schemas.ErrorResponseDto;
-      404: Schemas.ErrorResponseDto;
-    };
+    responses: { 204: unknown };
   };
-  /**
-   * The role belongs to this project only. It can hold only permissions that you hold in this project yourself.
-   */
-  export type post_ProjectRolesController_create = {
+  export type get_RolesController_list = {
+    method: "GET";
+    path: "/roles";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: never;
+    responses: { 200: Array<Schemas.RoleResponseDto> };
+  };
+  export type post_RolesController_create = {
     method: "POST";
-    path: "/projects/{projectId}/roles";
+    path: "/roles";
     requestFormat: "json";
     responseFormat: "json";
     parameters: {
-      path: { projectId: string };
-
       body: Schemas.CreateRoleDto;
     };
-    responses: {
-      201: Schemas.RoleResponseDto;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      401: Schemas.ErrorResponseDto;
-      403: Schemas.ErrorResponseDto;
-      404: Schemas.ErrorResponseDto;
-      409: Schemas.ErrorResponseDto;
-      422: Schemas.ErrorResponseDto;
-    };
+    responses: { 201: Schemas.RoleResponseDto };
   };
-  export type get_ProjectRolesController_get = {
+  export type get_RolesController_get = {
     method: "GET";
-    path: "/projects/{projectId}/roles/{roleId}";
+    path: "/roles/{id}";
     requestFormat: "json";
     responseFormat: "json";
     parameters: {
-      path: { projectId: string; roleId: string };
+      path: { id: string };
     };
-    responses: {
-      200: Schemas.RoleResponseDto;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      401: Schemas.ErrorResponseDto;
-      403: Schemas.ErrorResponseDto;
-      404: Schemas.ErrorResponseDto;
-    };
+    responses: { 200: Schemas.RoleResponseDto };
   };
   /**
-   * Predefined roles cannot be changed. Changes apply to its members immediately.
+   * System roles cannot be changed
    */
-  export type patch_ProjectRolesController_update = {
+  export type patch_RolesController_update = {
     method: "PATCH";
-    path: "/projects/{projectId}/roles/{roleId}";
+    path: "/roles/{id}";
     requestFormat: "json";
     responseFormat: "json";
     parameters: {
-      path: { projectId: string; roleId: string };
+      path: { id: string };
 
       body: Schemas.UpdateRoleDto;
     };
-    responses: {
-      200: Schemas.RoleResponseDto;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      401: Schemas.ErrorResponseDto;
-      403: Schemas.ErrorResponseDto;
-      404: Schemas.ErrorResponseDto;
-      409: Schemas.ErrorResponseDto;
-      422: Schemas.ErrorResponseDto;
-    };
+    responses: { 200: Schemas.RoleResponseDto };
   };
-  export type delete_ProjectRolesController_remove = {
+  /**
+   * System roles and roles still assigned to someone cannot be deleted
+   */
+  export type delete_RolesController_remove = {
     method: "DELETE";
-    path: "/projects/{projectId}/roles/{roleId}";
+    path: "/roles/{id}";
     requestFormat: "json";
     responseFormat: "json";
     parameters: {
-      path: { projectId: string; roleId: string };
+      path: { id: string };
     };
-    responses: {
-      204: unknown;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      401: Schemas.ErrorResponseDto;
-      403: Schemas.ErrorResponseDto;
-      404: Schemas.ErrorResponseDto;
-      409: Schemas.ErrorResponseDto;
-    };
+    responses: { 204: unknown };
   };
-  /**
-   * Contact details are included only for yourself and for system-level callers.
-   */
   export type get_ProjectMembersController_list = {
     method: "GET";
     path: "/projects/{projectId}/members";
@@ -873,17 +756,8 @@ export namespace Endpoints {
     parameters: {
       path: { projectId: string };
     };
-    responses: {
-      200: Array<Schemas.MemberResponseDto>;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      401: Schemas.ErrorResponseDto;
-      403: Schemas.ErrorResponseDto;
-      404: Schemas.ErrorResponseDto;
-    };
+    responses: { 200: Array<Schemas.MemberResponseDto> };
   };
-  /**
-   * You can assign only roles whose permissions you hold in this project yourself.
-   */
   export type post_ProjectMembersController_add = {
     method: "POST";
     path: "/projects/{projectId}/members";
@@ -894,19 +768,9 @@ export namespace Endpoints {
 
       body: Schemas.AddMemberDto;
     };
-    responses: {
-      201: Schemas.MemberResponseDto;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      401: Schemas.ErrorResponseDto;
-      403: Schemas.ErrorResponseDto;
-      404: Schemas.ErrorResponseDto;
-      409: Schemas.ErrorResponseDto;
-    };
+    responses: { 201: Schemas.MemberResponseDto };
   };
-  /**
-   * You can neither assign a role stronger than your own nor change a member who holds one. The last owner cannot be demoted.
-   */
-  export type patch_ProjectMembersController_changeRole = {
+  export type patch_ProjectMembersController_update = {
     method: "PATCH";
     path: "/projects/{projectId}/members/{userId}";
     requestFormat: "json";
@@ -916,14 +780,7 @@ export namespace Endpoints {
 
       body: Schemas.UpdateMemberDto;
     };
-    responses: {
-      200: Schemas.MemberResponseDto;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      401: Schemas.ErrorResponseDto;
-      403: Schemas.ErrorResponseDto;
-      404: Schemas.ErrorResponseDto;
-      409: Schemas.ErrorResponseDto;
-    };
+    responses: { 200: Schemas.MemberResponseDto };
   };
   export type delete_ProjectMembersController_remove = {
     method: "DELETE";
@@ -933,14 +790,7 @@ export namespace Endpoints {
     parameters: {
       path: { projectId: string; userId: string };
     };
-    responses: {
-      204: unknown;
-      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
-      401: Schemas.ErrorResponseDto;
-      403: Schemas.ErrorResponseDto;
-      404: Schemas.ErrorResponseDto;
-      409: Schemas.ErrorResponseDto;
-    };
+    responses: { 204: unknown };
   };
   export type post_ProjectController_create = {
     method: "POST";
@@ -1065,6 +915,9 @@ export namespace Endpoints {
   /**
    * Each region carries the number of blocks and parcels it contains
    */
+  /**
+   * Each region carries the number of blocks and parcels it contains
+   */
   export type get_RegionController_list = {
     method: "GET";
     path: "/regions";
@@ -1117,6 +970,16 @@ export namespace Endpoints {
     };
     responses: { 200: Schemas.RegionDetailResponseDto };
   };
+  export type get_RegionController_getDetail = {
+    method: "GET";
+    path: "/regions/{id}/detail";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: {
+      path: { id: string };
+    };
+    responses: { 200: Schemas.RegionDetailResponseDto };
+  };
   export type get_RegionController_listParcels = {
     method: "GET";
     path: "/regions/{id}/parcels";
@@ -1126,8 +989,10 @@ export namespace Endpoints {
       path: { id: string };
     };
     responses: { 200: Array<Schemas.ParcelResponseDto> };
+    responses: { 200: Array<Schemas.ParcelResponseDto> };
   };
   /**
+   * Send geometry, or the boundaryId of a finished draft. The region is not sent: it is the region of the project that contains the block outline.
    * Send geometry, or the boundaryId of a finished draft. The region is not sent: it is the region of the project that contains the block outline.
    */
   export type post_BlockController_create = {
@@ -1140,6 +1005,9 @@ export namespace Endpoints {
     };
     responses: { 201: Schemas.BlockResponseDto };
   };
+  /**
+   * Each block carries its region and the number of parcels it contains
+   */
   /**
    * Each block carries its region and the number of parcels it contains
    */
@@ -1202,6 +1070,16 @@ export namespace Endpoints {
     };
     responses: { 200: Schemas.BlockDetailResponseDto };
   };
+  export type get_BlockController_getDetail = {
+    method: "GET";
+    path: "/blocks/{id}/detail";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: {
+      path: { id: string };
+    };
+    responses: { 200: Schemas.BlockDetailResponseDto };
+  };
   export type get_BlockController_listParcels = {
     method: "GET";
     path: "/blocks/{id}/parcels";
@@ -1211,8 +1089,10 @@ export namespace Endpoints {
       path: { id: string };
     };
     responses: { 200: Array<Schemas.ParcelResponseDto> };
+    responses: { 200: Array<Schemas.ParcelResponseDto> };
   };
   /**
+   * Send geometry, or the boundaryId of a finished draft. Region and block are not sent: they are the region and block that contain the parcel outline.
    * Send geometry, or the boundaryId of a finished draft. Region and block are not sent: they are the region and block that contain the parcel outline.
    */
   export type post_ParcelController_create = {
@@ -1225,6 +1105,9 @@ export namespace Endpoints {
     };
     responses: { 201: Schemas.ParcelResponseDto };
   };
+  /**
+   * Each parcel carries its region, its block (or null) and the number of owners holding a share
+   */
   /**
    * Each parcel carries its region, its block (or null) and the number of owners holding a share
    */
@@ -1277,6 +1160,16 @@ export namespace Endpoints {
       path: { id: string };
     };
     responses: { 204: unknown };
+  };
+  export type get_ParcelController_getDetail = {
+    method: "GET";
+    path: "/parcels/{id}/detail";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: {
+      path: { id: string };
+    };
+    responses: { 200: Schemas.ParcelDetailResponseDto };
   };
   export type get_ParcelController_getDetail = {
     method: "GET";
@@ -1401,14 +1294,10 @@ export namespace Endpoints {
 // <EndpointByMethod>
 export type EndpointByMethod = {
   post: {
-    "/auth/register": Endpoints.post_AuthController_register;
-    "/auth/register/verify": Endpoints.post_AuthController_verifyRegistration;
     "/auth/login": Endpoints.post_AuthController_login;
     "/auth/logout": Endpoints.post_AuthController_logout;
-    "/auth/session/renew": Endpoints.post_AuthController_renew;
-    "/auth/password/forgot": Endpoints.post_AuthController_forgotPassword;
-    "/auth/password/reset": Endpoints.post_AuthController_resetPassword;
-    "/projects/{projectId}/roles": Endpoints.post_ProjectRolesController_create;
+    "/users": Endpoints.post_UsersController_create;
+    "/roles": Endpoints.post_RolesController_create;
     "/projects/{projectId}/members": Endpoints.post_ProjectMembersController_add;
     "/projects": Endpoints.post_ProjectController_create;
     "/boundaries": Endpoints.post_BoundaryController_create;
@@ -1422,10 +1311,8 @@ export type EndpointByMethod = {
     "/auth/me": Endpoints.get_AuthController_me;
     "/users": Endpoints.get_UsersController_list;
     "/users/{id}": Endpoints.get_UsersController_get;
-    "/permissions": Endpoints.get_PermissionsController_list;
-    "/roles/system": Endpoints.get_SystemRolesController_list;
-    "/projects/{projectId}/roles": Endpoints.get_ProjectRolesController_list;
-    "/projects/{projectId}/roles/{roleId}": Endpoints.get_ProjectRolesController_get;
+    "/roles": Endpoints.get_RolesController_list;
+    "/roles/{id}": Endpoints.get_RolesController_get;
     "/projects/{projectId}/members": Endpoints.get_ProjectMembersController_list;
     "/projects": Endpoints.get_ProjectController_list;
     "/projects/{id}": Endpoints.get_ProjectController_get;
@@ -1434,13 +1321,16 @@ export type EndpointByMethod = {
     "/regions": Endpoints.get_RegionController_list;
     "/regions/{id}": Endpoints.get_RegionController_get;
     "/regions/{id}/detail": Endpoints.get_RegionController_getDetail;
+    "/regions/{id}/detail": Endpoints.get_RegionController_getDetail;
     "/regions/{id}/parcels": Endpoints.get_RegionController_listParcels;
     "/blocks": Endpoints.get_BlockController_list;
     "/blocks/{id}": Endpoints.get_BlockController_get;
     "/blocks/{id}/detail": Endpoints.get_BlockController_getDetail;
+    "/blocks/{id}/detail": Endpoints.get_BlockController_getDetail;
     "/blocks/{id}/parcels": Endpoints.get_BlockController_listParcels;
     "/parcels": Endpoints.get_ParcelController_list;
     "/parcels/{id}": Endpoints.get_ParcelController_get;
+    "/parcels/{id}/detail": Endpoints.get_ParcelController_getDetail;
     "/parcels/{id}/detail": Endpoints.get_ParcelController_getDetail;
     "/parcels/{id}/owners": Endpoints.get_ParcelController_listOwners;
     "/owners": Endpoints.get_OwnerController_list;
@@ -1449,8 +1339,8 @@ export type EndpointByMethod = {
   };
   patch: {
     "/users/{id}": Endpoints.patch_UsersController_update;
-    "/projects/{projectId}/roles/{roleId}": Endpoints.patch_ProjectRolesController_update;
-    "/projects/{projectId}/members/{userId}": Endpoints.patch_ProjectMembersController_changeRole;
+    "/roles/{id}": Endpoints.patch_RolesController_update;
+    "/projects/{projectId}/members/{userId}": Endpoints.patch_ProjectMembersController_update;
     "/projects/{id}": Endpoints.patch_ProjectController_update;
     "/boundaries/{id}": Endpoints.patch_BoundaryController_update;
     "/regions/{id}": Endpoints.patch_RegionController_update;
@@ -1460,7 +1350,8 @@ export type EndpointByMethod = {
     "/owners/{id}": Endpoints.patch_OwnerController_update;
   };
   delete: {
-    "/projects/{projectId}/roles/{roleId}": Endpoints.delete_ProjectRolesController_remove;
+    "/users/{id}": Endpoints.delete_UsersController_remove;
+    "/roles/{id}": Endpoints.delete_RolesController_remove;
     "/projects/{projectId}/members/{userId}": Endpoints.delete_ProjectMembersController_remove;
     "/projects/{id}": Endpoints.delete_ProjectController_remove;
     "/boundaries/{id}": Endpoints.delete_BoundaryController_remove;

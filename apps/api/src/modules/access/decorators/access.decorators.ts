@@ -1,69 +1,73 @@
-import { applyDecorators, createParamDecorator, ExecutionContext, SetMetadata } from '@nestjs/common';
-import { ApiCookieAuth } from '@nestjs/swagger';
-import type { AuthenticatedRequest, Principal } from '../access.types';
-import { NotAuthenticatedError } from '../errors/not-authenticated.error';
+import {
+  createParamDecorator,
+  ExecutionContext,
+  SetMetadata,
+} from '@nestjs/common';
+import { AuthContext, AuthedRequest } from '../access.types';
 import { Action, Resource } from '../permissions';
 
 export const IS_PUBLIC_KEY = 'access:public';
 export const AUTHENTICATED_ONLY_KEY = 'access:authenticated-only';
 export const PERMISSION_KEY = 'access:permission';
 
-/** OpenAPI security scheme name for the session cookie. */
-export const SESSION_AUTH_NAME = 'session';
-
-/** Marks the operation as protected by the session cookie in the OpenAPI document. */
-export const ApiSessionAuth = (): ClassDecorator & MethodDecorator => ApiCookieAuth(SESSION_AUTH_NAME);
-
-/** No authentication at all. Everything is private unless it says so. */
-export const Public = (): MethodDecorator & ClassDecorator => SetMetadata(IS_PUBLIC_KEY, true);
-
-/**
- * Requires a session but no permission, for routes whose authorization depends on the record and is decided in the
- * application service (for example "read my own account", "leave a project").
- */
-export const AuthenticatedOnly = (): MethodDecorator & ClassDecorator => applyDecorators(SetMetadata(AUTHENTICATED_ONLY_KEY, true));
-
-/**
- * How the guard finds the project the permission is checked against:
- *  - `param` (default): `idOf` (default: the permission's resource) record whose id is in route param `param` (default `id`)
- *  - `body`: `projectId` in the request body
- *  - `query`: optional `projectId` in the query string; without it `@ProjectScope()` carries the accessible projects
- *  - `system`: no project; the permission must be held at system level
- */
-export type PermissionScope = 'param' | 'body' | 'query' | 'system';
+/** Where the project a request acts on comes from. */
+export type PermissionScope =
+  | 'param' // the project owning the resource whose id is in the route (see `idOf` / `param`)
+  | 'body' // `body.projectId`
+  | 'query' // `query.projectId`, or, when absent, every project the caller may read (list routes)
+  | 'global'; // no project: only a global role can pass
 
 export interface PermissionOptions {
+  /** Defaults to `'param'`. */
   scope?: PermissionScope;
-  param?: string;
+  /** `'param'` scope: the resource type that the route id identifies, when it differs from `resource`. */
   idOf?: Resource;
+  /** `'param'` scope: name of the route parameter holding that id. Defaults to `'id'`. */
+  param?: string;
 }
 
-export interface PermissionRequirement {
+export interface PermissionMeta extends Omit<PermissionOptions, 'scope'> {
   resource: Resource;
   action: Action;
   scope: PermissionScope;
-  param: string;
-  idOf: Resource;
 }
 
-export const RequirePermission = (resource: Resource, action: Action, options: PermissionOptions = {}): MethodDecorator =>
-  SetMetadata<string, PermissionRequirement>(PERMISSION_KEY, {
+/** Skips authentication entirely (login). */
+export const Public = (): MethodDecorator & ClassDecorator =>
+  SetMetadata(IS_PUBLIC_KEY, true);
+
+/** Any authenticated user may call the route; no permission is checked (profile, role catalogue). */
+export const AuthenticatedOnly = (): MethodDecorator & ClassDecorator =>
+  SetMetadata(AUTHENTICATED_ONLY_KEY, true);
+
+/**
+ * Requires `resource:action`. Routes with none of `@Public`, `@AuthenticatedOnly` or `@RequirePermission` are
+ * rejected, so a forgotten annotation can never expose an endpoint.
+ */
+export const RequirePermission = (
+  resource: Resource,
+  action: Action,
+  options: PermissionOptions = {},
+): MethodDecorator & ClassDecorator =>
+  SetMetadata(PERMISSION_KEY, {
     resource,
     action,
+    ...options,
     scope: options.scope ?? 'param',
-    param: options.param ?? 'id',
-    idOf: options.idOf ?? resource,
-  });
+  } satisfies PermissionMeta);
 
-/** The authenticated caller. Only available on routes that are not `@Public()`. */
-export const CurrentPrincipal = createParamDecorator((_data: unknown, context: ExecutionContext): Principal => {
-  const { principal } = context.switchToHttp().getRequest<AuthenticatedRequest>();
-  if (!principal) throw new NotAuthenticatedError();
-  return principal;
-});
+/** The authenticated caller. */
+export const Auth = createParamDecorator(
+  (_: unknown, context: ExecutionContext): AuthContext => {
+    const request = context.switchToHttp().getRequest<AuthedRequest>();
+    return request.auth as AuthContext;
+  },
+);
 
-/** Projects the caller may access on a `scope: 'query'` route; `null` = all, `[]` = none. */
-export const ProjectScope = createParamDecorator((_data: unknown, context: ExecutionContext): string[] | null => {
-  const { projectScope } = context.switchToHttp().getRequest<AuthenticatedRequest>();
-  return projectScope === undefined ? [] : projectScope;
-});
+/** On list routes: the projects the caller may read (null = all), to pass to the query handler. */
+export const ProjectScope = createParamDecorator(
+  (_: unknown, context: ExecutionContext): string[] | null => {
+    const request = context.switchToHttp().getRequest<AuthedRequest>();
+    return request.projectScope ?? null;
+  },
+);
