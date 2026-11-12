@@ -31,6 +31,8 @@ body {
     transform 200ms ease,
     display 200ms allow-discrete,
     overlay 200ms allow-discrete;
+
+  transition-behavior: allow-discrete;
 }
 
 .ui-dialog[open] {
