@@ -11,6 +11,8 @@ import { RolePermission } from '../entities/role-permission.entity';
 import { User } from '../entities/user.entity';
 import {
   EmailTakenError,
+  PasswordRequiresEmailError,
+  PhoneTakenError,
   MemberAlreadyExistsError,
   MemberNotFoundError,
   RoleNameTakenError,
@@ -20,6 +22,7 @@ import {
   UserNotFoundError,
 } from '../errors';
 import { isGrantableToProjectRole, RoleScope } from '../permissions';
+import { toLatinDigits } from '../utils/iran-phone';
 import { PasswordService } from './password.service';
 import { SessionService } from './session.service';
 
@@ -37,13 +40,16 @@ export class AccessAdminService {
   // ---------------------------------------------------------------- users
 
   async createUser(dto: CreateUserDto): Promise<User> {
-    if (await this.users.existsBy({ email: dto.email })) throw new EmailTakenError(dto.email);
+    if (dto.password && !dto.email) throw new PasswordRequiresEmailError();
+    if (await this.users.existsBy({ phone: dto.phone })) throw new PhoneTakenError(dto.phone);
+    if (dto.email && (await this.users.existsBy({ email: dto.email }))) throw new EmailTakenError(dto.email);
     if (dto.globalRoleId) await this.requireRole(dto.globalRoleId, RoleScope.global);
     const user = await this.users.save(
       this.users.create({
-        email: dto.email,
+        phone: dto.phone,
+        email: dto.email ?? null,
         name: dto.name,
-        passwordHash: await this.passwords.hash(dto.password),
+        passwordHash: dto.password ? await this.passwords.hash(dto.password) : null,
         globalRoleId: dto.globalRoleId ?? null,
       }),
     );
@@ -53,8 +59,11 @@ export class AccessAdminService {
   listUsers(query: UserQueryDto): Promise<PaginatedResult<User>> {
     const qb = this.users.createQueryBuilder('user');
     if (query.search) {
-      qb.andWhere(`(user.name ILIKE :search ESCAPE '\\' OR user.email ILIKE :search ESCAPE '\\')`, {
+      // `0912…` / `+98912…` / Persian digits all match the stored E.164 value.
+      const local = toLatinDigits(query.search).replace(/\D/g, '').replace(/^(?:0098|98|0)/, '');
+      qb.andWhere(`(user.name ILIKE :search ESCAPE '\\' OR user.email ILIKE :search ESCAPE '\\' OR user.phone LIKE :phone)`, {
         search: `%${escapeLike(query.search)}%`,
+        phone: local.length >= 3 ? `%${local}%` : null,
       });
     }
     return paginate(qb.orderBy('user.name', 'ASC').addOrderBy('user.id', 'ASC'), query);
@@ -68,16 +77,31 @@ export class AccessAdminService {
 
   async updateUser(id: string, dto: UpdateUserDto): Promise<User> {
     const user = await this.getUser(id);
+    let credentialChanged = false;
     if (dto.name !== undefined) user.name = dto.name;
+    if (dto.phone !== undefined && dto.phone !== user.phone) {
+      if (await this.users.existsBy({ phone: dto.phone })) throw new PhoneTakenError(dto.phone);
+      user.phone = dto.phone;
+      credentialChanged = true;
+    }
+    if (dto.email !== undefined && dto.email !== user.email) {
+      if (await this.users.existsBy({ email: dto.email })) throw new EmailTakenError(dto.email);
+      user.email = dto.email;
+      credentialChanged = true;
+    }
     if (dto.globalRoleId !== undefined) {
       if (dto.globalRoleId !== null) await this.requireRole(dto.globalRoleId, RoleScope.global);
       user.globalRoleId = dto.globalRoleId;
     }
     if (dto.isActive !== undefined) user.isActive = dto.isActive;
-    if (dto.password !== undefined) user.passwordHash = await this.passwords.hash(dto.password);
+    if (dto.password !== undefined) {
+      if (!user.email) throw new PasswordRequiresEmailError();
+      user.passwordHash = await this.passwords.hash(dto.password);
+      credentialChanged = true;
+    }
     await this.users.save(user);
     // Roles are loaded per request, but sessions must not outlive a credential or status change.
-    if (dto.password !== undefined || dto.isActive === false) await this.sessions.revokeAllOf(id);
+    if (credentialChanged || dto.isActive === false) await this.sessions.revokeAllOf(id);
     return this.getUser(id);
   }
 
@@ -216,7 +240,7 @@ export class AccessAdminService {
   private memberRows(projectId: string, userId?: string): Promise<MemberResponseDto[]> {
     return this.dataSource
       .query(
-        `SELECT pm.project_id AS "projectId", pm.user_id AS "userId", u.email AS "userEmail", u.name AS "userName",
+        `SELECT pm.project_id AS "projectId", pm.user_id AS "userId", u.email AS "userEmail", u.phone AS "userPhone", u.name AS "userName",
                 pm.role_id AS "roleId", r.name AS "roleName", pm.created_at AS "createdAt", pm.updated_at AS "updatedAt"
            FROM project_members pm
            JOIN users u ON u.id = pm.user_id

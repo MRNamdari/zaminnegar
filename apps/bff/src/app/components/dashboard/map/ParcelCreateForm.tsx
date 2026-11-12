@@ -26,7 +26,6 @@ export function ParcelCreateForm({
       },
       projectId: '6d758969-a52c-48fc-bca3-2b79676aa366',
       status: 'active',
-      regionId: draft.parentId?.replace(/\w+:/g, ''),
     },
     validators: {
       onSubmit: CreateParcelDto,

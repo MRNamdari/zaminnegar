@@ -1,25 +1,31 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, Relation, Unique } from 'typeorm';
+import type { E164Phone } from '../access.types';
 import { TimestampedEntity } from '../../../common/base/timestamped.entity';
 import { ProjectMember } from './project-member.entity';
 import { Role } from './role.entity';
 
 @Entity({ name: 'users' })
 @Unique('uq_users__email', ['email'])
+@Unique('uq_users__phone', ['phone'])
 @Index('ix_users__global_role_id', ['globalRoleId'])
 export class User extends TimestampedEntity {
   @PrimaryColumn({ type: 'uuid', name: 'id', primaryKeyConstraintName: 'pk_users', default: () => 'gen_random_uuid()' })
   id!: string;
 
-  /** Stored lower-cased. */
-  @Column({ type: 'varchar', length: 320, name: 'email' })
-  email!: string;
+  /** Main identity and sign-in method: an Iranian mobile in E.164 (`+989123456789`). Null only for legacy email-only users. */
+  @Column({ type: 'varchar', length: 13, name: 'phone', nullable: true })
+  phone!: E164Phone | null;
+
+  /** Optional secondary sign-in method (with `passwordHash`). Stored lower-cased. */
+  @Column({ type: 'varchar', length: 320, name: 'email', nullable: true })
+  email!: string | null;
 
   @Column({ type: 'varchar', length: 200, name: 'name' })
   name!: string;
 
-  /** `scrypt:<salt>:<hash>`; never selected by default and never returned by the API. */
-  @Column({ type: 'varchar', length: 255, name: 'password_hash', select: false })
-  passwordHash!: string;
+  /** `scrypt:<salt>:<hash>`; null for phone-only users. Never selected by default and never returned by the API. */
+  @Column({ type: 'varchar', length: 255, name: 'password_hash', nullable: true, select: false })
+  passwordHash!: string | null;
 
   @Column({ type: 'boolean', name: 'is_active', default: true })
   isActive!: boolean;
