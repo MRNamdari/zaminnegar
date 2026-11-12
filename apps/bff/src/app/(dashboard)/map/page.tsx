@@ -1,5 +1,6 @@
 'use client';
 
+<<<<<<< HEAD
 import DetailsLevel from '@/app/_components/dashboard/map/DetailsLevel';
 import LevelManagement from '@/app/_components/dashboard/map/LevelManagement';
 import { MapWorkspace } from '@/app/_components/dashboard/map/MapWorkspace';
@@ -10,6 +11,16 @@ import { DraftConfigurationFlow, MapEditor } from '@/app/features/map-editor';
 import { CreateBlockDto } from '@zaminnegar/api-client';
 const result = CreateBlockDto.safeParse({});
 console.log(result.error);
+=======
+import DetailsLevel from '@/app/components/dashboard/map/DetailsLevel';
+import LevelManagement from '@/app/components/dashboard/map/LevelManagement';
+import { MapWorkspace } from '@/app/components/dashboard/map/MapWorkspace';
+import { ParcelCreateForm } from '@/app/components/dashboard/map/ParcelCreateForm';
+import SelectedParcels from '@/app/components/dashboard/map/SelectedParcels';
+import SelectedParcelsOwnersTable from '@/app/components/dashboard/map/SelectedParcelsOwnersTable';
+import { DraftConfigurationFlow, MapEditor } from '@/app/features/map-editor';
+
+>>>>>>> 10af5f3 (feat(bff): add DraftConfigurationFlow component to MapPage)
 export default function MapPage() {
   return (
     <MapWorkspace>
