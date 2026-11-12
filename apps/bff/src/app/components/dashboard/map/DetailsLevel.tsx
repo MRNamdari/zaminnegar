@@ -8,6 +8,7 @@ import { useState } from 'react';
 import {
   useWorkspaceActions,
   useWorkspaceState,
+  useWorkspaceOperations,
 } from '@/app/features/map-editor';
 import { faNum } from '@/app/util';
 import { SvgPolygon } from '../SvgPolygon';
@@ -16,156 +17,306 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/app/_lib/api.client';
 import { OwnerResponseDto } from '@zaminnegar/api-client';
 
-const owner = [
-  { id: 1, name: 'علی صادقی', count: 5 },
-  { id: 2, name: 'مهران مدیری', count: 3 },
-  { id: 3, name: 'جواد سیدی', count: 8 },
-  { id: 4, name: 'مهدی لطفی', count: 2 },
-];
-
 export default function DetailsLevel() {
-
-  const { data } = useQuery(api.get('/owners').queryOptions);
-
+  const operations = useWorkspaceOperations();
+  const actions = useWorkspaceActions();
+  const { features, selectedFeatureId, editableFeatureIds } = useWorkspaceState();
   const [isOpen, setIsOpen] = useState(false);
+  const isEditable = selectedFeatureId
+    ? editableFeatureIds.has(selectedFeatureId)
+    : false;
+
+  // get owner list
+  const { data } = useQuery(api.get('/owners').queryOptions);
   const [searchValue, setSearchValue] = useState('');
   const filteredOwners = data?.items.filter((owner: OwnerResponseDto) =>
     owner.name.toLowerCase().includes(searchValue.trim().toLowerCase()),
   );
 
-  const actions = useWorkspaceActions();
-  const { features, selectedFeatureId } = useWorkspaceState();
+  // get selected feature
   const selectedeFeature = features.features.find(
-    (f) => f.id === selectedFeatureId
-  )
-  const blocksRegion = features.features.filter(
-    (f) => 
-      f.properties.parentId === selectedFeatureId &&
-      f.properties.level === 'block'
+    (f) => f.id === selectedFeatureId,
   );
+  
+  // get blocks by selected region
+  const blocksRegion = features.features.filter(
+    (f) =>
+      f.properties.parentId === selectedFeatureId &&
+      f.properties.level === 'block',
+  );
+
+  // get parcels by selected region
+  const parcelsRegion = features.features.filter(
+    (f) =>
+      blocksRegion.some((block) => block.id === f.properties.parentId) &&
+      f.properties.level === 'parcel',
+  );
+
+  // get parcels by selected block
+  const parcelsBlock = features.features.filter(
+    (f) =>
+      f.properties.parentId === selectedFeatureId &&
+      f.properties.level === 'parcel',
+  );
+
+  // get length parcels by block id
   const getBlockParcelCount = (blockId: string) => {
     return features.features.filter(
-      (f) => 
-        f.properties.parentId === blockId &&
-      f.properties.level === 'parcel'
-    ).length
-  }
-  const levelRegion = selectedeFeature?.properties.level === "region";
-  const levelBlock = selectedeFeature?.properties.level === "block";
-  const levelParcel = selectedeFeature?.properties.level === "parcel";
+      (f) =>
+        f.properties.parentId === blockId && f.properties.level === 'parcel',
+    ).length;
+  };
+
+  // get parent selected feature
+  const parentName = features.features.find(
+    (f) => f.id === selectedeFeature?.properties.parentId,
+  );
+
+  // get the region of ​​the selected parcel
+  const regtionParcel = features.features.find(
+    (f) => f.id === parentName?.properties.parentId,
+  );
 
   return (
     <aside className="h-full min-h-0 min-w-0 flex-1 py-3 pl-2 pr-3 ">
       {selectedeFeature ? (
-        <>
-          <h3 className="border-b border-border text-xs pb-2 block">
-            جزئیات{' '}
-            {levelRegion
-              ? 'منطقه'
-              : levelBlock
-                ? 'بلوک'
-                : levelParcel
-                  ? 'قطعه'
-                  : 'لطفا بخشی را انتخاب کنید'}
-          </h3>
-          <div className="details_polygon relative">
-            {levelRegion ? (
-              <>
-                <div className="abs-plyg flex items-center absolute top-0.5 left-0 w-30 h-30 rounded-xl bg-blue-500/10 backdrop-blur-lg border border-border">
-                  <SvgPolygon
-                    polygon={selectedeFeature.geometry}
-                    height="70"
-                    stroke="var(--map-green)"
-                    fill="color-mix(var(--map-green) 50%, transparent 50%)"
-                  />
-                </div>
-                <h3 className="text-xs pb-2 mt-3 flex items-center gap-1">
-                  <PolygonIcon fillColor="var(--map-green)" />
-                  <span>منطقه - {selectedeFeature.properties.name}</span>
-                </h3>
-              </>
-            ) : levelBlock ? (
-              <>
-                <div className="abs-plyg flex items-center absolute top-0.5 left-0 w-30 h-30 rounded-xl bg-blue-500/10 backdrop-blur-lg border border-border">
-                  <SvgPolygon
-                    polygon={selectedeFeature.geometry}
-                    height="70"
-                    stroke="var(--map-blue)"
-                    fill="color-mix(var(--map-blue) 50%, transparent 50%)"
-                  />
-                </div>
-                <h3 className="text-xs pb-2 mt-3 flex items-center gap-1">
-                  <PolygonIcon fillColor="var(--map-blue)" />
-                  <span>بلوک - {selectedeFeature.properties.name}</span>
-                </h3>
-              </>
-            ) : levelParcel ? (
-              <>
-                <div className="abs-plyg flex items-center absolute top-0.5 left-0 w-30 h-30 rounded-xl bg-blue-500/10 backdrop-blur-lg border border-border">
-                  <SvgPolygon
-                    polygon={selectedeFeature.geometry}
-                    height="70"
-                    stroke="var(--map-yellow)"
-                    fill="color-mix(var(--map-yellow) 50%, transparent 50%)"
-                  />
-                </div>
-                <h3 className="text-xs pb-2 mt-3 flex items-center gap-1">
-                  <PolygonIcon fillColor="var(--map-yellow)" />
-                  <span>قطعه - {selectedeFeature.properties.name}</span>
-                </h3>
-              </>
-            ) : (
-              'لطفا بخشی را انتخاب کنید'
-            )}
-            <ul>
-              <li className="flex flex-col gap-1 py-2.5 border-b border-border">
-                <span className="title text-xs">کد‌منطقه</span>
-                <span className="desc text-xs font-normal text-slate-400">
-                  R_001
-                </span>
-              </li>
-              <li className="flex flex-col gap-1 py-2.5 border-b border-border">
-                <span className="title text-xs">مساحت</span>
-                <span className="desc text-xs font-normal text-slate-400">
-                  {faNum((selectedeFeature.properties.areaHa ?? 0).toFixed(2))}{' '}
-                  هکتار
-                </span>
-              </li>
-              <li className="flex flex-col gap-1 py-2.5 border-b border-border">
-                <span className="title text-xs">تعداد بلوک‌ها</span>
-                <span className="desc text-xs font-normal text-slate-400">
-                  3
-                </span>
-              </li>
-              <li className="flex flex-col gap-1 py-2.5">
-                <span className="title text-xs">تعداد قطعات</span>
-                <span className="desc text-xs font-normal text-slate-400">
-                  12
-                </span>
-              </li>
-            </ul>
-            <div className="buttons_wrapper flex justify-between items-center mt-2 gap-2">
-              <button className="delete relative overflow-hidden cursor-pointer flex gap-1.5 py-2.5 items-center rounded-md justify-center w-full border border-border">
-                <IoTrashOutline />
-                <span className="text-xs font-medium">حذف منطقه</span>
-              </button>
-              <button
-                style={{ '--color-plyg': '#7eff1d' } as React.CSSProperties}
-                className="patch cursor-pointer flex transition-bg duration-300 bg-(--color-plyg) hover:bg-[color-mix(in_srgb,var(--color-plyg),black_20%)] gap-1.5 py-2.5 items-center rounded-md justify-center w-full border border-border"
-              >
-                <HiOutlinePencil stroke="#020d20" />
-                <span className="text-xs text-[#020d20] font-bold">
-                  ویرایش منطقه
-                </span>
-              </button>
+        selectedeFeature.properties.level === 'region' ? (
+          <>
+            <h3 className="border-b border-border text-xs pb-2 block">
+              جزئیات منطقه
+            </h3>
+            <div className="details_polygon relative">
+              <div className="abs-plyg flex items-center absolute top-0.5 left-0 w-30 h-30 rounded-xl bg-blue-500/10 backdrop-blur-lg border border-border">
+                <SvgPolygon
+                  polygon={selectedeFeature.geometry}
+                  height="70"
+                  stroke="var(--map-green)"
+                  fill="color-mix(var(--map-green) 50%, transparent 50%)"
+                />
+              </div>
+              <h3 className="text-xs pb-2 mt-3 flex items-center gap-1">
+                <PolygonIcon fillColor="var(--map-green)" />
+                <span>منطقه - {selectedeFeature.properties.name}</span>
+              </h3>
+              <ul>
+                <li className="flex flex-col gap-1 py-2.5 border-b border-border">
+                  <span className="title text-xs">کد‌منطقه</span>
+                  <span className="desc text-xs font-normal text-slate-400">
+                    {selectedeFeature.id.replace(/\w+:/g, '')}
+                  </span>
+                </li>
+                <li className="flex flex-col gap-1 py-2.5 border-b border-border">
+                  <span className="title text-xs">مساحت</span>
+                  <span className="desc text-xs font-normal text-slate-400">
+                    {faNum(
+                      (selectedeFeature.properties.areaHa ?? 0).toFixed(2),
+                    )}{' '}
+                    هکتار
+                  </span>
+                </li>
+                <li className="flex flex-col gap-1 py-2.5 border-b border-border">
+                  <span className="title text-xs">تعداد بلوک‌ها</span>
+                  <span className="desc text-xs font-normal text-slate-400">
+                    {blocksRegion.length}
+                  </span>
+                </li>
+                <li className="flex flex-col gap-1 py-2.5">
+                  <span className="title text-xs">تعداد قطعات</span>
+                  <span className="desc text-xs font-normal text-slate-400">
+                    {parcelsRegion.length}
+                  </span>
+                </li>
+              </ul>
+              <div className="buttons_wrapper flex justify-between items-center mt-2 gap-2">
+                <button
+                  type="button"
+                  disabled={!isEditable}
+                  onClick={() => {
+                    if (!selectedFeatureId || !isEditable) return;
+                    operations.deleteFeature(selectedFeatureId);
+                  }}
+                  className={`delete relative overflow-hidden flex gap-1.5 py-2.5 items-center rounded-md justify-center w-full border border-border ${
+                    isEditable
+                      ? 'cursor-pointer'
+                      : 'cursor-not-allowed opacity-40'
+                  }`}
+                >
+                  <IoTrashOutline />
+                  <span className="text-xs font-medium">حذف منطقه</span>
+                </button>
+                <button
+                  style={{ '--color-plyg': '#7eff1d' } as React.CSSProperties}
+                  className="patch cursor-pointer flex transition-bg duration-300 bg-(--color-plyg) hover:bg-[color-mix(in_srgb,var(--color-plyg),black_20%)] gap-1.5 py-2.5 items-center rounded-md justify-center w-full border border-border"
+                >
+                  <HiOutlinePencil stroke="#020d20" />
+                  <span className="text-xs text-[#020d20] font-bold">
+                    ویرایش منطقه
+                  </span>
+                </button>
+              </div>
             </div>
-          </div>
-        </>
+          </>
+        ) : selectedeFeature.properties.level === 'block' ? (
+          <>
+            <h3 className="border-b border-border text-xs pb-2 block">
+              جزئیات بلوک
+            </h3>
+            <div className="details_polygon relative">
+              <div className="abs-plyg flex items-center absolute top-0.5 left-0 w-30 h-30 rounded-xl bg-blue-500/10 backdrop-blur-lg border border-border">
+                <SvgPolygon
+                  polygon={selectedeFeature.geometry}
+                  height="70"
+                  stroke="var(--map-blue)"
+                  fill="color-mix(var(--map-blue) 50%, transparent 50%)"
+                />
+              </div>
+              <h3 className="text-xs pb-2 mt-3 flex items-center gap-1">
+                <PolygonIcon fillColor="var(--map-blue)" />
+                <span>بلوک - {selectedeFeature.properties.name}</span>
+              </h3>
+              <ul>
+                <li className="flex flex-col gap-1 py-2.5 border-b border-border">
+                  <span className="title text-xs">کد‌بلوک</span>
+                  <span className="desc text-xs font-normal text-slate-400">
+                    {selectedeFeature.id.replace(/\w+:/g, '')}
+                  </span>
+                </li>
+                <li className="flex flex-col gap-1 py-2.5 border-b border-border">
+                  <span className="title text-xs">مساحت</span>
+                  <span className="desc text-xs font-normal text-slate-400">
+                    {faNum(
+                      (selectedeFeature.properties.areaHa ?? 0).toFixed(2),
+                    )}{' '}
+                    هکتار
+                  </span>
+                </li>
+                <li className="flex flex-col gap-1 py-2.5 border-b border-border">
+                  <span className="title text-xs">نام منطقه</span>
+                  <span className="desc text-xs font-normal text-slate-400">
+                    {parentName?.properties.name}
+                  </span>
+                </li>
+                <li className="flex flex-col gap-1 py-2.5">
+                  <span className="title text-xs">تعداد قطعات</span>
+                  <span className="desc text-xs font-normal text-slate-400">
+                    {parcelsBlock.length}
+                  </span>
+                </li>
+              </ul>
+              <div className="buttons_wrapper flex justify-between items-center mt-2 gap-2">
+                <button
+                  type="button"
+                  disabled={!isEditable}
+                  onClick={() => {
+                    if (!selectedFeatureId || !isEditable) return;
+                    operations.deleteFeature(selectedFeatureId);
+                  }}
+                  className={`delete relative overflow-hidden flex gap-1.5 py-2.5 items-center rounded-md justify-center w-full border border-border ${
+                    isEditable
+                      ? 'cursor-pointer'
+                      : 'cursor-not-allowed opacity-40'
+                  }`}
+                >
+                  <IoTrashOutline />
+                  <span className="text-xs font-medium">حذف بلوک</span>
+                </button>
+                <button
+                  style={{ '--color-plyg': '#7eff1d' } as React.CSSProperties}
+                  className="patch cursor-pointer flex transition-bg duration-300 bg-(--color-plyg) hover:bg-[color-mix(in_srgb,var(--color-plyg),black_20%)] gap-1.5 py-2.5 items-center rounded-md justify-center w-full border border-border"
+                >
+                  <HiOutlinePencil stroke="#020d20" />
+                  <span className="text-xs text-[#020d20] font-bold">
+                    ویرایش بلوک
+                  </span>
+                </button>
+              </div>
+            </div>
+          </>
+        ) : selectedeFeature.properties.level === 'parcel' ? (
+          <>
+            <h3 className="border-b border-border text-xs pb-2 block">
+              جزئیات قطعه
+            </h3>
+            <div className="details_polygon relative">
+              <div className="abs-plyg flex items-center absolute top-0.5 left-0 w-30 h-30 rounded-xl bg-blue-500/10 backdrop-blur-lg border border-border">
+                <SvgPolygon
+                  polygon={selectedeFeature.geometry}
+                  height="70"
+                  stroke="var(--map-yellow)"
+                  fill="color-mix(var(--map-yellow) 50%, transparent 50%)"
+                />
+              </div>
+              <h3 className="text-xs pb-2 mt-3 flex items-center gap-1">
+                <PolygonIcon fillColor="var(--map-yellow)" />
+                <span>قطعه - {selectedeFeature.properties.name}</span>
+              </h3>
+              <ul>
+                <li className="flex flex-col gap-1 py-2.5 border-b border-border">
+                  <span className="title text-xs">کد‌قطعه</span>
+                  <span className="desc text-xs font-normal text-slate-400">
+                    {selectedeFeature.id.replace(/\w+:/g, '')}
+                  </span>
+                </li>
+                <li className="flex flex-col gap-1 py-2.5 border-b border-border">
+                  <span className="title text-xs">مساحت</span>
+                  <span className="desc text-xs font-normal text-slate-400">
+                    {faNum(
+                      (selectedeFeature.properties.areaHa ?? 0).toFixed(2),
+                    )}{' '}
+                    هکتار
+                  </span>
+                </li>
+                <li className="flex flex-col gap-1 py-2.5 border-b border-border">
+                  <span className="title text-xs">نام منطقه</span>
+                  <span className="desc text-xs font-normal text-slate-400">
+                    {regtionParcel?.properties.name}
+                  </span>
+                </li>
+                <li className="flex flex-col gap-1 py-2.5">
+                  <span className="title text-xs">نام بلوک</span>
+                  <span className="desc text-xs font-normal text-slate-400">
+                    {parentName?.properties.name}
+                  </span>
+                </li>
+              </ul>
+              <div className="buttons_wrapper flex justify-between items-center mt-2 gap-2">
+                <button
+                  type="button"
+                  disabled={!isEditable}
+                  onClick={() => {
+                    if (!selectedFeatureId) return;
+                    operations.deleteFeature(selectedFeatureId);
+                  }}
+                  className={`delete relative overflow-hidden flex gap-1.5 py-2.5 items-center rounded-md justify-center w-full border border-border ${
+                    isEditable
+                      ? 'cursor-pointer'
+                      : 'cursor-not-allowed opacity-40'
+                  }`}
+                >
+                  <IoTrashOutline />
+                  <span className="text-xs font-medium">حذف قطعه</span>
+                </button>
+                <button
+                  style={{ '--color-plyg': '#7eff1d' } as React.CSSProperties}
+                  className="patch cursor-pointer flex transition-bg duration-300 bg-(--color-plyg) hover:bg-[color-mix(in_srgb,var(--color-plyg),black_20%)] gap-1.5 py-2.5 items-center rounded-md justify-center w-full border border-border"
+                >
+                  <HiOutlinePencil stroke="#020d20" />
+                  <span className="text-xs text-[#020d20] font-bold">
+                    ویرایش قطعه
+                  </span>
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div>نوع عارضه معتبر نیست</div>
+        )
       ) : (
         <div className="text-md text-center text-slate-400">
           لطفا بخشی را انتخاب کنید
         </div>
       )}
+
       <div className="details_blooks_polygon border border-border rounded-xl mt-3 p-1.5 overflow-hidden relative">
         <h3
           onClick={() => setIsOpen(!isOpen)}
@@ -277,22 +428,25 @@ export default function DetailsLevel() {
           </form>
         </div>
         <div className="owners_wrapper mt-3 flex flex-col">
-          {filteredOwners && filteredOwners.length > 0
-            ? filteredOwners.map((owner: OwnerResponseDto) => (
-                <div
-                  key={owner.id}
-                  className="owner_item flex items-center py-3 border-b last:border-b-0 border-border justify-between px-1"
-                >
-                  <div className="name_and_circle flex items-center gap-2">
-                    <span className="circle w-2 h-2 rounded-full bg-[#5e00d9]"></span>
-                    <span className="text-xs">{owner.name}</span>
-                  </div>
-
-                  <span className="text-xs text-slate-400">99 قطعه</span>
+          {filteredOwners && filteredOwners.length > 0 ? (
+            filteredOwners.map((owner: OwnerResponseDto) => (
+              <div
+                key={owner.id}
+                className="owner_item flex items-center py-3 border-b last:border-b-0 border-border justify-between px-1"
+              >
+                <div className="name_and_circle flex items-center gap-2">
+                  <span className="circle w-2 h-2 rounded-full bg-[#5e00d9]"></span>
+                  <span className="text-xs">{owner.name}</span>
                 </div>
-              ))
-            : <span className='text-center py-2 text-xs text-slate-400'>مالکی یافت نشد</span>
-            }
+
+                <span className="text-xs text-slate-400">99 قطعه</span>
+              </div>
+            ))
+          ) : (
+            <span className="text-center py-2 text-xs text-slate-400">
+              مالکی یافت نشد
+            </span>
+          )}
         </div>
       </div>
     </aside>
