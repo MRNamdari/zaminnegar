@@ -1,4 +1,13 @@
-import { ConflictException, NotFoundException, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  BadGatewayException,
+  ConflictException,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 
 export class InvalidCredentialsError extends UnauthorizedException {
   constructor() {
@@ -43,5 +52,55 @@ export class MemberNotFoundError extends NotFoundException {
 export class MemberAlreadyExistsError extends ConflictException {
   constructor(projectId: string, userId: string) {
     super({ code: 'MEMBER_ALREADY_EXISTS', message: `User ${userId} is already a member of project ${projectId}` });
+  }
+}
+
+export class PhoneTakenError extends ConflictException {
+  constructor(phone: string) {
+    super({ code: 'PHONE_TAKEN', message: `A user with the phone number "${phone}" already exists` });
+  }
+}
+export class PasswordRequiresEmailError extends UnprocessableEntityException {
+  constructor() {
+    super({ code: 'PASSWORD_REQUIRES_EMAIL', message: 'A password can only be set on a user that has an email' });
+  }
+}
+export class InvalidOtpError extends UnauthorizedException {
+  constructor() {
+    super({ code: 'INVALID_OTP', message: 'The code is invalid or has expired' });
+  }
+}
+export class OtpAttemptsExceededError extends HttpException {
+  constructor() {
+    super(
+      { code: 'OTP_ATTEMPTS_EXCEEDED', message: 'Too many wrong codes; request a new code' },
+      HttpStatus.TOO_MANY_REQUESTS,
+    );
+  }
+}
+export class OtpCooldownError extends HttpException {
+  constructor(readonly retryAfterSeconds: number) {
+    super(
+      { code: 'OTP_COOLDOWN', message: 'A code was sent recently; wait before requesting another', retryAfterSeconds },
+      HttpStatus.TOO_MANY_REQUESTS,
+    );
+  }
+}
+export class OtpRateLimitedError extends HttpException {
+  constructor(readonly retryAfterSeconds: number) {
+    super(
+      { code: 'OTP_RATE_LIMITED', message: 'Too many code requests; try again later', retryAfterSeconds },
+      HttpStatus.TOO_MANY_REQUESTS,
+    );
+  }
+}
+export class UserInactiveError extends ForbiddenException {
+  constructor() {
+    super({ code: 'USER_INACTIVE', message: 'This account has been deactivated' });
+  }
+}
+export class SmsDeliveryError extends BadGatewayException {
+  constructor() {
+    super({ code: 'SMS_DELIVERY_FAILED', message: 'The verification code could not be sent; try again shortly' });
   }
 }

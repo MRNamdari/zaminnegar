@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes } from 'node:crypto';
 import { DataSource } from 'typeorm';
-import { AuthContext } from '../access.types';
+import { AuthContext, E164Phone } from '../access.types';
 
 const TOUCH_AFTER_MS = 60_000;
 
@@ -12,7 +12,8 @@ interface SessionRow {
   session_id: string;
   last_used_at: Date;
   user_id: string;
-  email: string;
+  email: string | null;
+  phone: E164Phone | null;
   name: string;
   global_role_id: string | null;
   global_role_name: string | null;
@@ -52,7 +53,7 @@ export class SessionService {
   /** Resolves a bearer token to the caller and everything the caller may do; null when invalid/expired/inactive. */
   async authenticate(token: string): Promise<AuthContext | null> {
     const rows: SessionRow[] = await this.dataSource.query(
-      `SELECT s.id AS session_id, s.last_used_at, u.id AS user_id, u.email, u.name,
+      `SELECT s.id AS session_id, s.last_used_at, u.id AS user_id, u.email, u.phone, u.name,
               u.global_role_id, gr.name AS global_role_name
          FROM sessions s
          JOIN users u ON u.id = s.user_id
@@ -96,7 +97,7 @@ export class SessionService {
 
     return {
       sessionId: row.session_id,
-      user: { id: row.user_id, email: row.email, name: row.name },
+      user: { id: row.user_id, email: row.email, phone: row.phone, name: row.name },
       globalRole: row.global_role_id ? { id: row.global_role_id, name: row.global_role_name as string } : null,
       globalPermissions,
       projectPermissions,
