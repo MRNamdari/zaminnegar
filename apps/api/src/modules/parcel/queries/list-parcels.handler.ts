@@ -8,7 +8,7 @@ import { ListParcelsQuery } from './list-parcels.query';
 export class ListParcelsHandler implements IQueryHandler<ListParcelsQuery, PaginatedResult<Parcel>> {
   constructor(private readonly parcels: ParcelRepository) {}
 
-  execute({ dto }: ListParcelsQuery): Promise<PaginatedResult<Parcel>> {
-    return this.parcels.findPage(dto);
+  execute({ dto, projectScope }: ListParcelsQuery): Promise<PaginatedResult<Parcel>> {
+    return this.parcels.findPage(dto, projectScope);
   }
 }

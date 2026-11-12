@@ -10,8 +10,17 @@ export class RegionResponseDto {
   @ApiProperty() @Expose() name!: string;
   @ApiProperty() @Expose() description!: string;
   @ApiProperty({ enum: RegionStatus, enumName: 'RegionStatus' }) @Expose() status!: RegionStatus;
+  @ApiProperty({ type: 'number', description: 'Geodesic area in square meters' }) @Expose() areaM2!: number;
   @ApiProperty() @Expose() createdAt!: Date;
   @ApiProperty() @Expose() updatedAt!: Date;
+
+  @ApiProperty({ type: 'integer', required: false, description: 'Number of blocks in the region. Only present in list responses' })
+  @Expose()
+  blocksCount?: number;
+
+  @ApiProperty({ type: 'integer', required: false, description: 'Number of parcels in the region. Only present in list responses' })
+  @Expose()
+  parcelsCount?: number;
 
   static from(region: IRegion): RegionResponseDto {
     return plainToInstance(RegionResponseDto, region, { excludeExtraneousValues: true });

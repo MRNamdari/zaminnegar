@@ -1,6 +1,655 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/auth/login": {
+      "post": {
+        "description": "Returns an opaque session token to send as a Bearer token",
+        "operationId": "AuthController_login",
+        "parameters": [
+          {
+            "name": "user-agent",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sign in",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "End the current session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The signed-in user with the permissions they hold",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/users": {
+      "post": {
+        "operationId": "UsersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a user",
+        "tags": [
+          "users"
+        ]
+      },
+      "get": {
+        "operationId": "UsersController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Case-insensitive match on name or email",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginatedResponseDto"
+                    },
+                    {
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/UserResponseDto"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List users",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "operationId": "UsersController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a user by id",
+        "tags": [
+          "users"
+        ]
+      },
+      "patch": {
+        "operationId": "UsersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a user",
+        "tags": [
+          "users"
+        ]
+      },
+      "delete": {
+        "operationId": "UsersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a user",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/roles": {
+      "get": {
+        "operationId": "RolesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RoleResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List roles with their permissions",
+        "tags": [
+          "roles"
+        ]
+      },
+      "post": {
+        "operationId": "RolesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a role",
+        "tags": [
+          "roles"
+        ]
+      }
+    },
+    "/roles/{id}": {
+      "get": {
+        "operationId": "RolesController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a role by id",
+        "tags": [
+          "roles"
+        ]
+      },
+      "patch": {
+        "description": "System roles cannot be changed",
+        "operationId": "RolesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a role (name, description, permissions)",
+        "tags": [
+          "roles"
+        ]
+      },
+      "delete": {
+        "description": "System roles and roles still assigned to someone cannot be deleted",
+        "operationId": "RolesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a role",
+        "tags": [
+          "roles"
+        ]
+      }
+    },
+    "/projects/{projectId}/members": {
+      "get": {
+        "operationId": "ProjectMembersController_list",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MemberResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List the members of a project",
+        "tags": [
+          "project-members"
+        ]
+      },
+      "post": {
+        "operationId": "ProjectMembersController_add",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Give a user a role in the project",
+        "tags": [
+          "project-members"
+        ]
+      }
+    },
+    "/projects/{projectId}/members/{userId}": {
+      "patch": {
+        "operationId": "ProjectMembersController_update",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change a member's role in the project",
+        "tags": [
+          "project-members"
+        ]
+      },
+      "delete": {
+        "operationId": "ProjectMembersController_remove",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a user from the project",
+        "tags": [
+          "project-members"
+        ]
+      }
+    },
     "/projects": {
       "post": {
         "operationId": "ProjectController_create",
@@ -27,6 +676,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Create a project",
         "tags": [
           "projects"
@@ -92,6 +746,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "List projects",
         "tags": [
           "projects"
@@ -123,6 +782,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Get a project by id",
         "tags": [
           "projects"
@@ -162,6 +826,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Update a project",
         "tags": [
           "projects"
@@ -184,6 +853,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Delete a project",
         "tags": [
           "projects"
@@ -217,6 +891,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Create a boundary",
         "tags": [
           "boundaries"
@@ -291,6 +970,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "List boundaries",
         "tags": [
           "boundaries"
@@ -322,6 +1006,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Get a boundary by id",
         "tags": [
           "boundaries"
@@ -361,6 +1050,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Update a boundary",
         "tags": [
           "boundaries"
@@ -383,6 +1077,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Delete a boundary",
         "tags": [
           "boundaries"
@@ -416,12 +1115,18 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Create a region",
         "tags": [
           "regions"
         ]
       },
       "get": {
+        "description": "Each region carries the number of blocks and parcels it contains",
         "operationId": "RegionController_list",
         "parameters": [
           {
@@ -498,6 +1203,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "List regions",
         "tags": [
           "regions"
@@ -529,6 +1239,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Get a region by id",
         "tags": [
           "regions"
@@ -568,6 +1283,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Update a region",
         "tags": [
           "regions"
@@ -590,7 +1310,48 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Delete a region",
+        "tags": [
+          "regions"
+        ]
+      }
+    },
+    "/regions/{id}/detail": {
+      "get": {
+        "operationId": "RegionController_getDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegionDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a region with project, boundary, blocks and parcels",
         "tags": [
           "regions"
         ]
@@ -617,13 +1378,18 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/RegionWithParcelsResponse"
+                    "$ref": "#/components/schemas/ParcelResponseDto"
                   }
                 }
               }
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "List the parcels a region contains",
         "tags": [
           "regions"
@@ -632,7 +1398,7 @@
     },
     "/blocks": {
       "post": {
-        "description": "Send geometry, or the boundaryId of a finished draft",
+        "description": "Send geometry, or the boundaryId of a finished draft. The region is not sent: it is the region of the project that contains the block outline.",
         "operationId": "BlockController_create",
         "parameters": [],
         "requestBody": {
@@ -657,12 +1423,18 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Create a block",
         "tags": [
           "blocks"
         ]
       },
       "get": {
+        "description": "Each block carries its region and the number of parcels it contains",
         "operationId": "BlockController_list",
         "parameters": [
           {
@@ -748,6 +1520,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "List blocks",
         "tags": [
           "blocks"
@@ -779,6 +1556,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Get a block by id",
         "tags": [
           "blocks"
@@ -818,6 +1600,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Update a block",
         "tags": [
           "blocks"
@@ -840,7 +1627,48 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Delete a block",
+        "tags": [
+          "blocks"
+        ]
+      }
+    },
+    "/blocks/{id}/detail": {
+      "get": {
+        "operationId": "BlockController_getDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlockDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a block with project, region, boundary and parcels",
         "tags": [
           "blocks"
         ]
@@ -867,13 +1695,18 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/BlockWithParcelsResponse"
+                    "$ref": "#/components/schemas/ParcelResponseDto"
                   }
                 }
               }
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "List the parcels a block contains",
         "tags": [
           "blocks"
@@ -882,7 +1715,7 @@
     },
     "/parcels": {
       "post": {
-        "description": "Send geometry, or the boundaryId of a finished draft",
+        "description": "Send geometry, or the boundaryId of a finished draft. Region and block are not sent: they are the region and block that contain the parcel outline.",
         "operationId": "ParcelController_create",
         "parameters": [],
         "requestBody": {
@@ -907,12 +1740,18 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Create a parcel",
         "tags": [
           "parcels"
         ]
       },
       "get": {
+        "description": "Each parcel carries its region, its block (or null) and the number of owners holding a share",
         "operationId": "ParcelController_list",
         "parameters": [
           {
@@ -1007,6 +1846,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "List parcels",
         "tags": [
           "parcels"
@@ -1038,6 +1882,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Get a parcel by id",
         "tags": [
           "parcels"
@@ -1077,6 +1926,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Update a parcel",
         "tags": [
           "parcels"
@@ -1099,7 +1953,48 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Delete a parcel together with its ownerships and boundary",
+        "tags": [
+          "parcels"
+        ]
+      }
+    },
+    "/parcels/{id}/detail": {
+      "get": {
+        "operationId": "ParcelController_getDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParcelDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a parcel with project, region, block, boundary and ownerships (with owners)",
         "tags": [
           "parcels"
         ]
@@ -1133,6 +2028,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "List the owners of a parcel with their shares",
         "tags": [
           "parcels"
@@ -1172,6 +2072,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Give an owner a share of a parcel",
         "tags": [
           "parcels"
@@ -1221,6 +2126,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Change an owner's share of a parcel",
         "tags": [
           "parcels"
@@ -1251,6 +2161,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Remove an owner's share from a parcel",
         "tags": [
           "parcels"
@@ -1283,6 +2198,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Create a owner",
         "tags": [
           "owners"
@@ -1357,6 +2277,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "List owners",
         "tags": [
           "owners"
@@ -1388,6 +2313,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Get a owner by id",
         "tags": [
           "owners"
@@ -1427,6 +2357,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Update a owner",
         "tags": [
           "owners"
@@ -1449,6 +2384,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Delete a owner",
         "tags": [
           "owners"
@@ -1483,6 +2423,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "List the parcels an owner holds shares in, with the share of each",
         "tags": [
           "owners"
@@ -1492,27 +2437,547 @@
   },
   "info": {
     "title": "Zaminnegar API",
-    "description": "Farmland management API. Geometry is GeoJSON in WGS 84 (EPSG:4326) with `[longitude, latitude]` ordering. Errors share one envelope (`ErrorResponseDto`).",
+    "description": "Farmland management API. Geometry is GeoJSON in WGS 84 (EPSG:4326) with `[longitude, latitude]` ordering. Errors share one envelope (`ErrorResponseDto`).\n\n**Authentication.** Call `POST /auth/login` with email and password to get a session token, then send it as `Authorization: Bearer <token>` on every other request (use the *Authorize* button here). A missing, invalid or expired token gives `401`; a valid token without the required permission on the project in question gives `403`. Permissions come from roles stored in the database and are granted either globally (global role) or per project (project membership).",
     "version": "1.0.0",
     "contact": {}
   },
   "tags": [
     {
-      "name": "Projects",
-      "description": "Groups of parcels, e.g. one farm or survey."
+      "name": "auth",
+      "description": "Sign in / out and inspect the current session. `login` is the only public route."
     },
     {
-      "name": "Parcels",
-      "description": "Land parcels with PostGIS-validated boundaries."
+      "name": "users",
+      "description": "User administration (global `user:*` permissions, i.e. admin)."
     },
     {
-      "name": "Exports",
-      "description": "Download project data in standard formats."
+      "name": "roles",
+      "description": "Roles and their permissions, stored in the database."
+    },
+    {
+      "name": "project-members",
+      "description": "Which users act in a project, and with which role."
+    },
+    {
+      "name": "projects",
+      "description": "Groups of regions, blocks, parcels and owners, e.g. one farm or survey."
+    },
+    {
+      "name": "boundaries",
+      "description": "Polygon outlines; drafts become region, block or parcel outlines."
+    },
+    {
+      "name": "regions",
+      "description": "Territories; contain blocks and parcels."
+    },
+    {
+      "name": "blocks",
+      "description": "Groups of parcels inside a region. The region is derived from the outline."
+    },
+    {
+      "name": "parcels",
+      "description": "Land parcels. Region and block are derived from the outline."
+    },
+    {
+      "name": "owners",
+      "description": "People or organizations holding shares in parcels."
     }
   ],
   "servers": [],
   "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "Opaque session token",
+        "type": "http",
+        "description": "The `token` returned by `POST /auth/login`. Revoked by `POST /auth/logout`."
+      }
+    },
     "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 320
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "globalRoleId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Role of scope `global`, if any"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "isActive",
+          "globalRoleId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "LoginResponseDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Send as `Authorization: Bearer <token>`. Shown once."
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          }
+        },
+        "required": [
+          "token",
+          "expiresAt",
+          "user"
+        ]
+      },
+      "RoleSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "Resource": {
+        "type": "string",
+        "enum": [
+          "project",
+          "boundary",
+          "region",
+          "block",
+          "parcel",
+          "owner",
+          "ownership",
+          "member",
+          "user",
+          "role"
+        ]
+      },
+      "Action": {
+        "type": "string",
+        "enum": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      },
+      "PermissionDto": {
+        "type": "object",
+        "properties": {
+          "resource": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Resource"
+              }
+            ]
+          },
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Action"
+              }
+            ]
+          }
+        },
+        "required": [
+          "resource",
+          "action"
+        ]
+      },
+      "MembershipPermissionsDto": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "$ref": "#/components/schemas/RoleSummaryDto"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PermissionDto"
+            }
+          }
+        },
+        "required": [
+          "projectId",
+          "role",
+          "permissions"
+        ]
+      },
+      "CurrentUserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string"
+          },
+          "globalRole": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleSummaryDto"
+              }
+            ]
+          },
+          "globalPermissions": {
+            "description": "Granted on every project",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PermissionDto"
+            }
+          },
+          "memberships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MembershipPermissionsDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "globalRole",
+          "globalPermissions",
+          "memberships"
+        ]
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 320
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128,
+            "format": "password"
+          },
+          "globalRoleId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "A role of scope `global`"
+          }
+        },
+        "required": [
+          "email",
+          "name",
+          "password"
+        ]
+      },
+      "PaginatedResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total number of matches across all pages"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128,
+            "format": "password",
+            "description": "Revokes all sessions of the user"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Deactivating a user revokes all sessions"
+          },
+          "globalRoleId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "A role of scope `global`; null removes it"
+          }
+        }
+      },
+      "RoleScope": {
+        "type": "string",
+        "enum": [
+          "global",
+          "project"
+        ]
+      },
+      "RoleResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "scope": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleScope"
+              }
+            ]
+          },
+          "isSystem": {
+            "type": "boolean",
+            "description": "System roles are seeded and cannot be changed or deleted"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PermissionDto"
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "scope",
+          "isSystem",
+          "permissions",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateRoleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "default": ""
+          },
+          "scope": {
+            "description": "`global` roles are assigned to a user once; `project` roles are assigned per project",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleScope"
+              }
+            ]
+          },
+          "permissions": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PermissionDto"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "scope",
+          "permissions"
+        ]
+      },
+      "UpdateRoleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "default": ""
+          },
+          "permissions": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PermissionDto"
+            }
+          }
+        }
+      },
+      "MemberResponseDto": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "roleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roleName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "projectId",
+          "userId",
+          "userEmail",
+          "userName",
+          "roleId",
+          "roleName",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AddMemberDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roleId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "A role of scope `project`"
+          }
+        },
+        "required": [
+          "userId",
+          "roleId"
+        ]
+      },
+      "UpdateMemberDto": {
+        "type": "object",
+        "properties": {
+          "roleId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "A role of scope `project`"
+          }
+        },
+        "required": [
+          "roleId"
+        ]
+      },
       "CreateProjectDto": {
         "type": "object",
         "properties": {
@@ -1557,33 +3022,6 @@
           "description",
           "createdAt",
           "updatedAt"
-        ]
-      },
-      "PaginatedResponseDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          },
-          "total": {
-            "type": "number",
-            "description": "Total number of matches across all pages"
-          },
-          "page": {
-            "type": "number"
-          },
-          "limit": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "items",
-          "total",
-          "page",
-          "limit"
         ]
       },
       "UpdateProjectDto": {
@@ -1910,6 +3348,10 @@
               }
             ]
           },
+          "areaM2": {
+            "type": "number",
+            "description": "Geodesic area in square meters"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -1917,6 +3359,14 @@
           "updatedAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "blocksCount": {
+            "type": "integer",
+            "description": "Number of blocks in the region. Only present in list responses"
+          },
+          "parcelsCount": {
+            "type": "integer",
+            "description": "Number of parcels in the region. Only present in list responses"
           }
         },
         "required": [
@@ -1926,8 +3376,274 @@
           "name",
           "description",
           "status",
+          "areaM2",
           "createdAt",
           "updatedAt"
+        ]
+      },
+      "BlockStatus": {
+        "type": "string",
+        "enum": [
+          "active",
+          "inactive"
+        ]
+      },
+      "BlockResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "regionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Derived from the block outline by the database"
+          },
+          "boundaryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BlockStatus"
+              }
+            ]
+          },
+          "areaM2": {
+            "type": "number",
+            "description": "Geodesic area in square meters"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "parcelsCount": {
+            "type": "integer",
+            "description": "Number of parcels in the block. Only present in list responses"
+          },
+          "region": {
+            "description": "Only present in list responses",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RegionResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "regionId",
+          "boundaryId",
+          "name",
+          "description",
+          "status",
+          "areaM2",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ParcelStatus": {
+        "type": "string",
+        "enum": [
+          "active",
+          "inactive"
+        ]
+      },
+      "ParcelResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "regionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Derived from the parcel outline by the database"
+          },
+          "blockId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Derived from the parcel outline by the database; null when no block contains the parcel"
+          },
+          "boundaryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ParcelStatus"
+              }
+            ]
+          },
+          "areaM2": {
+            "type": "number",
+            "description": "Geodesic area in square meters"
+          },
+          "regionOccupancyPct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "% of the region this parcel occupies"
+          },
+          "blockOccupancyPct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "nullable": true,
+            "description": "% of the block this parcel occupies"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "ownershipsCount": {
+            "type": "integer",
+            "description": "Number of owners holding a share. Only present in list responses"
+          },
+          "region": {
+            "description": "Only present in list responses",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RegionResponseDto"
+              }
+            ]
+          },
+          "block": {
+            "nullable": true,
+            "description": "Only present in list responses; null when the parcel is in no block",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BlockResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "regionId",
+          "boundaryId",
+          "name",
+          "status",
+          "areaM2",
+          "regionOccupancyPct",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "RegionDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "boundaryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RegionStatus"
+              }
+            ]
+          },
+          "areaM2": {
+            "type": "number",
+            "description": "Geodesic area in square meters"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "blocksCount": {
+            "type": "integer",
+            "description": "Number of blocks in the region. Only present in list responses"
+          },
+          "parcelsCount": {
+            "type": "integer",
+            "description": "Number of parcels in the region. Only present in list responses"
+          },
+          "project": {
+            "$ref": "#/components/schemas/ProjectResponseDto"
+          },
+          "boundary": {
+            "$ref": "#/components/schemas/BoundaryResponseDto"
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BlockResponseDto"
+            }
+          },
+          "parcels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParcelResponseDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "boundaryId",
+          "name",
+          "description",
+          "status",
+          "areaM2",
+          "createdAt",
+          "updatedAt",
+          "project",
+          "boundary",
+          "blocks",
+          "parcels"
         ]
       },
       "UpdateRegionDto": {
@@ -2009,153 +3725,10 @@
           }
         }
       },
-      "ParcelStatus": {
-        "type": "string",
-        "enum": [
-          "active",
-          "inactive"
-        ]
-      },
-      "ParcelResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "projectId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "regionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "blockId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "boundaryId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ParcelStatus"
-              }
-            ]
-          },
-          "areaM2": {
-            "type": "number",
-            "description": "Geodesic area in square meters"
-          },
-          "regionOccupancyPct": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 100,
-            "description": "% of the region this parcel occupies"
-          },
-          "blockOccupancyPct": {
-            "type": "object",
-            "minimum": 0,
-            "maximum": 100,
-            "nullable": true,
-            "description": "% of the block this parcel occupies"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "projectId",
-          "regionId",
-          "boundaryId",
-          "name",
-          "status",
-          "areaM2",
-          "regionOccupancyPct",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "RegionWithParcelsResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "projectId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "boundaryId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/RegionStatus"
-              }
-            ]
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "parcels": {
-            "$ref": "#/components/schemas/ParcelResponseDto"
-          }
-        },
-        "required": [
-          "id",
-          "projectId",
-          "boundaryId",
-          "name",
-          "description",
-          "status",
-          "createdAt",
-          "updatedAt",
-          "parcels"
-        ]
-      },
-      "BlockStatus": {
-        "type": "string",
-        "enum": [
-          "active",
-          "inactive"
-        ]
-      },
       "CreateBlockDto": {
         "type": "object",
         "properties": {
           "projectId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "regionId": {
             "type": "string",
             "format": "uuid"
           },
@@ -2241,49 +3814,10 @@
         },
         "required": [
           "projectId",
-          "regionId",
           "name"
         ]
       },
-      "PartialRegionResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "projectId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "boundaryId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/RegionStatus"
-              }
-            ]
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        }
-      },
-      "BlockResponseDto": {
+      "BlockDetailResponseDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -2296,27 +3830,12 @@
           },
           "regionId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "Derived from the block outline by the database"
           },
           "boundaryId": {
             "type": "string",
             "format": "uuid"
-          },
-          "areaM2": {
-            "type": "number"
-          },
-          "parcelsCount": {
-            "type": "number",
-            "nullable": true
-          },
-          "region": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PartialRegionResponseDto"
-              }
-            ]
           },
           "name": {
             "type": "string"
@@ -2331,6 +3850,10 @@
               }
             ]
           },
+          "areaM2": {
+            "type": "number",
+            "description": "Geodesic area in square meters"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -2338,6 +3861,25 @@
           "updatedAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "parcelsCount": {
+            "type": "integer",
+            "description": "Number of parcels in the block. Only present in list responses"
+          },
+          "project": {
+            "$ref": "#/components/schemas/ProjectResponseDto"
+          },
+          "region": {
+            "$ref": "#/components/schemas/RegionResponseDto"
+          },
+          "boundary": {
+            "$ref": "#/components/schemas/BoundaryResponseDto"
+          },
+          "parcels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParcelResponseDto"
+            }
           }
         },
         "required": [
@@ -2345,21 +3887,21 @@
           "projectId",
           "regionId",
           "boundaryId",
-          "areaM2",
           "name",
           "description",
           "status",
+          "areaM2",
           "createdAt",
-          "updatedAt"
+          "updatedAt",
+          "project",
+          "region",
+          "boundary",
+          "parcels"
         ]
       },
       "UpdateBlockDto": {
         "type": "object",
         "properties": {
-          "regionId": {
-            "type": "string",
-            "format": "uuid"
-          },
           "name": {
             "type": "string",
             "maxLength": 200
@@ -2435,80 +3977,6 @@
             }
           }
         }
-      },
-      "BlockWithParcelsResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "projectId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "regionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "boundaryId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "areaM2": {
-            "type": "number"
-          },
-          "parcelsCount": {
-            "type": "number",
-            "nullable": true
-          },
-          "region": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PartialRegionResponseDto"
-              }
-            ]
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/BlockStatus"
-              }
-            ]
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "parcels": {
-            "$ref": "#/components/schemas/ParcelResponseDto"
-          }
-        },
-        "required": [
-          "id",
-          "projectId",
-          "regionId",
-          "boundaryId",
-          "areaM2",
-          "name",
-          "description",
-          "status",
-          "createdAt",
-          "updatedAt",
-          "parcels"
-        ]
       },
       "CreateParcelDto": {
         "type": "object",
@@ -2517,16 +3985,6 @@
             "type": "string",
             "format": "uuid"
           },
-          "regionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "blockId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true,
-            "description": "Must belong to regionId"
-          },
           "name": {
             "type": "string",
             "maxLength": 200,
@@ -2606,95 +4064,8 @@
         },
         "required": [
           "projectId",
-          "regionId",
           "name"
         ]
-      },
-      "UpdateParcelDto": {
-        "type": "object",
-        "properties": {
-          "regionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "blockId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true,
-            "description": "Must belong to regionId"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 200,
-            "minLength": 1
-          },
-          "status": {
-            "default": "active",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ParcelStatus"
-              }
-            ]
-          },
-          "geometry": {
-            "type": "object",
-            "description": "GeoJSON MultiPolygon, WGS 84, [longitude, latitude]",
-            "example": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      8.68,
-                      50.11
-                    ],
-                    [
-                      8.69,
-                      50.11
-                    ],
-                    [
-                      8.69,
-                      50.12
-                    ],
-                    [
-                      8.68,
-                      50.12
-                    ],
-                    [
-                      8.68,
-                      50.11
-                    ]
-                  ]
-                ]
-              ]
-            },
-            "additionalProperties": false,
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": [
-                  "MultiPolygon",
-                  "Polygon"
-                ]
-              },
-              "coordinates": {
-                "type": "array",
-                "items": {
-                  "type": "array",
-                  "items": {
-                    "type": "array",
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "type": "number"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
       },
       "OwnerResponseDto": {
         "type": "object",
@@ -2783,6 +4154,189 @@
           "updatedAt",
           "owner"
         ]
+      },
+      "ParcelDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "regionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Derived from the parcel outline by the database"
+          },
+          "blockId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Derived from the parcel outline by the database; null when no block contains the parcel"
+          },
+          "boundaryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ParcelStatus"
+              }
+            ]
+          },
+          "areaM2": {
+            "type": "number",
+            "description": "Geodesic area in square meters"
+          },
+          "regionOccupancyPct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "% of the region this parcel occupies"
+          },
+          "blockOccupancyPct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "nullable": true,
+            "description": "% of the block this parcel occupies"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "ownershipsCount": {
+            "type": "integer",
+            "description": "Number of owners holding a share. Only present in list responses"
+          },
+          "project": {
+            "$ref": "#/components/schemas/ProjectResponseDto"
+          },
+          "region": {
+            "$ref": "#/components/schemas/RegionResponseDto"
+          },
+          "block": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BlockResponseDto"
+              }
+            ]
+          },
+          "boundary": {
+            "$ref": "#/components/schemas/BoundaryResponseDto"
+          },
+          "ownerships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OwnershipWithOwnerResponseDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "regionId",
+          "boundaryId",
+          "name",
+          "status",
+          "areaM2",
+          "regionOccupancyPct",
+          "createdAt",
+          "updatedAt",
+          "project",
+          "region",
+          "block",
+          "boundary",
+          "ownerships"
+        ]
+      },
+      "UpdateParcelDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "status": {
+            "default": "active",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ParcelStatus"
+              }
+            ]
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON MultiPolygon, WGS 84, [longitude, latitude]",
+            "example": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      8.68,
+                      50.11
+                    ],
+                    [
+                      8.69,
+                      50.11
+                    ],
+                    [
+                      8.69,
+                      50.12
+                    ],
+                    [
+                      8.68,
+                      50.12
+                    ],
+                    [
+                      8.68,
+                      50.11
+                    ]
+                  ]
+                ]
+              ]
+            },
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "MultiPolygon",
+                  "Polygon"
+                ]
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "AssignOwnerDto": {
         "type": "object",

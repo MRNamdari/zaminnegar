@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { BaseRepository } from '../../../common/base/base.repository';
 import { escapeLike, paginate, PaginatedResult } from '../../../common/utils/paginate';
+import { applyProjectScope } from '../../../common/utils/project-scope';
 import { ParcelQueryDto } from '../dto/parcel-query.dto';
 import { Parcel } from '../entities/parcel.entity';
 
@@ -33,8 +34,23 @@ export class ParcelRepository extends BaseRepository<Parcel> {
       .getOne();
   }
 
-  findPage(query: ParcelQueryDto): Promise<PaginatedResult<Parcel>> {
-    const qb = this.repository.createQueryBuilder('parcel');
+  /** Every relation of a parcel: project, region, block, boundary and ownerships with their owners. */
+  findDetailById(id: string, manager?: EntityManager): Promise<Parcel | null> {
+    return this.repo(manager).findOne({
+      where: { id },
+      relations: { project: true, region: true, block: true, boundary: true, ownerships: { owner: true } },
+      order: { ownerships: { createdAt: 'ASC' } },
+    });
+  }
+
+  /** A page of parcels, each with `region` and `block` joined and `ownershipsCount` filled in. */
+  findPage(query: ParcelQueryDto, projectScope: string[] | null = null): Promise<PaginatedResult<Parcel>> {
+    const qb = this.repository
+      .createQueryBuilder('parcel')
+      .leftJoinAndSelect('parcel.region', 'region')
+      .leftJoinAndSelect('parcel.block', 'block')
+      .loadRelationCountAndMap('parcel.ownershipsCount', 'parcel.ownerships');
+    applyProjectScope(qb, 'parcel.projectId', projectScope);
     if (query.projectId) qb.andWhere('parcel.projectId = :projectId', { projectId: query.projectId });
     if (query.regionId) qb.andWhere('parcel.regionId = :regionId', { regionId: query.regionId });
     if (query.blockId) qb.andWhere('parcel.blockId = :blockId', { blockId: query.blockId });

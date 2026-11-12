@@ -9,14 +9,11 @@ interface CreateDtoShape {
   geometry?: IMultiPolygon;
 }
 
+/** `regionId` is not sent: the block's region is derived from its outline by the database. */
 export class CreateBlockDto {
   @ApiProperty({ format: 'uuid' })
   @IsUUID()
   projectId!: string;
-
-  @ApiProperty({ format: 'uuid' })
-  @IsUUID()
-  regionId!: string;
 
   @ApiProperty({ maxLength: 200 })
   @IsString()

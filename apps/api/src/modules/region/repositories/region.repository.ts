@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { BaseRepository } from '../../../common/base/base.repository';
 import { escapeLike, paginate, PaginatedResult } from '../../../common/utils/paginate';
+import { applyProjectScope } from '../../../common/utils/project-scope';
 import { RegionQueryDto } from '../dto/region-query.dto';
 import { Region } from '../entities/region.entity';
 
@@ -40,8 +41,22 @@ export class RegionRepository extends BaseRepository<Region> {
     });
   }
 
-  findPage(query: RegionQueryDto): Promise<PaginatedResult<Region>> {
-    const qb = this.repository.createQueryBuilder('region');
+  /** Every relation of a region: project, boundary, blocks and parcels (both ordered by name). */
+  findDetailById(id: string, manager?: EntityManager): Promise<Region | null> {
+    return this.repo(manager).findOne({
+      where: { id },
+      relations: { project: true, boundary: true, blocks: true, parcels: true },
+      order: { blocks: { name: 'ASC' }, parcels: { name: 'ASC' } },
+    });
+  }
+
+  /** A page of regions, each with `blocksCount` and `parcelsCount` filled in. */
+  findPage(query: RegionQueryDto, projectScope: string[] | null = null): Promise<PaginatedResult<Region>> {
+    const qb = this.repository
+      .createQueryBuilder('region')
+      .loadRelationCountAndMap('region.blocksCount', 'region.blocks')
+      .loadRelationCountAndMap('region.parcelsCount', 'region.parcels');
+    applyProjectScope(qb, 'region.projectId', projectScope);
     if (query.projectId)
       qb.andWhere('region.projectId = :projectId', {
         projectId: query.projectId,

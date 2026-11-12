@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseRepository } from '../../../common/base/base.repository';
+import { applyProjectScope } from '../../../common/utils/project-scope';
 import { escapeLike, paginate, PaginatedResult } from '../../../common/utils/paginate';
 import { OwnerQueryDto } from '../dto/owner-query.dto';
 import { Owner } from '../entities/owner.entity';
@@ -12,8 +13,9 @@ export class OwnerRepository extends BaseRepository<Owner> {
     super(repository);
   }
 
-  findPage(query: OwnerQueryDto): Promise<PaginatedResult<Owner>> {
+  findPage(query: OwnerQueryDto, projectScope: string[] | null = null): Promise<PaginatedResult<Owner>> {
     const qb = this.repository.createQueryBuilder('owner');
+    applyProjectScope(qb, 'owner.projectId', projectScope);
     if (query.projectId) qb.andWhere('owner.projectId = :projectId', { projectId: query.projectId });
     if (query.search) {
       qb.andWhere(`owner.name ILIKE :search ESCAPE '\\'`, { search: `%${escapeLike(query.search)}%` });

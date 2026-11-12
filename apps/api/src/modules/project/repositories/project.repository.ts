@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { BaseRepository } from '../../../common/base/base.repository';
+import { applyProjectScope } from '../../../common/utils/project-scope';
 import { escapeLike, paginate, PaginatedResult } from '../../../common/utils/paginate';
 import { ProjectQueryDto } from '../dto/project-query.dto';
 import { Project } from '../entities/project.entity';
@@ -16,8 +17,9 @@ export class ProjectRepository extends BaseRepository<Project> {
     return this.repo(manager).findOne({ where: { name } });
   }
 
-  findPage(query: ProjectQueryDto): Promise<PaginatedResult<Project>> {
+  findPage(query: ProjectQueryDto, projectScope: string[] | null = null): Promise<PaginatedResult<Project>> {
     const qb = this.repository.createQueryBuilder('project');
+    applyProjectScope(qb, 'project.id', projectScope);
     if (query.search) {
       qb.andWhere(`project.name ILIKE :search ESCAPE '\\'`, { search: `%${escapeLike(query.search)}%` });
     }

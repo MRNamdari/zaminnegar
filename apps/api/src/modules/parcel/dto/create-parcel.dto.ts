@@ -12,7 +12,10 @@ import { MultiPolygonField } from '../../../common/decorators/multi-polygon-fiel
 import { ParcelStatus } from '../../../common/enums/parcel-status.enum';
 import { IMultiPolygon } from '../../../common/interfaces/geometry.interface';
 
-/** `areaM2`, `regionOccupancyPct` and `blockOccupancyPct` are computed and cannot be sent. */
+/**
+ * `regionId`, `blockId`, `areaM2`, `regionOccupancyPct` and `blockOccupancyPct` are derived from the outline by the
+ * database and cannot be sent.
+ */
 interface CreateDtoShape {
   boundaryId?: string;
   geometry?: IMultiPolygon;
@@ -23,22 +26,7 @@ export class CreateParcelDto {
   @IsUUID()
   projectId!: string;
 
-  @ApiProperty({ format: 'uuid' })
-  @IsUUID()
-  regionId!: string;
-
-  @ApiPropertyOptional({
-    type: 'string',
-    format: 'uuid',
-    nullable: true,
-    required: false,
-    description: 'Must belong to regionId',
-  })
-  @IsOptional()
-  @IsUUID()
-  blockId?: string | null;
-
-  @ApiProperty({ maxLength: 200, minLength: 1 })
+  @ApiProperty({ maxLength: 200 })
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)

@@ -84,9 +84,7 @@ export default function RegionsTable({
         accessorKey: 'id',
         header: 'نام منطقه',
         cell({ row }) {
-          return (
-            <SvgPolygon height="3rem" multiPolygon={row.original.territory} />
-          );
+          return <SvgPolygon height="3rem" polygon={row.original.territory} />;
         },
       },
       {

@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import { Action, Resource } from '../access/permissions';
 import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
 import { PaginatedResult } from '../../common/utils/paginate';
@@ -16,6 +18,7 @@ import { GetProjectQuery } from './queries/get-project.query';
 import { ListProjectsQuery } from './queries/list-projects.query';
 
 @ApiTags('projects')
+@ApiBearerAuth()
 @Controller('projects')
 export class ProjectController {
   constructor(
@@ -24,6 +27,7 @@ export class ProjectController {
   ) {}
 
   @Post()
+  @RequirePermission(Resource.project, Action.create, { scope: 'global' })
   @ApiOperation({ summary: 'Create a project' })
   @ApiCreatedResponse({ type: ProjectResponseDto })
   async create(@Body() dto: CreateProjectDto): Promise<ProjectResponseDto> {
@@ -32,14 +36,16 @@ export class ProjectController {
   }
 
   @Get()
+  @RequirePermission(Resource.project, Action.read, { scope: 'query' })
   @ApiOperation({ summary: 'List projects' })
   @ApiPaginatedResponse(ProjectResponseDto)
-  async list(@Query() query: ProjectQueryDto): Promise<PaginatedResponseDto<ProjectResponseDto>> {
-    const result = await this.queryBus.execute<ListProjectsQuery, PaginatedResult<Project>>(new ListProjectsQuery(query));
+  async list(@Query() query: ProjectQueryDto, @ProjectScope() projectScope: string[] | null): Promise<PaginatedResponseDto<ProjectResponseDto>> {
+    const result = await this.queryBus.execute<ListProjectsQuery, PaginatedResult<Project>>(new ListProjectsQuery(query, projectScope));
     return PaginatedResponseDto.of(result, ProjectResponseDto.from);
   }
 
   @Get(':id')
+  @RequirePermission(Resource.project, Action.read)
   @ApiOperation({ summary: 'Get a project by id' })
   @ApiOkResponse({ type: ProjectResponseDto })
   async get(@Param('id', ParseUUIDPipe) id: string): Promise<ProjectResponseDto> {
@@ -48,6 +54,7 @@ export class ProjectController {
   }
 
   @Patch(':id')
+  @RequirePermission(Resource.project, Action.update)
   @ApiOperation({ summary: 'Update a project' })
   @ApiOkResponse({ type: ProjectResponseDto })
   async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProjectDto): Promise<ProjectResponseDto> {
@@ -56,6 +63,7 @@ export class ProjectController {
   }
 
   @Delete(':id')
+  @RequirePermission(Resource.project, Action.delete)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a project' })
   @ApiNoContentResponse()

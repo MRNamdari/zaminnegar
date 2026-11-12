@@ -8,7 +8,7 @@ import { ListProjectsQuery } from './list-projects.query';
 export class ListProjectsHandler implements IQueryHandler<ListProjectsQuery, PaginatedResult<Project>> {
   constructor(private readonly projects: ProjectRepository) {}
 
-  execute({ dto }: ListProjectsQuery): Promise<PaginatedResult<Project>> {
-    return this.projects.findPage(dto);
+  execute({ dto, projectScope }: ListProjectsQuery): Promise<PaginatedResult<Project>> {
+    return this.projects.findPage(dto, projectScope);
   }
 }

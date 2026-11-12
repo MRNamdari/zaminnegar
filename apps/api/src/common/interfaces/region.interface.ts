@@ -12,7 +12,7 @@ export interface IRegion {
   name: string;
   description: string;
   status: RegionStatus;
-  areaM2?: number;
+  areaM2: number;
   createdAt: Date;
   updatedAt: Date;
   /** Only present when the relation is explicitly loaded. */
@@ -20,4 +20,8 @@ export interface IRegion {
   boundary?: IBoundary;
   blocks?: IBlock[];
   parcels?: IParcel[];
+  /** Only present in list results. */
+  blocksCount?: number;
+  /** Only present in list results. */
+  parcelsCount?: number;
 }

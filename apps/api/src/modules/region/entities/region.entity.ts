@@ -83,4 +83,10 @@ export class Region extends TimestampedEntity implements IRegion {
 
   @OneToMany(() => Parcel, (parcel) => parcel.region)
   parcels?: Relation<Parcel>[];
+
+  /** Only set by RegionRepository.findPage (loadRelationCountAndMap). */
+  blocksCount?: number;
+
+  /** Only set by RegionRepository.findPage (loadRelationCountAndMap). */
+  parcelsCount?: number;
 }

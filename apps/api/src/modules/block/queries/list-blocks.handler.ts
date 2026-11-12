@@ -8,7 +8,7 @@ import { ListBlocksQuery } from './list-blocks.query';
 export class ListBlocksHandler implements IQueryHandler<ListBlocksQuery, PaginatedResult<Block>> {
   constructor(private readonly blocks: BlockRepository) {}
 
-  execute({ dto }: ListBlocksQuery): Promise<PaginatedResult<Block>> {
-    return this.blocks.findPage(dto);
+  execute({ dto, projectScope }: ListBlocksQuery): Promise<PaginatedResult<Block>> {
+    return this.blocks.findPage(dto, projectScope);
   }
 }

@@ -8,7 +8,7 @@ import { ListRegionsQuery } from './list-regions.query';
 export class ListRegionsHandler implements IQueryHandler<ListRegionsQuery, PaginatedResult<Region>> {
   constructor(private readonly regions: RegionRepository) {}
 
-  execute({ dto }: ListRegionsQuery): Promise<PaginatedResult<Region>> {
-    return this.regions.findPage(dto);
+  execute({ dto, projectScope }: ListRegionsQuery): Promise<PaginatedResult<Region>> {
+    return this.regions.findPage(dto, projectScope);
   }
 }

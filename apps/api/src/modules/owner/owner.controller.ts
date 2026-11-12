@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import { Action, Resource } from '../access/permissions';
 import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
 import { PaginatedResult } from '../../common/utils/paginate';
@@ -19,6 +21,7 @@ import { ParcelOwnership } from '../parcel/entities/parcel-ownership.entity';
 import { OwnershipWithParcelResponseDto } from '../parcel/dto/ownership-with-parcel-response.dto';
 
 @ApiTags('owners')
+@ApiBearerAuth()
 @Controller('owners')
 export class OwnerController {
   constructor(
@@ -27,6 +30,7 @@ export class OwnerController {
   ) {}
 
   @Post()
+  @RequirePermission(Resource.owner, Action.create, { scope: 'body' })
   @ApiOperation({ summary: 'Create a owner' })
   @ApiCreatedResponse({ type: OwnerResponseDto })
   async create(@Body() dto: CreateOwnerDto): Promise<OwnerResponseDto> {
@@ -35,14 +39,16 @@ export class OwnerController {
   }
 
   @Get()
+  @RequirePermission(Resource.owner, Action.read, { scope: 'query' })
   @ApiOperation({ summary: 'List owners' })
   @ApiPaginatedResponse(OwnerResponseDto)
-  async list(@Query() query: OwnerQueryDto): Promise<PaginatedResponseDto<OwnerResponseDto>> {
-    const result = await this.queryBus.execute<ListOwnersQuery, PaginatedResult<Owner>>(new ListOwnersQuery(query));
+  async list(@Query() query: OwnerQueryDto, @ProjectScope() projectScope: string[] | null): Promise<PaginatedResponseDto<OwnerResponseDto>> {
+    const result = await this.queryBus.execute<ListOwnersQuery, PaginatedResult<Owner>>(new ListOwnersQuery(query, projectScope));
     return PaginatedResponseDto.of(result, OwnerResponseDto.from);
   }
 
   @Get(':id')
+  @RequirePermission(Resource.owner, Action.read)
   @ApiOperation({ summary: 'Get a owner by id' })
   @ApiOkResponse({ type: OwnerResponseDto })
   async get(@Param('id', ParseUUIDPipe) id: string): Promise<OwnerResponseDto> {
@@ -51,6 +57,7 @@ export class OwnerController {
   }
 
   @Patch(':id')
+  @RequirePermission(Resource.owner, Action.update)
   @ApiOperation({ summary: 'Update a owner' })
   @ApiOkResponse({ type: OwnerResponseDto })
   async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateOwnerDto): Promise<OwnerResponseDto> {
@@ -59,6 +66,7 @@ export class OwnerController {
   }
 
   @Delete(':id')
+  @RequirePermission(Resource.owner, Action.delete)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a owner' })
   @ApiNoContentResponse()
@@ -67,6 +75,7 @@ export class OwnerController {
   }
 
   @Get(':id/parcels')
+  @RequirePermission(Resource.ownership, Action.read, { idOf: Resource.owner })
   @ApiOperation({ summary: 'List the parcels an owner holds shares in, with the share of each' })
   @ApiOkResponse({ type: OwnershipWithParcelResponseDto, isArray: true })
   async listParcels(@Param('id', ParseUUIDPipe) id: string): Promise<OwnershipWithParcelResponseDto[]> {

@@ -8,7 +8,7 @@ import { ListBoundariesQuery } from './list-boundaries.query';
 export class ListBoundariesHandler implements IQueryHandler<ListBoundariesQuery, PaginatedResult<Boundary>> {
   constructor(private readonly boundaries: BoundaryRepository) {}
 
-  execute({ dto }: ListBoundariesQuery): Promise<PaginatedResult<Boundary>> {
-    return this.boundaries.findPage(dto);
+  execute({ dto, projectScope }: ListBoundariesQuery): Promise<PaginatedResult<Boundary>> {
+    return this.boundaries.findPage(dto, projectScope);
   }
 }

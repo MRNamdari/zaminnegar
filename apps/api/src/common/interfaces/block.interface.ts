@@ -13,7 +13,7 @@ export interface IBlock {
   name: string;
   description: string;
   status: BlockStatus;
-  areaM2?: number;
+  areaM2: number;
   createdAt: Date;
   updatedAt: Date;
   /** Only present when the relation is explicitly loaded. */
@@ -21,4 +21,6 @@ export interface IBlock {
   region?: IRegion;
   boundary?: IBoundary;
   parcels?: IParcel[];
+  /** Only present in list results. */
+  parcelsCount?: number;
 }

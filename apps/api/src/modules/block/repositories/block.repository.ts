@@ -7,6 +7,7 @@ import {
   paginate,
   PaginatedResult,
 } from '../../../common/utils/paginate';
+import { applyProjectScope } from '../../../common/utils/project-scope';
 import { BlockQueryDto } from '../dto/block-query.dto';
 import { Block } from '../entities/block.entity';
 
@@ -43,13 +44,24 @@ export class BlockRepository extends BaseRepository<Block> {
     });
   }
 
-  async findPage(query: BlockQueryDto): Promise<PaginatedResult<Block>> {
+  /** Every relation of a block: project, region, boundary and parcels (ordered by name). */
+  findDetailById(id: string, manager?: EntityManager): Promise<Block | null> {
+    return this.repo(manager).findOne({
+      where: { id },
+      relations: { project: true, region: true, boundary: true, parcels: true },
+      order: { parcels: { name: 'ASC' } },
+    });
+  }
+
+  /** A page of blocks, each with its `region` joined and `parcelsCount` filled in. */
+  async findPage(query: BlockQueryDto, projectScope: string[] | null = null): Promise<PaginatedResult<Block>> {
     const qb = this.repository
       .createQueryBuilder('block')
       .leftJoin('block.region', 'region')
       .addSelect('region')
       .loadRelationCountAndMap('block.parcelsCount', 'block.parcels');
 
+    applyProjectScope(qb, 'block.projectId', projectScope);
     if (query.projectId)
       qb.andWhere('block.projectId = :projectId', {
         projectId: query.projectId,
