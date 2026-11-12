@@ -51,10 +51,12 @@ export class Parcel extends TimestampedEntity implements IParcel {
   @Column({ type: 'uuid', name: 'project_id' })
   projectId!: string;
 
-  @Column({ type: 'uuid', name: 'region_id' })
+  /** Assigned by trigger `trg_parcels_assign_references`: the region containing the parcel's boundary. Never written by the ORM. */
+  @Column({ type: 'uuid', name: 'region_id', insert: false, update: false })
   regionId!: string;
 
-  @Column({ type: 'uuid', name: 'block_id', nullable: true })
+  /** Assigned by trigger `trg_parcels_assign_references`: the block containing the parcel's boundary, or null. Never written by the ORM. */
+  @Column({ type: 'uuid', name: 'block_id', nullable: true, insert: false, update: false })
   blockId?: string | null;
 
   /** UNIQUE: `uq_parcels__boundary_id`, named by ExplicitNamingStrategy. */
@@ -73,11 +75,11 @@ export class Parcel extends TimestampedEntity implements IParcel {
   })
   status!: ParcelStatus;
 
-  /** Maintained by ParcelRepository.recalculateMetrics (copied from the boundary). */
+  /** Maintained by trigger `trg_parcels_assign_references` (copied from the boundary). */
   @Column({ type: 'double precision', name: 'area_m2', default: 0 })
   areaM2!: number;
 
-  /** Maintained by ParcelRepository.recalculateMetrics. */
+  /** Maintained by trigger `trg_parcels_assign_references`. */
   @Column({
     type: 'numeric',
     precision: 9,
@@ -88,7 +90,7 @@ export class Parcel extends TimestampedEntity implements IParcel {
   })
   regionOccupancyPct!: number;
 
-  /** Maintained by ParcelRepository.recalculateMetrics. Null when the parcel has no block. */
+  /** Maintained by trigger `trg_parcels_assign_references`. Null when the parcel has no block. */
   @Column({
     type: 'numeric',
     precision: 9,
@@ -145,4 +147,7 @@ export class Parcel extends TimestampedEntity implements IParcel {
 
   @OneToMany(() => ParcelOwnership, (ownership) => ownership.parcel)
   ownerships?: Relation<ParcelOwnership>[];
+
+  /** Only set by ParcelRepository.findPage (loadRelationCountAndMap). */
+  ownershipsCount?: number;
 }

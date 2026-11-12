@@ -1,8 +1,12 @@
 import 'reflect-metadata';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import {
+  buildOpenApiDocument,
+  SWAGGER_UI_OPTIONS,
+} from './openapi/build-openapi-document';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
@@ -11,14 +15,13 @@ async function bootstrap(): Promise<void> {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.enableShutdownHooks();
 
-  const document = SwaggerModule.createDocument(
+  // Same document the client generator uses, so /docs and the generated client never disagree.
+  SwaggerModule.setup(
+    'docs',
     app,
-    new DocumentBuilder()
-      .setTitle('ZaminNegar API')
-      .setVersion('0.1.0')
-      .build(),
+    buildOpenApiDocument(app),
+    SWAGGER_UI_OPTIONS,
   );
-  SwaggerModule.setup('docs', app, document);
 
   await app.listen(process.env.PORT ?? 3000);
 }

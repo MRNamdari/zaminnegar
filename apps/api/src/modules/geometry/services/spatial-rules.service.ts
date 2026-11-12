@@ -7,6 +7,7 @@ import { InvalidGeometryError } from '../../../common/errors/invalid-geometry.er
 import { FeatureKind } from '../../../common/interfaces/boundary-usage.interface';
 import { IMultiPolygon } from '../../../common/interfaces/geometry.interface';
 import { GEOMETRY_TOLERANCE_M2 } from '../geometry.constants';
+import { NoContainingRegionError } from '../../../common/errors/no-containing-region.error';
 
 /** Siblings are compared inside this scope (a region's neighbours are the project's other regions, ...). */
 const SIBLING_SCOPE: Record<FeatureKind, { table: string; scopeColumn: string }> = {
@@ -35,6 +36,34 @@ export class SpatialRulesService {
       [JSON.stringify(geometry)],
     );
     if (!rows[0]?.valid) throw new InvalidGeometryError(rows[0]?.reason ?? 'unknown reason');
+  }
+
+  /**
+   * The region that will own a block/parcel with this outline: the region of the project that
+   * contains it (same SQL function the database triggers use, so both always agree).
+   */
+  async resolveRegionId(
+    kind: 'block' | 'parcel',
+    geometry: IMultiPolygon,
+    projectId: string,
+    manager: EntityManager,
+  ): Promise<string> {
+    const rows: Array<{ id: string | null }> = await manager.query(
+      `SELECT resolve_containing_region($2::uuid, ST_SetSRID(ST_GeomFromGeoJSON($1), 4326)) AS id`,
+      [JSON.stringify(geometry), projectId],
+    );
+    const id = rows[0]?.id ?? null;
+    if (!id) throw new NoContainingRegionError(kind);
+    return id;
+  }
+
+  /** The block of `regionId` that contains a parcel with this outline, or null. */
+  async resolveBlockId(geometry: IMultiPolygon, regionId: string, manager: EntityManager): Promise<string | null> {
+    const rows: Array<{ id: string | null }> = await manager.query(
+      `SELECT resolve_containing_block($2::uuid, ST_SetSRID(ST_GeomFromGeoJSON($1), 4326)) AS id`,
+      [JSON.stringify(geometry), regionId],
+    );
+    return rows[0]?.id ?? null;
   }
 
   async assertRegionRules(
@@ -71,11 +100,6 @@ export class SpatialRulesService {
   async assertRegionChildrenWithin(regionId: string, geometry: IMultiPolygon, manager: EntityManager): Promise<void> {
     await this.assertChildrenWithin('block', 'blocks', 'region_id', regionId, geometry, manager);
     await this.assertChildrenWithin('parcel', 'parcels', 'region_id', regionId, geometry, manager);
-  }
-
-  /** A block's new outline must still cover all of its parcels. */
-  async assertBlockChildrenWithin(blockId: string, geometry: IMultiPolygon, manager: EntityManager): Promise<void> {
-    await this.assertChildrenWithin('parcel', 'parcels', 'block_id', blockId, geometry, manager);
   }
 
   private async assertWithin(
@@ -131,7 +155,7 @@ export class SpatialRulesService {
   private async assertChildrenWithin(
     childKind: 'block' | 'parcel',
     table: 'blocks' | 'parcels',
-    parentColumn: 'region_id' | 'block_id',
+    parentColumn: 'region_id',
     parentId: string,
     geometry: IMultiPolygon,
     manager: EntityManager,

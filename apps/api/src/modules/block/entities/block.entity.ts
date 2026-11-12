@@ -34,7 +34,11 @@ export class Block extends TimestampedEntity implements IBlock {
   @Column({ type: 'uuid', name: 'project_id' })
   projectId!: string;
 
-  @Column({ type: 'uuid', name: 'region_id' })
+  /**
+   * Assigned by the database (trigger `trg_blocks_assign_region`): the region of the same project
+   * whose boundary contains the block's boundary. Never written by the ORM.
+   */
+  @Column({ type: 'uuid', name: 'region_id', insert: false, update: false })
   regionId!: string;
 
   /** UNIQUE: `uq_blocks__boundary_id`, named by ExplicitNamingStrategy. */

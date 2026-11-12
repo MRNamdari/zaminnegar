@@ -1,3 +1,8 @@
+import z from 'zod';
+import { fa } from 'zod/locales';
+
+z.config(fa());
+
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';

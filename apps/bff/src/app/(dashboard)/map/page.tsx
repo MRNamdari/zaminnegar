@@ -6,7 +6,9 @@ import { MapWorkspace } from '@/app/components/dashboard/map/MapWorkspace';
 import SelectedParcels from '@/app/components/dashboard/map/SelectedParcels';
 import SelectedParcelsOwnersTable from '@/app/components/dashboard/map/SelectedParcelsOwnersTable';
 import { MapEditor } from '@/app/features/map-editor';
-
+import { CreateBlockDto } from '@zaminnegar/api-client';
+const result = CreateBlockDto.safeParse({});
+console.log(result.error);
 export default function MapPage() {
   return (
     <MapWorkspace>

@@ -27,12 +27,12 @@ export class UpdateRegionHandler implements ICommandHandler<UpdateRegionCommand,
       }
       if (dto.description !== undefined) region.description = dto.description;
       if (dto.status !== undefined) region.status = dto.status;
-      const saved = await this.regions.save(region, manager);
+      await this.regions.save(region, manager);
 
-      // Re-checks overlap with other regions and that all blocks/parcels still fit, then
-      // recalculates the occupancy of every parcel in the region.
+      // Re-checks overlap with other regions and that all blocks/parcels still fit; the triggers then
+      // re-validate every block/parcel reference of the region and recompute the parcels' metrics.
       if (dto.geometry) await this.geometry.replaceGeometry(region.boundaryId, dto.geometry, manager);
-      return saved;
+      return (await this.regions.findById(id, manager)) as Region;
     });
   }
 }

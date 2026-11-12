@@ -92,17 +92,20 @@ export class BoundaryGeometryService {
         await this.spatial.assertRegionRules(geometry, { projectId: usage.projectId, excludeBoundaryId }, manager);
         await this.spatial.assertRegionChildrenWithin(usage.featureId, geometry, manager);
         return;
-      case 'block':
-        await this.spatial.assertBlockRules(geometry, { regionId: usage.regionId, excludeBoundaryId }, manager);
-        await this.spatial.assertBlockChildrenWithin(usage.featureId, geometry, manager);
+      case 'block': {
+        // The block's region is derived from its outline (trigger trg_blocks_assign_region), so the
+        // rules are checked against the region the *new* outline falls into. Parcels that no longer
+        // fit in the block are detached, or attached to it, by trg_boundaries_revalidate_references.
+        const regionId = await this.spatial.resolveRegionId('block', geometry, usage.projectId, manager);
+        await this.spatial.assertBlockRules(geometry, { regionId, excludeBoundaryId }, manager);
         return;
-      case 'parcel':
-        await this.spatial.assertParcelRules(
-          geometry,
-          { regionId: usage.regionId, blockId: usage.blockId, excludeBoundaryId },
-          manager,
-        );
+      }
+      case 'parcel': {
+        const regionId = await this.spatial.resolveRegionId('parcel', geometry, usage.projectId, manager);
+        const blockId = await this.spatial.resolveBlockId(geometry, regionId, manager);
+        await this.spatial.assertParcelRules(geometry, { regionId, blockId, excludeBoundaryId }, manager);
         return;
+      }
     }
   }
 

@@ -6,12 +6,13 @@
  * - Query parameter serialization
  * - Body encoding by `requestFormat` (json / form-data / form-url / binary / text)
  * - Operation headers and request overrides
-
+ * - OpenAPI securitySchemes via `configureFetcher({ getAuth })`
  *
  * Usage:
  * 1. Import createApi() or api from this file
  * 2. Pass a base URL to createApi() when your runtime owns environment access
- * 3. Customize error handling and headers as needed
+ * 3. Call configureFetcher({ getAuth: () => ({ ... }) })
+ * 4. Customize error handling and headers as needed
  */
 
 import { type Fetcher, type RequestFormat, createApiClient } from "./client.ts";
@@ -82,6 +83,64 @@ const encodeRequestBody = ((requestFormat, body) => {
   }
 }) as (requestFormat: RequestFormat, body: unknown) => { body?: BodyInit; contentType?: string };
 
+export type AuthCredentials = {
+  /** The `token` returned by `POST /auth/login`. Revoked by `POST /auth/logout`. */
+  bearer?: string;
+};
+
+export type SecurityRequirements = readonly (readonly string[])[];
+
+const securitySchemeProperties: Record<string, keyof AuthCredentials> = {
+  bearer: "bearer",
+};
+
+/** Pick the first OpenAPI security requirement satisfied by the available credentials. */
+const selectSecuritySchemes = (
+  auth: AuthCredentials,
+  requirements: SecurityRequirements,
+): Set<keyof AuthCredentials> => {
+  for (const requirement of requirements) {
+    const properties = requirement
+      .map((name) => securitySchemeProperties[name])
+      .filter((property): property is keyof AuthCredentials => Boolean(property));
+    if (properties.length === requirement.length && properties.every((property) => Boolean(auth[property]))) {
+      return new Set(properties);
+    }
+  }
+  return new Set();
+};
+
+/**
+ * Apply credentials for the first satisfied OpenAPI security requirement.
+ * Pass tokens via `getAuth` on the default fetcher.
+ * Bearer tokens may be raw or already prefixed with `Bearer `.
+ */
+export const applyAuth = (
+  headers: Headers,
+  _url: URL,
+  auth: AuthCredentials,
+  requirements: SecurityRequirements,
+): void => {
+  const allowed = selectSecuritySchemes(auth, requirements);
+  if (allowed.has("bearer") && auth["bearer"]) {
+    const raw = auth["bearer"]!.trim();
+    const token = /^bearer\s+/i.test(raw) ? raw.replace(/^bearer\s+/i, "").trim() : raw;
+    headers.set("Authorization", "Bearer " + token);
+  }
+};
+
+export type DefaultFetcherConfig = {
+  /** Return credentials for OpenAPI securitySchemes (sync or async). */
+  getAuth?: () => AuthCredentials | Promise<AuthCredentials>;
+};
+
+let fetcherConfig: DefaultFetcherConfig = {};
+
+/** Configure auth (and future fetcher options). Call before requests. */
+export const configureFetcher = (config: DefaultFetcherConfig) => {
+  fetcherConfig = { ...fetcherConfig, ...config };
+};
+
 /**
  * Simple fetcher implementation without external dependencies.
  * Compatible with both ApiClient and EffectApiClient (promise fetcher is wrapped).
@@ -92,6 +151,9 @@ export const defaultFetcher: Fetcher["fetch"] = async (input) => {
   if (input.urlSearchParams) {
     input.url.search = input.urlSearchParams.toString();
   }
+
+  const auth = await fetcherConfig.getAuth?.();
+  if (auth) applyAuth(headers, input.url, auth, input.security ?? []);
 
   let body: BodyInit | undefined;
   if (isMutationMethod(input.method)) {

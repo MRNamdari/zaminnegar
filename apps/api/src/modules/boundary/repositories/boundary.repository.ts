@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { BaseRepository } from '../../../common/base/base.repository';
 import { BoundaryUsage, FeatureKind } from '../../../common/interfaces/boundary-usage.interface';
+import { applyProjectScope } from '../../../common/utils/project-scope';
 import { escapeLike, paginate, PaginatedResult } from '../../../common/utils/paginate';
 import { BoundaryQueryDto } from '../dto/boundary-query.dto';
 import { Boundary } from '../entities/boundary.entity';
@@ -22,8 +23,9 @@ export class BoundaryRepository extends BaseRepository<Boundary> {
     return (await this.findById(saved.id, manager)) as Boundary;
   }
 
-  findPage(query: BoundaryQueryDto): Promise<PaginatedResult<Boundary>> {
+  findPage(query: BoundaryQueryDto, projectScope: string[] | null = null): Promise<PaginatedResult<Boundary>> {
     const qb = this.repository.createQueryBuilder('boundary');
+    applyProjectScope(qb, 'boundary.projectId', projectScope);
     if (query.projectId) qb.andWhere('boundary.projectId = :projectId', { projectId: query.projectId });
     if (query.search) {
       qb.andWhere(`boundary.name ILIKE :search ESCAPE '\\'`, { search: `%${escapeLike(query.search)}%` });

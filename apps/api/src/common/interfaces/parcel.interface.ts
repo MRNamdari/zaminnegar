@@ -28,4 +28,6 @@ export interface IParcel {
   block?: IBlock | null;
   boundary?: IBoundary;
   ownerships?: IParcelOwnership[];
+  /** Only present in list results. */
+  ownershipsCount?: number;
 }

@@ -8,7 +8,7 @@ import { ListOwnersQuery } from './list-owners.query';
 export class ListOwnersHandler implements IQueryHandler<ListOwnersQuery, PaginatedResult<Owner>> {
   constructor(private readonly owners: OwnerRepository) {}
 
-  execute({ dto }: ListOwnersQuery): Promise<PaginatedResult<Owner>> {
-    return this.owners.findPage(dto);
+  execute({ dto, projectScope }: ListOwnersQuery): Promise<PaginatedResult<Owner>> {
+    return this.owners.findPage(dto, projectScope);
   }
 }

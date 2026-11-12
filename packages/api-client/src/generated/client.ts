@@ -4,6 +4,187 @@ import type * as __TypedOpenapi from "./client.types.js";
 import { z } from "zod";
 
 // <Schemas>
+export type LoginDto = __TypedOpenapi.Schemas.LoginDto;
+export const LoginDto = z.strictObject({ email: z.email().max(320), password: z.string().max(128) });
+
+export type UserResponseDto = __TypedOpenapi.Schemas.UserResponseDto;
+export const UserResponseDto = z.strictObject({
+  id: z.uuid(),
+  email: z.email(),
+  name: z.string(),
+  isActive: z.boolean(),
+  globalRoleId: z
+    .uuid()
+    .describe("Role of scope `global`, if any")
+    .nullable()
+    .describe("Role of scope `global`, if any"),
+  createdAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  updatedAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+});
+
+export type LoginResponseDto = __TypedOpenapi.Schemas.LoginResponseDto;
+export const LoginResponseDto = z.strictObject({
+  token: z.string().describe("Send as `Authorization: Bearer <token>`. Shown once."),
+  expiresAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  user: UserResponseDto,
+});
+
+export type RoleSummaryDto = __TypedOpenapi.Schemas.RoleSummaryDto;
+export const RoleSummaryDto = z.strictObject({ id: z.uuid(), name: z.string() });
+
+export type Resource = __TypedOpenapi.Schemas.Resource;
+export const Resource = z.enum([
+  "project",
+  "boundary",
+  "region",
+  "block",
+  "parcel",
+  "owner",
+  "ownership",
+  "member",
+  "user",
+  "role",
+]);
+
+export type Action = __TypedOpenapi.Schemas.Action;
+export const Action = z.enum(["create", "read", "update", "delete"]);
+
+export type PermissionDto = __TypedOpenapi.Schemas.PermissionDto;
+export const PermissionDto = z.strictObject({ resource: Resource, action: Action });
+
+export type MembershipPermissionsDto = __TypedOpenapi.Schemas.MembershipPermissionsDto;
+export const MembershipPermissionsDto = z.strictObject({
+  projectId: z.uuid(),
+  role: RoleSummaryDto,
+  permissions: z.array(PermissionDto),
+});
+
+export type CurrentUserResponseDto = __TypedOpenapi.Schemas.CurrentUserResponseDto;
+export const CurrentUserResponseDto = z.strictObject({
+  id: z.uuid(),
+  email: z.email(),
+  name: z.string(),
+  globalRole: RoleSummaryDto.and(z.record(z.string(), z.unknown()).nullable()).nullable(),
+  globalPermissions: z.array(PermissionDto).describe("Granted on every project"),
+  memberships: z.array(MembershipPermissionsDto),
+});
+
+export type CreateUserDto = __TypedOpenapi.Schemas.CreateUserDto;
+export const CreateUserDto = z.strictObject({
+  email: z.email().max(320),
+  name: z.string().max(200),
+  password: z.string().min(8).max(128),
+  globalRoleId: z
+    .uuid()
+    .describe("A role of scope `global`")
+    .nullable()
+    .describe("A role of scope `global`")
+    .optional(),
+});
+
+export type PaginatedResponseDto = __TypedOpenapi.Schemas.PaginatedResponseDto;
+export const PaginatedResponseDto = z.strictObject({
+  items: z.array(z.record(z.string(), z.unknown())),
+  total: z.number().describe("Total number of matches across all pages"),
+  page: z.number(),
+  limit: z.number(),
+});
+
+export type UpdateUserDto = __TypedOpenapi.Schemas.UpdateUserDto;
+export const UpdateUserDto = z
+  .strictObject({
+    name: z.string().max(200),
+    password: z.string().min(8).max(128).describe("Revokes all sessions of the user"),
+    isActive: z.boolean().describe("Deactivating a user revokes all sessions"),
+    globalRoleId: z
+      .uuid()
+      .describe("A role of scope `global`; null removes it")
+      .nullable()
+      .describe("A role of scope `global`; null removes it"),
+  })
+  .partial();
+
+export type RoleScope = __TypedOpenapi.Schemas.RoleScope;
+export const RoleScope = z.enum(["global", "project"]);
+
+export type RoleResponseDto = __TypedOpenapi.Schemas.RoleResponseDto;
+export const RoleResponseDto = z.strictObject({
+  id: z.uuid(),
+  name: z.string(),
+  description: z.string(),
+  scope: RoleScope,
+  isSystem: z.boolean().describe("System roles are seeded and cannot be changed or deleted"),
+  permissions: z.array(PermissionDto),
+  createdAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  updatedAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+});
+
+export type CreateRoleDto = __TypedOpenapi.Schemas.CreateRoleDto;
+export const CreateRoleDto = z.strictObject({
+  name: z.string().max(100),
+  description: z.string().default(""),
+  scope: RoleScope,
+  permissions: z.array(PermissionDto).max(100),
+});
+
+export type UpdateRoleDto = __TypedOpenapi.Schemas.UpdateRoleDto;
+export const UpdateRoleDto = z
+  .strictObject({
+    name: z.string().max(100),
+    description: z.string().default(""),
+    permissions: z.array(PermissionDto).max(100),
+  })
+  .partial();
+
+export type MemberResponseDto = __TypedOpenapi.Schemas.MemberResponseDto;
+export const MemberResponseDto = z.strictObject({
+  projectId: z.uuid(),
+  userId: z.uuid(),
+  userEmail: z.email(),
+  userName: z.string(),
+  roleId: z.uuid(),
+  roleName: z.string(),
+  createdAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  updatedAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+});
+
+export type AddMemberDto = __TypedOpenapi.Schemas.AddMemberDto;
+export const AddMemberDto = z.strictObject({
+  userId: z.uuid(),
+  roleId: z.uuid().describe("A role of scope `project`"),
+});
+
+export type UpdateMemberDto = __TypedOpenapi.Schemas.UpdateMemberDto;
+export const UpdateMemberDto = z.strictObject({ roleId: z.uuid().describe("A role of scope `project`") });
+
 export type CreateProjectDto = __TypedOpenapi.Schemas.CreateProjectDto;
 export const CreateProjectDto = z.strictObject({ name: z.string().max(200), description: z.string().default("") });
 
@@ -22,14 +203,6 @@ export const ProjectResponseDto = z.strictObject({
     if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
     return d;
   }),
-});
-
-export type PaginatedResponseDto = __TypedOpenapi.Schemas.PaginatedResponseDto;
-export const PaginatedResponseDto = z.strictObject({
-  items: z.array(z.record(z.string(), z.unknown())),
-  total: z.number().describe("Total number of matches across all pages"),
-  page: z.number(),
-  limit: z.number(),
 });
 
 export type UpdateProjectDto = __TypedOpenapi.Schemas.UpdateProjectDto;
@@ -111,6 +284,7 @@ export const RegionResponseDto = z.strictObject({
   name: z.string(),
   description: z.string(),
   status: RegionStatus,
+  areaM2: z.number().describe("Geodesic area in square meters"),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
     if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
@@ -121,6 +295,112 @@ export const RegionResponseDto = z.strictObject({
     if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
     return d;
   }),
+  blocksCount: z.number().int().describe("Number of blocks in the region. Only present in list responses").optional(),
+  parcelsCount: z.number().int().describe("Number of parcels in the region. Only present in list responses").optional(),
+});
+
+export type BlockStatus = __TypedOpenapi.Schemas.BlockStatus;
+export const BlockStatus = z.enum(["active", "inactive"]);
+
+export type BlockResponseDto = __TypedOpenapi.Schemas.BlockResponseDto;
+export const BlockResponseDto = z.strictObject({
+  id: z.uuid(),
+  projectId: z.uuid(),
+  regionId: z.uuid().describe("Derived from the block outline by the database"),
+  boundaryId: z.uuid(),
+  name: z.string(),
+  description: z.string(),
+  status: BlockStatus,
+  areaM2: z.number().describe("Geodesic area in square meters"),
+  createdAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  updatedAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  parcelsCount: z.number().int().describe("Number of parcels in the block. Only present in list responses").optional(),
+  region: RegionResponseDto.optional(),
+});
+
+export type ParcelStatus = __TypedOpenapi.Schemas.ParcelStatus;
+export const ParcelStatus = z.enum(["active", "inactive"]);
+
+export type ParcelResponseDto = __TypedOpenapi.Schemas.ParcelResponseDto;
+export const ParcelResponseDto = z.strictObject({
+  id: z.uuid(),
+  projectId: z.uuid(),
+  regionId: z.uuid().describe("Derived from the parcel outline by the database"),
+  blockId: z
+    .uuid()
+    .describe("Derived from the parcel outline by the database; null when no block contains the parcel")
+    .nullable()
+    .describe("Derived from the parcel outline by the database; null when no block contains the parcel")
+    .optional(),
+  boundaryId: z.uuid(),
+  name: z.string(),
+  status: ParcelStatus,
+  areaM2: z.number().describe("Geodesic area in square meters"),
+  regionOccupancyPct: z.number().min(0).max(100).describe("% of the region this parcel occupies"),
+  blockOccupancyPct: z
+    .number()
+    .min(0)
+    .max(100)
+    .describe("% of the block this parcel occupies")
+    .nullable()
+    .describe("% of the block this parcel occupies")
+    .optional(),
+  createdAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  updatedAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  ownershipsCount: z
+    .number()
+    .int()
+    .describe("Number of owners holding a share. Only present in list responses")
+    .optional(),
+  region: RegionResponseDto.optional(),
+  block: BlockResponseDto.and(z.record(z.string(), z.unknown()).nullable())
+    .describe("Only present in list responses; null when the parcel is in no block")
+    .nullable()
+    .describe("Only present in list responses; null when the parcel is in no block")
+    .optional(),
+});
+
+export type RegionDetailResponseDto = __TypedOpenapi.Schemas.RegionDetailResponseDto;
+export const RegionDetailResponseDto = z.strictObject({
+  id: z.uuid(),
+  projectId: z.uuid(),
+  boundaryId: z.uuid(),
+  name: z.string(),
+  description: z.string(),
+  status: RegionStatus,
+  areaM2: z.number().describe("Geodesic area in square meters"),
+  createdAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  updatedAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  blocksCount: z.number().int().describe("Number of blocks in the region. Only present in list responses").optional(),
+  parcelsCount: z.number().int().describe("Number of parcels in the region. Only present in list responses").optional(),
+  project: ProjectResponseDto,
+  boundary: BoundaryResponseDto,
+  blocks: z.array(BlockResponseDto),
+  parcels: z.array(ParcelResponseDto),
 });
 
 export type UpdateRegionDto = __TypedOpenapi.Schemas.UpdateRegionDto;
@@ -139,66 +419,9 @@ export const UpdateRegionDto = z
   })
   .partial();
 
-export type ParcelStatus = __TypedOpenapi.Schemas.ParcelStatus;
-export const ParcelStatus = z.enum(["active", "inactive"]);
-
-export type ParcelResponseDto = __TypedOpenapi.Schemas.ParcelResponseDto;
-export const ParcelResponseDto = z.strictObject({
-  id: z.uuid(),
-  projectId: z.uuid(),
-  regionId: z.uuid(),
-  blockId: z.uuid().nullable().optional(),
-  boundaryId: z.uuid(),
-  name: z.string(),
-  status: ParcelStatus,
-  areaM2: z.number().describe("Geodesic area in square meters"),
-  regionOccupancyPct: z.number().min(0).max(100).describe("% of the region this parcel occupies"),
-  blockOccupancyPct: z
-    .record(z.string(), z.unknown())
-    .describe("% of the block this parcel occupies")
-    .nullable()
-    .describe("% of the block this parcel occupies")
-    .optional(),
-  createdAt: z.iso.datetime().transform((s) => {
-    const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
-    return d;
-  }),
-  updatedAt: z.iso.datetime().transform((s) => {
-    const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
-    return d;
-  }),
-});
-
-export type RegionWithParcelsResponse = __TypedOpenapi.Schemas.RegionWithParcelsResponse;
-export const RegionWithParcelsResponse = z.strictObject({
-  id: z.uuid(),
-  projectId: z.uuid(),
-  boundaryId: z.uuid(),
-  name: z.string(),
-  description: z.string(),
-  status: RegionStatus,
-  createdAt: z.iso.datetime().transform((s) => {
-    const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
-    return d;
-  }),
-  updatedAt: z.iso.datetime().transform((s) => {
-    const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
-    return d;
-  }),
-  parcels: ParcelResponseDto,
-});
-
-export type BlockStatus = __TypedOpenapi.Schemas.BlockStatus;
-export const BlockStatus = z.enum(["active", "inactive"]);
-
 export type CreateBlockDto = __TypedOpenapi.Schemas.CreateBlockDto;
 export const CreateBlockDto = z.strictObject({
   projectId: z.uuid(),
-  regionId: z.uuid(),
   name: z.string().max(200),
   description: z.string().default(""),
   status: BlockStatus.optional(),
@@ -213,40 +436,16 @@ export const CreateBlockDto = z.strictObject({
     .optional(),
 });
 
-export type PartialRegionResponseDto = __TypedOpenapi.Schemas.PartialRegionResponseDto;
-export const PartialRegionResponseDto = z
-  .strictObject({
-    id: z.uuid(),
-    projectId: z.uuid(),
-    boundaryId: z.uuid(),
-    name: z.string(),
-    description: z.string(),
-    status: RegionStatus,
-    createdAt: z.iso.datetime().transform((s) => {
-      const d = new Date(s);
-      if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
-      return d;
-    }),
-    updatedAt: z.iso.datetime().transform((s) => {
-      const d = new Date(s);
-      if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
-      return d;
-    }),
-  })
-  .partial();
-
-export type BlockResponseDto = __TypedOpenapi.Schemas.BlockResponseDto;
-export const BlockResponseDto = z.strictObject({
+export type BlockDetailResponseDto = __TypedOpenapi.Schemas.BlockDetailResponseDto;
+export const BlockDetailResponseDto = z.strictObject({
   id: z.uuid(),
   projectId: z.uuid(),
-  regionId: z.uuid(),
+  regionId: z.uuid().describe("Derived from the block outline by the database"),
   boundaryId: z.uuid(),
-  areaM2: z.number(),
-  parcelsCount: z.number().nullable().optional(),
-  region: PartialRegionResponseDto.and(z.record(z.string(), z.unknown()).nullable()).nullable().optional(),
   name: z.string(),
   description: z.string(),
   status: BlockStatus,
+  areaM2: z.number().describe("Geodesic area in square meters"),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
     if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
@@ -257,12 +456,16 @@ export const BlockResponseDto = z.strictObject({
     if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
     return d;
   }),
+  parcelsCount: z.number().int().describe("Number of parcels in the block. Only present in list responses").optional(),
+  project: ProjectResponseDto,
+  region: RegionResponseDto,
+  boundary: BoundaryResponseDto,
+  parcels: z.array(ParcelResponseDto),
 });
 
 export type UpdateBlockDto = __TypedOpenapi.Schemas.UpdateBlockDto;
 export const UpdateBlockDto = z
   .strictObject({
-    regionId: z.uuid(),
     name: z.string().max(200),
     description: z.string().default(""),
     status: BlockStatus,
@@ -276,36 +479,9 @@ export const UpdateBlockDto = z
   })
   .partial();
 
-export type BlockWithParcelsResponse = __TypedOpenapi.Schemas.BlockWithParcelsResponse;
-export const BlockWithParcelsResponse = z.strictObject({
-  id: z.uuid(),
-  projectId: z.uuid(),
-  regionId: z.uuid(),
-  boundaryId: z.uuid(),
-  areaM2: z.number(),
-  parcelsCount: z.number().nullable().optional(),
-  region: PartialRegionResponseDto.and(z.record(z.string(), z.unknown()).nullable()).nullable().optional(),
-  name: z.string(),
-  description: z.string(),
-  status: BlockStatus,
-  createdAt: z.iso.datetime().transform((s) => {
-    const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
-    return d;
-  }),
-  updatedAt: z.iso.datetime().transform((s) => {
-    const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
-    return d;
-  }),
-  parcels: ParcelResponseDto,
-});
-
 export type CreateParcelDto = __TypedOpenapi.Schemas.CreateParcelDto;
 export const CreateParcelDto = z.strictObject({
   projectId: z.uuid(),
-  regionId: z.uuid(),
-  blockId: z.uuid().describe("Must belong to regionId").nullable().describe("Must belong to regionId").optional(),
   name: z.string().max(200),
   status: ParcelStatus.optional(),
   boundaryId: z.uuid().describe("Existing draft boundary to use instead of geometry").optional(),
@@ -318,23 +494,6 @@ export const CreateParcelDto = z.strictObject({
     .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]")
     .optional(),
 });
-
-export type UpdateParcelDto = __TypedOpenapi.Schemas.UpdateParcelDto;
-export const UpdateParcelDto = z
-  .strictObject({
-    regionId: z.uuid(),
-    blockId: z.uuid().describe("Must belong to regionId").nullable().describe("Must belong to regionId"),
-    name: z.string().max(200),
-    status: ParcelStatus,
-    geometry: z
-      .strictObject({
-        type: z.enum(["MultiPolygon", "Polygon"]),
-        coordinates: z.array(z.array(z.array(z.array(z.number())))),
-      })
-      .partial()
-      .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]"),
-  })
-  .partial();
 
 export type OwnerResponseDto = __TypedOpenapi.Schemas.OwnerResponseDto;
 export const OwnerResponseDto = z.strictObject({
@@ -375,6 +534,67 @@ export const OwnershipWithOwnerResponseDto = z.strictObject({
   }),
   owner: OwnerResponseDto,
 });
+
+export type ParcelDetailResponseDto = __TypedOpenapi.Schemas.ParcelDetailResponseDto;
+export const ParcelDetailResponseDto = z.strictObject({
+  id: z.uuid(),
+  projectId: z.uuid(),
+  regionId: z.uuid().describe("Derived from the parcel outline by the database"),
+  blockId: z
+    .uuid()
+    .describe("Derived from the parcel outline by the database; null when no block contains the parcel")
+    .nullable()
+    .describe("Derived from the parcel outline by the database; null when no block contains the parcel")
+    .optional(),
+  boundaryId: z.uuid(),
+  name: z.string(),
+  status: ParcelStatus,
+  areaM2: z.number().describe("Geodesic area in square meters"),
+  regionOccupancyPct: z.number().min(0).max(100).describe("% of the region this parcel occupies"),
+  blockOccupancyPct: z
+    .number()
+    .min(0)
+    .max(100)
+    .describe("% of the block this parcel occupies")
+    .nullable()
+    .describe("% of the block this parcel occupies")
+    .optional(),
+  createdAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  updatedAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  ownershipsCount: z
+    .number()
+    .int()
+    .describe("Number of owners holding a share. Only present in list responses")
+    .optional(),
+  project: ProjectResponseDto,
+  region: RegionResponseDto,
+  block: BlockResponseDto.and(z.record(z.string(), z.unknown()).nullable()).nullable(),
+  boundary: BoundaryResponseDto,
+  ownerships: z.array(OwnershipWithOwnerResponseDto),
+});
+
+export type UpdateParcelDto = __TypedOpenapi.Schemas.UpdateParcelDto;
+export const UpdateParcelDto = z
+  .strictObject({
+    name: z.string().max(200),
+    status: ParcelStatus,
+    geometry: z
+      .strictObject({
+        type: z.enum(["MultiPolygon", "Polygon"]),
+        coordinates: z.array(z.array(z.array(z.array(z.number())))),
+      })
+      .partial()
+      .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]"),
+  })
+  .partial();
 
 export type AssignOwnerDto = __TypedOpenapi.Schemas.AssignOwnerDto;
 export const AssignOwnerDto = z.strictObject({
@@ -448,6 +668,185 @@ export const OwnershipWithParcelResponseDto = z.strictObject({
 // </Schemas>
 
 // <Endpoints>
+export type post_AuthController_login = __TypedOpenapi.Endpoints.post_AuthController_login;
+export const post_AuthController_login = {
+  method: z.literal("POST"),
+  path: z.literal("/auth/login"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { header: z.strictObject({ "user-agent": z.string() }), body: LoginDto },
+  responses: { 200: LoginResponseDto },
+};
+
+export type post_AuthController_logout = __TypedOpenapi.Endpoints.post_AuthController_logout;
+export const post_AuthController_logout = {
+  method: z.literal("POST"),
+  path: z.literal("/auth/logout"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: z.never(),
+  responses: { 204: z.unknown() },
+};
+
+export type get_AuthController_me = __TypedOpenapi.Endpoints.get_AuthController_me;
+export const get_AuthController_me = {
+  method: z.literal("GET"),
+  path: z.literal("/auth/me"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: z.never(),
+  responses: { 200: CurrentUserResponseDto },
+};
+
+export type post_UsersController_create = __TypedOpenapi.Endpoints.post_UsersController_create;
+export const post_UsersController_create = {
+  method: z.literal("POST"),
+  path: z.literal("/users"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { body: CreateUserDto },
+  responses: { 201: UserResponseDto },
+};
+
+export type get_UsersController_list = __TypedOpenapi.Endpoints.get_UsersController_list;
+export const get_UsersController_list = {
+  method: z.literal("GET"),
+  path: z.literal("/users"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: {
+    query: z
+      .strictObject({
+        page: z.coerce.number().min(1).default(1),
+        limit: z.coerce.number().min(1).max(100).default(20),
+        search: z.string(),
+      })
+      .partial()
+      .optional(),
+  },
+  responses: { 200: PaginatedResponseDto.and(z.strictObject({ items: z.array(UserResponseDto) }).partial()) },
+};
+
+export type get_UsersController_get = __TypedOpenapi.Endpoints.get_UsersController_get;
+export const get_UsersController_get = {
+  method: z.literal("GET"),
+  path: z.literal("/users/{id}"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ id: z.string() }) },
+  responses: { 200: UserResponseDto },
+};
+
+export type patch_UsersController_update = __TypedOpenapi.Endpoints.patch_UsersController_update;
+export const patch_UsersController_update = {
+  method: z.literal("PATCH"),
+  path: z.literal("/users/{id}"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ id: z.string() }), body: UpdateUserDto },
+  responses: { 200: UserResponseDto },
+};
+
+export type delete_UsersController_remove = __TypedOpenapi.Endpoints.delete_UsersController_remove;
+export const delete_UsersController_remove = {
+  method: z.literal("DELETE"),
+  path: z.literal("/users/{id}"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ id: z.string() }) },
+  responses: { 204: z.unknown() },
+};
+
+export type get_RolesController_list = __TypedOpenapi.Endpoints.get_RolesController_list;
+export const get_RolesController_list = {
+  method: z.literal("GET"),
+  path: z.literal("/roles"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: z.never(),
+  responses: { 200: z.array(RoleResponseDto) },
+};
+
+export type post_RolesController_create = __TypedOpenapi.Endpoints.post_RolesController_create;
+export const post_RolesController_create = {
+  method: z.literal("POST"),
+  path: z.literal("/roles"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { body: CreateRoleDto },
+  responses: { 201: RoleResponseDto },
+};
+
+export type get_RolesController_get = __TypedOpenapi.Endpoints.get_RolesController_get;
+export const get_RolesController_get = {
+  method: z.literal("GET"),
+  path: z.literal("/roles/{id}"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ id: z.string() }) },
+  responses: { 200: RoleResponseDto },
+};
+
+export type patch_RolesController_update = __TypedOpenapi.Endpoints.patch_RolesController_update;
+export const patch_RolesController_update = {
+  method: z.literal("PATCH"),
+  path: z.literal("/roles/{id}"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ id: z.string() }), body: UpdateRoleDto },
+  responses: { 200: RoleResponseDto },
+};
+
+export type delete_RolesController_remove = __TypedOpenapi.Endpoints.delete_RolesController_remove;
+export const delete_RolesController_remove = {
+  method: z.literal("DELETE"),
+  path: z.literal("/roles/{id}"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ id: z.string() }) },
+  responses: { 204: z.unknown() },
+};
+
+export type get_ProjectMembersController_list = __TypedOpenapi.Endpoints.get_ProjectMembersController_list;
+export const get_ProjectMembersController_list = {
+  method: z.literal("GET"),
+  path: z.literal("/projects/{projectId}/members"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ projectId: z.string() }) },
+  responses: { 200: z.array(MemberResponseDto) },
+};
+
+export type post_ProjectMembersController_add = __TypedOpenapi.Endpoints.post_ProjectMembersController_add;
+export const post_ProjectMembersController_add = {
+  method: z.literal("POST"),
+  path: z.literal("/projects/{projectId}/members"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ projectId: z.string() }), body: AddMemberDto },
+  responses: { 201: MemberResponseDto },
+};
+
+export type patch_ProjectMembersController_update = __TypedOpenapi.Endpoints.patch_ProjectMembersController_update;
+export const patch_ProjectMembersController_update = {
+  method: z.literal("PATCH"),
+  path: z.literal("/projects/{projectId}/members/{userId}"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ projectId: z.string(), userId: z.string() }), body: UpdateMemberDto },
+  responses: { 200: MemberResponseDto },
+};
+
+export type delete_ProjectMembersController_remove = __TypedOpenapi.Endpoints.delete_ProjectMembersController_remove;
+export const delete_ProjectMembersController_remove = {
+  method: z.literal("DELETE"),
+  path: z.literal("/projects/{projectId}/members/{userId}"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ projectId: z.string(), userId: z.string() }) },
+  responses: { 204: z.unknown() },
+};
+
 export type post_ProjectController_create = __TypedOpenapi.Endpoints.post_ProjectController_create;
 export const post_ProjectController_create = {
   method: z.literal("POST"),
@@ -628,6 +1027,16 @@ export const delete_RegionController_remove = {
   responses: { 204: z.unknown() },
 };
 
+export type get_RegionController_getDetail = __TypedOpenapi.Endpoints.get_RegionController_getDetail;
+export const get_RegionController_getDetail = {
+  method: z.literal("GET"),
+  path: z.literal("/regions/{id}/detail"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ id: z.string() }) },
+  responses: { 200: RegionDetailResponseDto },
+};
+
 export type get_RegionController_listParcels = __TypedOpenapi.Endpoints.get_RegionController_listParcels;
 export const get_RegionController_listParcels = {
   method: z.literal("GET"),
@@ -635,7 +1044,7 @@ export const get_RegionController_listParcels = {
   requestFormat: z.literal("json"),
   responseFormat: z.literal("json"),
   parameters: { path: z.strictObject({ id: z.string() }) },
-  responses: { 200: z.array(RegionWithParcelsResponse) },
+  responses: { 200: z.array(ParcelResponseDto) },
 };
 
 export type post_BlockController_create = __TypedOpenapi.Endpoints.post_BlockController_create;
@@ -700,6 +1109,16 @@ export const delete_BlockController_remove = {
   responses: { 204: z.unknown() },
 };
 
+export type get_BlockController_getDetail = __TypedOpenapi.Endpoints.get_BlockController_getDetail;
+export const get_BlockController_getDetail = {
+  method: z.literal("GET"),
+  path: z.literal("/blocks/{id}/detail"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ id: z.string() }) },
+  responses: { 200: BlockDetailResponseDto },
+};
+
 export type get_BlockController_listParcels = __TypedOpenapi.Endpoints.get_BlockController_listParcels;
 export const get_BlockController_listParcels = {
   method: z.literal("GET"),
@@ -707,7 +1126,7 @@ export const get_BlockController_listParcels = {
   requestFormat: z.literal("json"),
   responseFormat: z.literal("json"),
   parameters: { path: z.strictObject({ id: z.string() }) },
-  responses: { 200: z.array(BlockWithParcelsResponse) },
+  responses: { 200: z.array(ParcelResponseDto) },
 };
 
 export type post_ParcelController_create = __TypedOpenapi.Endpoints.post_ParcelController_create;
@@ -771,6 +1190,16 @@ export const delete_ParcelController_remove = {
   responseFormat: z.literal("json"),
   parameters: { path: z.strictObject({ id: z.string() }) },
   responses: { 204: z.unknown() },
+};
+
+export type get_ParcelController_getDetail = __TypedOpenapi.Endpoints.get_ParcelController_getDetail;
+export const get_ParcelController_getDetail = {
+  method: z.literal("GET"),
+  path: z.literal("/parcels/{id}/detail"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ id: z.string() }) },
+  responses: { 200: ParcelDetailResponseDto },
 };
 
 export type get_ParcelController_listOwners = __TypedOpenapi.Endpoints.get_ParcelController_listOwners;
@@ -888,6 +1317,11 @@ export const get_OwnerController_listParcels = {
 // <EndpointByMethod>
 export const EndpointByMethod = {
   post: {
+    "/auth/login": post_AuthController_login,
+    "/auth/logout": post_AuthController_logout,
+    "/users": post_UsersController_create,
+    "/roles": post_RolesController_create,
+    "/projects/{projectId}/members": post_ProjectMembersController_add,
     "/projects": post_ProjectController_create,
     "/boundaries": post_BoundaryController_create,
     "/regions": post_RegionController_create,
@@ -897,24 +1331,36 @@ export const EndpointByMethod = {
     "/owners": post_OwnerController_create,
   },
   get: {
+    "/auth/me": get_AuthController_me,
+    "/users": get_UsersController_list,
+    "/users/{id}": get_UsersController_get,
+    "/roles": get_RolesController_list,
+    "/roles/{id}": get_RolesController_get,
+    "/projects/{projectId}/members": get_ProjectMembersController_list,
     "/projects": get_ProjectController_list,
     "/projects/{id}": get_ProjectController_get,
     "/boundaries": get_BoundaryController_list,
     "/boundaries/{id}": get_BoundaryController_get,
     "/regions": get_RegionController_list,
     "/regions/{id}": get_RegionController_get,
+    "/regions/{id}/detail": get_RegionController_getDetail,
     "/regions/{id}/parcels": get_RegionController_listParcels,
     "/blocks": get_BlockController_list,
     "/blocks/{id}": get_BlockController_get,
+    "/blocks/{id}/detail": get_BlockController_getDetail,
     "/blocks/{id}/parcels": get_BlockController_listParcels,
     "/parcels": get_ParcelController_list,
     "/parcels/{id}": get_ParcelController_get,
+    "/parcels/{id}/detail": get_ParcelController_getDetail,
     "/parcels/{id}/owners": get_ParcelController_listOwners,
     "/owners": get_OwnerController_list,
     "/owners/{id}": get_OwnerController_get,
     "/owners/{id}/parcels": get_OwnerController_listParcels,
   },
   patch: {
+    "/users/{id}": patch_UsersController_update,
+    "/roles/{id}": patch_RolesController_update,
+    "/projects/{projectId}/members/{userId}": patch_ProjectMembersController_update,
     "/projects/{id}": patch_ProjectController_update,
     "/boundaries/{id}": patch_BoundaryController_update,
     "/regions/{id}": patch_RegionController_update,
@@ -924,6 +1370,9 @@ export const EndpointByMethod = {
     "/owners/{id}": patch_OwnerController_update,
   },
   delete: {
+    "/users/{id}": delete_UsersController_remove,
+    "/roles/{id}": delete_RolesController_remove,
+    "/projects/{projectId}/members/{userId}": delete_ProjectMembersController_remove,
     "/projects/{id}": delete_ProjectController_remove,
     "/boundaries/{id}": delete_BoundaryController_remove,
     "/regions/{id}": delete_RegionController_remove,
@@ -975,7 +1424,22 @@ export type EndpointParameterStyles = Partial<
 >;
 /** OpenAPI parameter styles used by the built-in encoders. */
 export const endpointParameterStyles = {
+  post: {
+    "/auth/login": { header: { "user-agent": { style: "simple", explode: false, allowReserved: false } } },
+    "/projects/{projectId}/members": { path: { projectId: { style: "simple", explode: false, allowReserved: false } } },
+    "/parcels/{id}/owners": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+  },
   get: {
+    "/users": {
+      query: {
+        page: { style: "form", explode: true, allowReserved: false },
+        limit: { style: "form", explode: true, allowReserved: false },
+        search: { style: "form", explode: true, allowReserved: false },
+      },
+    },
+    "/users/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    "/roles/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    "/projects/{projectId}/members": { path: { projectId: { style: "simple", explode: false, allowReserved: false } } },
     "/projects": {
       query: {
         page: { style: "form", explode: true, allowReserved: false },
@@ -1003,6 +1467,7 @@ export const endpointParameterStyles = {
       },
     },
     "/regions/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    "/regions/{id}/detail": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/regions/{id}/parcels": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/blocks": {
       query: {
@@ -1015,6 +1480,7 @@ export const endpointParameterStyles = {
       },
     },
     "/blocks/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    "/blocks/{id}/detail": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/blocks/{id}/parcels": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/parcels": {
       query: {
@@ -1028,6 +1494,7 @@ export const endpointParameterStyles = {
       },
     },
     "/parcels/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    "/parcels/{id}/detail": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/parcels/{id}/owners": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/owners": {
       query: {
@@ -1041,6 +1508,14 @@ export const endpointParameterStyles = {
     "/owners/{id}/parcels": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
   },
   patch: {
+    "/users/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    "/roles/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    "/projects/{projectId}/members/{userId}": {
+      path: {
+        projectId: { style: "simple", explode: false, allowReserved: false },
+        userId: { style: "simple", explode: false, allowReserved: false },
+      },
+    },
     "/projects/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/boundaries/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/regions/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
@@ -1055,6 +1530,14 @@ export const endpointParameterStyles = {
     "/owners/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
   },
   delete: {
+    "/users/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    "/roles/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    "/projects/{projectId}/members/{userId}": {
+      path: {
+        projectId: { style: "simple", explode: false, allowReserved: false },
+        userId: { style: "simple", explode: false, allowReserved: false },
+      },
+    },
     "/projects/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/boundaries/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/regions/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
@@ -1068,7 +1551,6 @@ export const endpointParameterStyles = {
     },
     "/owners/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
   },
-  post: { "/parcels/{id}/owners": { path: { id: { style: "simple", explode: false, allowReserved: false } } } },
 } as Partial<Record<string, Partial<Record<string, EndpointParameterStyles>>>>;
 // </EndpointParameterStyles>
 
@@ -1081,11 +1563,11 @@ export const endpointResponseFormats = {} as Partial<{
 
 // <EndpointSecurityRequirements>
 /** OpenAPI security requirements applied when an endpoint has no explicit entry. */
-export const defaultSecurityRequirements = [] as SecurityRequirements;
+export const defaultSecurityRequirements = [["bearer"]] as SecurityRequirements;
 /** Endpoint-specific security requirements that differ from the default. */
-export const endpointSecurityRequirements = {} as Partial<{
-  [M in keyof EndpointByMethod]: Partial<{ [P in keyof EndpointByMethod[M]]: SecurityRequirements }>;
-}>;
+export const endpointSecurityRequirements = {
+  post: { "/auth/login": [] },
+} as Partial<{ [M in keyof EndpointByMethod]: Partial<{ [P in keyof EndpointByMethod[M]]: SecurityRequirements }> }>;
 // </EndpointSecurityRequirements>
 
 export type DefaultEndpoint = {

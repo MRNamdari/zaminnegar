@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeormOptionsExample } from './database/typeorm-options.example';
+import { APP_FILTER } from '@nestjs/core';
+import { DatabaseExceptionFilter } from './common/filters/database-exception.filter';
+import { AccessModule } from './modules/access/access.module';
 import { BlockModule } from './modules/block/block.module';
 import { BoundaryModule } from './modules/boundary/boundary.module';
 import { GeometryModule } from './modules/geometry/geometry.module';
@@ -20,9 +23,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-
-        console.log('ConfigService:', configService);
-        console.log('DATABASE_HOST:', configService.get('DATABASE_HOST'));
         const host = configService.getOrThrow('DATABASE_HOST');
         const port = configService.getOrThrow('DATABASE_PORT');
         const username = configService.getOrThrow('DATABASE_USERNAME');
@@ -32,6 +32,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         return typeormOptionsExample(host, port, username, password, database);
       },
     }),
+    AccessModule,
     GeometryModule,
     ProjectModule,
     BoundaryModule,
@@ -40,5 +41,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     ParcelModule,
     OwnerModule,
   ],
+  providers: [{ provide: APP_FILTER, useClass: DatabaseExceptionFilter }],
 })
 export class AppModule {}
