@@ -26,22 +26,7 @@ export class CreateParcelDto {
   @IsUUID()
   projectId!: string;
 
-  @ApiProperty({ format: 'uuid' })
-  @IsUUID()
-  regionId!: string;
-
-  @ApiPropertyOptional({
-    type: 'string',
-    format: 'uuid',
-    nullable: true,
-    required: false,
-    description: 'Must belong to regionId',
-  })
-  @IsOptional()
-  @IsUUID()
-  blockId?: string | null;
-
-  @ApiProperty({ maxLength: 200, minLength: 1 })
+  @ApiProperty({ maxLength: 200 })
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)

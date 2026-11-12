@@ -7,31 +7,35 @@
  * - Body encoding by `requestFormat` (json / form-data / form-url / binary / text)
  * - Operation headers and request overrides
  * - OpenAPI securitySchemes via `configureFetcher({ getAuth })`
+ * - OpenAPI securitySchemes via `configureFetcher({ getAuth })`
  *
  * Usage:
  * 1. Import createApi() or api from this file
  * 2. Pass a base URL to createApi() when your runtime owns environment access
  * 3. Call configureFetcher({ getAuth: () => ({ ... }) })
  * 4. Customize error handling and headers as needed
+ * 3. Call configureFetcher({ getAuth: () => ({ ... }) })
+ * 4. Customize error handling and headers as needed
  */
 
-import { type Fetcher, type RequestFormat, createApiClient } from "./client.ts";
+import { type Fetcher, type RequestFormat, createApiClient } from './client.ts';
 
 // Basic configuration. Pass an explicit URL to createApi() in browser-only runtimes.
 const API_BASE_URL =
-  (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.["API_BASE_URL"] ??
-  "https://api.example.com";
+  (globalThis as { process?: { env?: Record<string, string | undefined> } })
+    .process?.env?.['API_BASE_URL'] ?? 'https://api.example.com';
 
-const isMutationMethod = (method: string) => ["post", "put", "patch", "delete"].includes(method.toLowerCase());
+const isMutationMethod = (method: string) =>
+  ['post', 'put', 'patch', 'delete'].includes(method.toLowerCase());
 
 /** Encode body according to OpenAPI requestBody content type (`requestFormat`). */
 const encodeRequestBody = ((requestFormat, body) => {
   if (body === void 0) return {};
   switch (requestFormat) {
-    case "form-data": {
+    case 'form-data': {
       if (body instanceof FormData) return { body };
       const formData = new FormData();
-      if (body && typeof body === "object") {
+      if (body && typeof body === 'object') {
         for (const [key, value] of Object.entries(body)) {
           if (value == null) continue;
           if (value instanceof Blob) {
@@ -48,12 +52,12 @@ const encodeRequestBody = ((requestFormat, body) => {
       }
       return { body: formData };
     }
-    case "form-url": {
+    case 'form-url': {
       if (body instanceof URLSearchParams) {
-        return { body, contentType: "application/x-www-form-urlencoded" };
+        return { body, contentType: 'application/x-www-form-urlencoded' };
       }
       const searchParams = new URLSearchParams();
-      if (body && typeof body === "object") {
+      if (body && typeof body === 'object') {
         for (const [key, value] of Object.entries(body)) {
           if (value == null) continue;
           if (Array.isArray(value)) {
@@ -65,33 +69,44 @@ const encodeRequestBody = ((requestFormat, body) => {
           }
         }
       }
-      return { body: searchParams, contentType: "application/x-www-form-urlencoded" };
+      return {
+        body: searchParams,
+        contentType: 'application/x-www-form-urlencoded',
+      };
     }
-    case "binary": {
-      if (typeof body === "string" || body instanceof Blob || body instanceof ArrayBuffer || ArrayBuffer.isView(body)) {
-        return { body, contentType: "application/octet-stream" };
+    case 'binary': {
+      if (
+        typeof body === 'string' ||
+        body instanceof Blob ||
+        body instanceof ArrayBuffer ||
+        ArrayBuffer.isView(body)
+      ) {
+        return { body, contentType: 'application/octet-stream' };
       }
       throw new TypeError(
         `requestFormat "binary" expects string | Blob | ArrayBuffer | ArrayBufferView, got ${Object.prototype.toString.call(body)}`,
       );
     }
-    case "text":
-      return { body: String(body), contentType: "text/plain" };
-    case "json":
+    case 'text':
+      return { body: String(body), contentType: 'text/plain' };
+    case 'json':
     default:
-      return { body: JSON.stringify(body), contentType: "application/json" };
+      return { body: JSON.stringify(body), contentType: 'application/json' };
   }
-}) as (requestFormat: RequestFormat, body: unknown) => { body?: BodyInit; contentType?: string };
+}) as (
+  requestFormat: RequestFormat,
+  body: unknown,
+) => { body?: BodyInit; contentType?: string };
 
 export type AuthCredentials = {
-  /** HTTP-only session cookie set by `POST /auth/login`. Ended by `POST /auth/logout`, a password reset or deactivation. */
-  session?: string;
+  /** The `token` returned by `POST /auth/login`. Revoked by `POST /auth/logout`. */
+  bearer?: string;
 };
 
 export type SecurityRequirements = readonly (readonly string[])[];
 
 const securitySchemeProperties: Record<string, keyof AuthCredentials> = {
-  session: "session",
+  bearer: 'bearer',
 };
 
 /** Pick the first OpenAPI security requirement satisfied by the available credentials. */
@@ -102,8 +117,13 @@ const selectSecuritySchemes = (
   for (const requirement of requirements) {
     const properties = requirement
       .map((name) => securitySchemeProperties[name])
-      .filter((property): property is keyof AuthCredentials => Boolean(property));
-    if (properties.length === requirement.length && properties.every((property) => Boolean(auth[property]))) {
+      .filter((property): property is keyof AuthCredentials =>
+        Boolean(property),
+      );
+    if (
+      properties.length === requirement.length &&
+      properties.every((property) => Boolean(auth[property]))
+    ) {
       return new Set(properties);
     }
   }
@@ -117,15 +137,17 @@ const selectSecuritySchemes = (
  */
 export const applyAuth = (
   headers: Headers,
-  url: URL,
+  _url: URL,
   auth: AuthCredentials,
   requirements: SecurityRequirements,
 ): void => {
   const allowed = selectSecuritySchemes(auth, requirements);
-  if (allowed.has("session") && auth["session"]) {
-    const existing = headers.get("cookie");
-    const part = "sid=" + encodeURIComponent(auth["session"]!);
-    headers.set("cookie", existing ? existing + "; " + part : part);
+  if (allowed.has('bearer') && auth['bearer']) {
+    const raw = auth['bearer']!.trim();
+    const token = /^bearer\s+/i.test(raw)
+      ? raw.replace(/^bearer\s+/i, '').trim()
+      : raw;
+    headers.set('Authorization', 'Bearer ' + token);
   }
 };
 
@@ -145,7 +167,7 @@ export const configureFetcher = (config: DefaultFetcherConfig) => {
  * Simple fetcher implementation without external dependencies.
  * Compatible with both ApiClient and EffectApiClient (promise fetcher is wrapped).
  */
-export const defaultFetcher: Fetcher["fetch"] = async (input) => {
+export const defaultFetcher: Fetcher['fetch'] = async (input) => {
   const headers = new Headers(input.overrides?.headers);
   // Handle query parameters
   if (input.urlSearchParams) {
@@ -155,60 +177,90 @@ export const defaultFetcher: Fetcher["fetch"] = async (input) => {
   const auth = await fetcherConfig.getAuth?.();
   if (auth) applyAuth(headers, input.url, auth, input.security ?? []);
 
+  const auth = await fetcherConfig.getAuth?.();
+  if (auth) applyAuth(headers, input.url, auth, input.security ?? []);
+
   let body: BodyInit | undefined;
   if (isMutationMethod(input.method)) {
-    const encoded = encodeRequestBody(input.requestFormat, input.parameters?.body);
+    const encoded = encodeRequestBody(
+      input.requestFormat,
+      input.parameters?.body,
+    );
     body = encoded.body;
-    if (encoded.contentType && !headers.has("content-type")) {
-      headers.set("Content-Type", encoded.contentType);
+    if (encoded.contentType && !headers.has('content-type')) {
+      headers.set('Content-Type', encoded.contentType);
     }
   }
 
-  const serializeParameterValue = (value: unknown, explode: boolean): string => {
+  const serializeParameterValue = (
+    value: unknown,
+    explode: boolean,
+  ): string => {
     if (Array.isArray(value))
       return value
         .filter((item) => item != null)
         .map(String)
-        .join(",");
-    if (value && typeof value === "object") {
-      const entries = Object.entries(value as Record<string, unknown>).filter(([, item]) => item != null);
+        .join(',');
+    if (value && typeof value === 'object') {
+      const entries = Object.entries(value as Record<string, unknown>).filter(
+        ([, item]) => item != null,
+      );
       return explode
-        ? entries.map(([key, item]) => key + "=" + String(item)).join(",")
-        : entries.flatMap(([key, item]) => [key, String(item)]).join(",");
+        ? entries.map(([key, item]) => key + '=' + String(item)).join(',')
+        : entries.flatMap(([key, item]) => [key, String(item)]).join(',');
     }
     return String(value);
   };
 
   // Add custom headers
-  if (input.parameters?.header && typeof input.parameters.header === "object") {
+  if (input.parameters?.header && typeof input.parameters.header === 'object') {
     Object.entries(input.parameters.header).forEach(([key, value]) => {
       if (value != null) {
         const style = input.parameterStyles?.header?.[key];
-        headers.set(key, serializeParameterValue(value, style?.explode ?? false));
+        headers.set(
+          key,
+          serializeParameterValue(value, style?.explode ?? false),
+        );
       }
     });
   }
 
   // Add cookie parameters using their OpenAPI form serialization.
-  if (input.parameters?.cookie && typeof input.parameters.cookie === "object") {
+  if (input.parameters?.cookie && typeof input.parameters.cookie === 'object') {
     const cookieParts: string[] = [];
     Object.entries(input.parameters.cookie).forEach(([key, value]) => {
       if (value == null) return;
       const style = input.parameterStyles?.cookie?.[key];
       const explode = style?.explode ?? true;
-      if (style?.style === "form" && explode && value && typeof value === "object" && !Array.isArray(value)) {
-        Object.entries(value as Record<string, unknown>).forEach(([nestedKey, nestedValue]) => {
-          if (nestedValue != null) cookieParts.push(nestedKey + "=" + String(nestedValue));
-        });
-      } else if (style?.style === "form" && explode && Array.isArray(value)) {
-        value.forEach((item) => item != null && cookieParts.push(key + "=" + String(item)));
+      if (
+        style?.style === 'form' &&
+        explode &&
+        value &&
+        typeof value === 'object' &&
+        !Array.isArray(value)
+      ) {
+        Object.entries(value as Record<string, unknown>).forEach(
+          ([nestedKey, nestedValue]) => {
+            if (nestedValue != null)
+              cookieParts.push(nestedKey + '=' + String(nestedValue));
+          },
+        );
+      } else if (style?.style === 'form' && explode && Array.isArray(value)) {
+        value.forEach(
+          (item) => item != null && cookieParts.push(key + '=' + String(item)),
+        );
       } else {
-        cookieParts.push(key + "=" + serializeParameterValue(value, explode));
+        cookieParts.push(key + '=' + serializeParameterValue(value, explode));
       }
     });
     if (cookieParts.length) {
-      const existing = headers.get("cookie");
-      headers.set("cookie", existing ? existing + "; " + cookieParts.join("; ") : cookieParts.join("; "));
+      const existing = headers.get('cookie');
+      headers.set(
+        'cookie',
+        existing
+          ? existing + '; ' + cookieParts.join('; ')
+          : cookieParts.join('; '),
+      );
     }
   }
 
@@ -223,6 +275,7 @@ export const defaultFetcher: Fetcher["fetch"] = async (input) => {
 };
 
 /** Create a client with an explicit base URL when your runtime owns environment access. */
-export const createApi = (baseUrl = API_BASE_URL) => createApiClient({ fetch: defaultFetcher }, baseUrl);
+export const createApi = (baseUrl = API_BASE_URL) =>
+  createApiClient({ fetch: defaultFetcher }, baseUrl);
 
 export const api = createApi();
