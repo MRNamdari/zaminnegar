@@ -1,100 +1,167 @@
-import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Ip, Post } from '@nestjs/common';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { Body, Controller, Get, Header, Headers, HttpCode, HttpStatus, Ip, Post, Res } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
 import {
-  ApiBadGatewayResponse,
-  ApiBadRequestResponse,
-  ApiBearerAuth,
-  ApiForbiddenResponse,
+  ApiAcceptedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
-  ApiTooManyRequestsResponse,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { AuthContext } from '../access.types';
-import { LoginWithPasswordCommand, LogoutCommand, RequestOtpCommand, VerifyOtpCommand } from '../commands/auth.commands';
-import { Auth, AuthenticatedOnly, Public } from '../decorators/access.decorators';
-import { ErrorResponseDto, ValidationErrorResponseDto } from '../dto/error.dto';
-import { RequestOtpDto, RequestOtpResponseDto, VerifyOtpDto, VerifyOtpResponseDto } from '../dto/otp.dto';
-import { CurrentUserResponseDto, LoginDto, LoginResponseDto } from '../dto/user.dto';
-import { GetCurrentUserQuery } from '../queries/get-current-user.query';
+import type { Response } from 'express';
+import type { Principal } from '../access.types';
+import { LoginCommand } from '../commands/login.command';
+import { LogoutCommand } from '../commands/logout.command';
+import { RegisterUserCommand } from '../commands/register-user.command';
+import { RenewSessionCommand } from '../commands/renew-session.command';
+import { RequestPasswordResetCommand } from '../commands/request-password-reset.command';
+import { ResetPasswordCommand } from '../commands/reset-password.command';
+import type { SessionResult } from '../commands/session-result';
+import { VerifyRegistrationCommand } from '../commands/verify-registration.command';
+import { ApiBadRequestErrors, ApiErrorResponse, ApiProtectedErrors } from '../decorators/api-error-responses.decorator';
+import { ApiSessionAuth, AuthenticatedOnly, CurrentPrincipal, Public } from '../decorators/access.decorators';
+import { CurrentUserResponseDto } from '../dto/current-user-response.dto';
+import { ForgotPasswordDto } from '../dto/forgot-password.dto';
+import { LoginDto } from '../dto/login.dto';
+import { OtpDispatchResponseDto } from '../dto/otp-dispatch-response.dto';
+import { RegisterUserDto } from '../dto/register-user.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
+import { SessionResponseDto } from '../dto/session-response.dto';
+import { VerifyRegistrationDto } from '../dto/verify-registration.dto';
+import { SessionCookieService } from '../services/session-cookie.service';
+
+const SET_COOKIE_HEADER = {
+  'Set-Cookie': { description: 'The HTTP-only session cookie', schema: { type: 'string' } },
+} as const;
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(
-    private readonly commands: CommandBus,
-    private readonly queries: QueryBus,
+    private readonly commandBus: CommandBus,
+    private readonly cookies: SessionCookieService,
   ) {}
 
-  @Post('otp/request')
+  @Post('register')
   @Public()
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({
-    summary: 'Send a sign-in code by SMS',
+    summary: 'Start a registration',
     description:
-      'Step 1 of sign-up and sign-in (one flow). Sends a 6-digit code to an Iranian mobile number. ' +
-      'The response is identical for registered and unknown numbers.',
+      'Sends a verification code to the phone number. The answer is the same whether or not the username or phone is already registered.',
   })
-  @ApiOkResponse({ type: RequestOtpResponseDto })
-  @ApiBadRequestResponse({ type: ValidationErrorResponseDto })
-  @ApiTooManyRequestsResponse({ type: ErrorResponseDto, description: 'OTP_COOLDOWN or OTP_RATE_LIMITED' })
-  @ApiBadGatewayResponse({ type: ErrorResponseDto, description: 'SMS_DELIVERY_FAILED: the SMS provider did not accept the message' })
-  requestOtp(@Body() dto: RequestOtpDto, @Ip() ip: string | undefined): Promise<RequestOtpResponseDto> {
-    return this.commands.execute(new RequestOtpCommand(dto.phone, ip || null));
+  @ApiAcceptedResponse({ type: OtpDispatchResponseDto })
+  @ApiBadRequestErrors()
+  @ApiErrorResponse(429, 'Code requested too often for this phone or from this address (`OTP_COOLDOWN`, `OTP_RATE_LIMITED`)')
+  async register(@Body() dto: RegisterUserDto, @Ip() ip: string): Promise<OtpDispatchResponseDto> {
+    return this.commandBus.execute<RegisterUserCommand, OtpDispatchResponseDto>(new RegisterUserCommand(dto, ip || null));
   }
 
-  @Post('otp/verify')
+  @Post('register/verify')
   @Public()
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Sign up or sign in with the SMS code',
-    description:
-      'Step 2. A valid code signs the user in; if the number has no account yet, one is created (`isNewUser: true`). ' +
-      'Returns an opaque session token to send as a Bearer token.',
-  })
-  @ApiOkResponse({ type: VerifyOtpResponseDto })
-  @ApiBadRequestResponse({ type: ValidationErrorResponseDto })
-  @ApiUnauthorizedResponse({ type: ErrorResponseDto, description: 'INVALID_OTP: wrong, expired or already used code' })
-  @ApiForbiddenResponse({ type: ErrorResponseDto, description: 'USER_INACTIVE' })
-  @ApiTooManyRequestsResponse({ type: ErrorResponseDto, description: 'OTP_ATTEMPTS_EXCEEDED: request a new code' })
-  verifyOtp(@Body() dto: VerifyOtpDto, @Headers('user-agent') userAgent?: string): Promise<VerifyOtpResponseDto> {
-    return this.commands.execute(new VerifyOtpCommand(dto.phone, dto.code, dto.name ?? null, userAgent ?? null));
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Finish a registration with the code sent by SMS', description: 'Activates the account; sign in afterwards.' })
+  @ApiNoContentResponse({ description: 'Phone verified, account active' })
+  @ApiBadRequestErrors('Invalid request, or the code is wrong, expired or used (`INVALID_OTP`)')
+  @ApiErrorResponse(429, 'Too many wrong codes (`OTP_ATTEMPTS_EXCEEDED`)')
+  async verifyRegistration(@Body() dto: VerifyRegistrationDto): Promise<void> {
+    await this.commandBus.execute<VerifyRegistrationCommand, void>(new VerifyRegistrationCommand(dto));
   }
 
   @Post('login')
   @Public()
   @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'no-store')
   @ApiOperation({
-    summary: 'Sign in with email and password (optional method)',
-    description: 'Only for users that have an email and a password. Returns an opaque session token to send as a Bearer token',
+    summary: 'Sign in with username and password',
+    description: 'Sets the session cookie and ends any previous session of this account.',
   })
-  @ApiOkResponse({ type: LoginResponseDto })
-  @ApiBadRequestResponse({ type: ValidationErrorResponseDto })
-  @ApiUnauthorizedResponse({ type: ErrorResponseDto, description: 'INVALID_CREDENTIALS' })
-  login(@Body() dto: LoginDto, @Headers('user-agent') userAgent?: string): Promise<LoginResponseDto> {
-    return this.commands.execute(new LoginWithPasswordCommand(dto.email, dto.password, userAgent ?? null));
+  @ApiOkResponse({ type: SessionResponseDto, headers: SET_COOKIE_HEADER })
+  @ApiBadRequestErrors()
+  @ApiErrorResponse(401, 'Wrong username or password, or the account is temporarily locked (`INVALID_CREDENTIALS`)')
+  @ApiErrorResponse(403, 'Correct password but the account is deactivated (`USER_INACTIVE`) or unverified (`PHONE_NOT_VERIFIED`)')
+  async login(
+    @Body() dto: LoginDto,
+    @Ip() ip: string,
+    @Headers('user-agent') userAgent: string | undefined,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<SessionResponseDto> {
+    const result = await this.commandBus.execute<LoginCommand, SessionResult>(
+      new LoginCommand(dto, { userAgent: userAgent ?? null, ip: ip || null }),
+    );
+    return this.respondWithSession(response, result);
   }
 
   @Post('logout')
-  @ApiBearerAuth()
   @AuthenticatedOnly()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'End the current session' })
+  @ApiSessionAuth()
+  @ApiOperation({ summary: 'Sign out: ends the session and clears the cookie' })
   @ApiNoContentResponse()
-  @ApiUnauthorizedResponse({ type: ValidationErrorResponseDto })
-  async logout(@Auth() auth: AuthContext): Promise<void> {
-    await this.commands.execute(new LogoutCommand(auth));
+  @ApiProtectedErrors()
+  async logout(@CurrentPrincipal() principal: Principal, @Res({ passthrough: true }) response: Response): Promise<void> {
+    await this.commandBus.execute<LogoutCommand, void>(new LogoutCommand(principal.sessionId));
+    this.cookies.clear(response);
+  }
+
+  @Post('session/renew')
+  @AuthenticatedOnly()
+  @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'no-store')
+  @ApiSessionAuth()
+  @ApiOperation({
+    summary: 'Renew the session',
+    description: 'Issues a new session identifier and restarts the idle timer. The absolute deadline does not move.',
+  })
+  @ApiOkResponse({ type: SessionResponseDto, headers: SET_COOKIE_HEADER })
+  @ApiProtectedErrors()
+  async renew(@CurrentPrincipal() principal: Principal, @Res({ passthrough: true }) response: Response): Promise<SessionResponseDto> {
+    const result = await this.commandBus.execute<RenewSessionCommand, SessionResult>(new RenewSessionCommand(principal));
+    return this.respondWithSession(response, result);
   }
 
   @Get('me')
-  @ApiBearerAuth()
   @AuthenticatedOnly()
-  @ApiOperation({ summary: 'The signed-in user with the permissions they hold' })
+  @Header('Cache-Control', 'no-store')
+  @ApiSessionAuth()
+  @ApiOperation({ summary: 'The signed-in user with their system role, memberships and permissions' })
   @ApiOkResponse({ type: CurrentUserResponseDto })
-  @ApiUnauthorizedResponse({ type: ValidationErrorResponseDto })
-  me(@Auth() auth: AuthContext): Promise<CurrentUserResponseDto> {
-    return this.queries.execute(new GetCurrentUserQuery(auth));
+  @ApiProtectedErrors()
+  me(@CurrentPrincipal() principal: Principal): CurrentUserResponseDto {
+    return CurrentUserResponseDto.from(principal);
+  }
+
+  @Post('password/forgot')
+  @Public()
+  @HttpCode(HttpStatus.ACCEPTED)
+  @ApiOperation({
+    summary: 'Request a password reset code',
+    description: 'Sends a code to the phone of the account. The answer is the same whether or not the account exists.',
+  })
+  @ApiAcceptedResponse({ type: OtpDispatchResponseDto })
+  @ApiBadRequestErrors()
+  @ApiErrorResponse(429, 'Code requested too often (`OTP_COOLDOWN`, `OTP_RATE_LIMITED`)')
+  async forgotPassword(@Body() dto: ForgotPasswordDto, @Ip() ip: string): Promise<OtpDispatchResponseDto> {
+    return this.commandBus.execute<RequestPasswordResetCommand, OtpDispatchResponseDto>(
+      new RequestPasswordResetCommand(dto, ip || null),
+    );
+  }
+
+  @Post('password/reset')
+  @Public()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Set a new password with the code sent by SMS',
+    description: 'Ends the account\'s session. Sign in with the new password afterwards.',
+  })
+  @ApiNoContentResponse({ description: 'Password replaced' })
+  @ApiBadRequestErrors('Invalid request, or the code is wrong, expired or used (`INVALID_OTP`)')
+  @ApiErrorResponse(429, 'Too many wrong codes (`OTP_ATTEMPTS_EXCEEDED`)')
+  async resetPassword(@Body() dto: ResetPasswordDto): Promise<void> {
+    await this.commandBus.execute<ResetPasswordCommand, void>(new ResetPasswordCommand(dto));
+  }
+
+  private respondWithSession(response: Response, { session, user }: SessionResult): SessionResponseDto {
+    this.cookies.write(response, session.token, session.cookieMaxAgeMs);
+    return SessionResponseDto.of({ user, idleExpiresAt: session.idleExpiresAt, absoluteExpiresAt: session.absoluteExpiresAt });
   }
 }

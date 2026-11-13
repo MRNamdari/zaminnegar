@@ -1,20 +1,124 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/auth/login": {
+    "/auth/register": {
       "post": {
-        "description": "Returns an opaque session token to send as a Bearer token",
-        "operationId": "AuthController_login",
-        "parameters": [
-          {
-            "name": "user-agent",
-            "required": true,
-            "in": "header",
-            "schema": {
-              "type": "string"
+        "description": "Sends a verification code to the phone number. The answer is the same whether or not the username or phone is already registered.",
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterUserDto"
+              }
             }
           }
-        ],
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpDispatchResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Code requested too often for this phone or from this address (`OTP_COOLDOWN`, `OTP_RATE_LIMITED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Start a registration",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/register/verify": {
+      "post": {
+        "description": "Activates the account; sign in afterwards.",
+        "operationId": "AuthController_verifyRegistration",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyRegistrationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Phone verified, account active"
+          },
+          "400": {
+            "description": "Invalid request, or the code is wrong, expired or used (`INVALID_OTP`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many wrong codes (`OTP_ATTEMPTS_EXCEEDED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Finish a registration with the code sent by SMS",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "description": "Sets the session cookie and ends any previous session of this account.",
+        "operationId": "AuthController_login",
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -27,17 +131,62 @@
         },
         "responses": {
           "200": {
+            "headers": {
+              "Set-Cookie": {
+                "description": "The HTTP-only session cookie",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LoginResponseDto"
+                  "$ref": "#/components/schemas/SessionResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Wrong username or password, or the account is temporarily locked (`INVALID_CREDENTIALS`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Correct password but the account is deactivated (`USER_INACTIVE`) or unverified (`PHONE_NOT_VERIFIED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
           }
         },
-        "summary": "Sign in",
+        "summary": "Sign in with username and password",
         "tags": [
           "auth"
         ]
@@ -50,14 +199,90 @@
         "responses": {
           "204": {
             "description": ""
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
-        "summary": "End the current session",
+        "summary": "Sign out: ends the session and clears the cookie",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/session/renew": {
+      "post": {
+        "description": "Issues a new session identifier and restarts the idle timer. The absolute deadline does not move.",
+        "operationId": "AuthController_renew",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "headers": {
+              "Set-Cookie": {
+                "description": "The HTTP-only session cookie",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Renew the session",
         "tags": [
           "auth"
         ]
@@ -77,40 +302,23 @@
                 }
               }
             }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "The signed-in user with the permissions they hold",
-        "tags": [
-          "auth"
-        ]
-      }
-    },
-    "/users": {
-      "post": {
-        "operationId": "UsersController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -118,14 +326,129 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
-        "summary": "Create a user",
+        "summary": "The signed-in user with their system role, memberships and permissions",
         "tags": [
-          "users"
+          "auth"
         ]
-      },
+      }
+    },
+    "/auth/password/forgot": {
+      "post": {
+        "description": "Sends a code to the phone of the account. The answer is the same whether or not the account exists.",
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpDispatchResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Code requested too often (`OTP_COOLDOWN`, `OTP_RATE_LIMITED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Request a password reset code",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/password/reset": {
+      "post": {
+        "description": "Ends the account's session. Sign in with the new password afterwards.",
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Password replaced"
+          },
+          "400": {
+            "description": "Invalid request, or the code is wrong, expired or used (`INVALID_OTP`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many wrong codes (`OTP_ATTEMPTS_EXCEEDED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Set a new password with the code sent by SMS",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/users": {
       "get": {
         "operationId": "UsersController_list",
         "parameters": [
@@ -154,8 +477,9 @@
             "name": "search",
             "required": false,
             "in": "query",
-            "description": "Case-insensitive match on name or email",
+            "description": "Case-insensitive match on username or phone",
             "schema": {
+              "maxLength": 64,
               "type": "string"
             }
           }
@@ -184,14 +508,51 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
-        "summary": "List users",
+        "summary": "List accounts (system level)",
         "tags": [
           "users"
         ]
@@ -199,6 +560,7 @@
     },
     "/users/{id}": {
       "get": {
+        "description": "Your own account, or any account with the system-level `user:read` permission.",
         "operationId": "UsersController_get",
         "parameters": [
           {
@@ -220,19 +582,67 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such account (`USER_NOT_FOUND`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
-        "summary": "Get a user by id",
+        "summary": "Get an account",
         "tags": [
           "users"
         ]
       },
       "patch": {
+        "description": "Deactivating an account ends its session. You cannot grant a system role stronger than your own.",
         "operationId": "UsersController_update",
         "parameters": [
           {
@@ -264,49 +674,129 @@
                 }
               }
             }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update a user",
-        "tags": [
-          "users"
-        ]
-      },
-      "delete": {
-        "operationId": "UsersController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such account or role (`USER_NOT_FOUND`, `ROLE_NOT_FOUND`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The last active superadmin cannot be removed (`LAST_SUPERADMIN`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
             }
           }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
-        "summary": "Delete a user",
+        "summary": "Activate or deactivate an account, or set its system role",
         "tags": [
           "users"
         ]
       }
     },
-    "/roles": {
+    "/permissions": {
       "get": {
-        "operationId": "RolesController_list",
+        "operationId": "PermissionsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PermissionDefinitionResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "The permission catalogue: everything a role can be granted",
+        "tags": [
+          "roles"
+        ]
+      }
+    },
+    "/roles/system": {
+      "get": {
+        "operationId": "SystemRolesController_list",
         "parameters": [],
         "responses": {
           "200": {
@@ -321,21 +811,137 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
-        "summary": "List roles with their permissions",
+        "summary": "The predefined system roles and their permissions",
+        "tags": [
+          "roles"
+        ]
+      }
+    },
+    "/projects/{projectId}/roles": {
+      "get": {
+        "operationId": "ProjectRolesController_list",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RoleResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such project, or not one of yours (`RESOURCE_NOT_FOUND`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List the roles assignable in a project",
         "tags": [
           "roles"
         ]
       },
       "post": {
-        "operationId": "RolesController_create",
-        "parameters": [],
+        "description": "The role belongs to this project only. It can hold only permissions that you hold in this project yourself.",
+        "operationId": "ProjectRolesController_create",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -356,25 +962,100 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such project (`RESOURCE_NOT_FOUND`, `PROJECT_NOT_FOUND`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A role with this name exists in the project (`ROLE_NAME_TAKEN`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A permission does not exist or cannot be held by a project role (`PERMISSION_NOT_GRANTABLE`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
-        "summary": "Create a role",
+        "summary": "Create a custom role in a project",
         "tags": [
           "roles"
         ]
       }
     },
-    "/roles/{id}": {
+    "/projects/{projectId}/roles/{roleId}": {
       "get": {
-        "operationId": "RolesController_get",
+        "operationId": "ProjectRolesController_get",
         "parameters": [
           {
-            "name": "id",
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "roleId",
             "required": true,
             "in": "path",
             "schema": {
@@ -392,24 +1073,79 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such project or role (`RESOURCE_NOT_FOUND`, `ROLE_NOT_FOUND`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
-        "summary": "Get a role by id",
+        "summary": "Get a role of a project",
         "tags": [
           "roles"
         ]
       },
       "patch": {
-        "description": "System roles cannot be changed",
-        "operationId": "RolesController_update",
+        "description": "Predefined roles cannot be changed. Changes apply to its members immediately.",
+        "operationId": "ProjectRolesController_update",
         "parameters": [
           {
-            "name": "id",
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "roleId",
             "required": true,
             "in": "path",
             "schema": {
@@ -437,24 +1173,98 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such project or role (`RESOURCE_NOT_FOUND`, `PROJECT_NOT_FOUND`, `ROLE_NOT_FOUND`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Name taken (`ROLE_NAME_TAKEN`) or predefined role (`SYSTEM_ROLE_IMMUTABLE`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A permission does not exist or cannot be held by a project role (`PERMISSION_NOT_GRANTABLE`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
-        "summary": "Update a role (name, description, permissions)",
+        "summary": "Update a custom role",
         "tags": [
           "roles"
         ]
       },
       "delete": {
-        "description": "System roles and roles still assigned to someone cannot be deleted",
-        "operationId": "RolesController_remove",
+        "operationId": "ProjectRolesController_remove",
         "parameters": [
           {
-            "name": "id",
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "roleId",
             "required": true,
             "in": "path",
             "schema": {
@@ -465,14 +1275,71 @@
         "responses": {
           "204": {
             "description": ""
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such project or role (`RESOURCE_NOT_FOUND`, `PROJECT_NOT_FOUND`, `ROLE_NOT_FOUND`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Predefined role (`SYSTEM_ROLE_IMMUTABLE`) or still assigned (`ROLE_IN_USE`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
-        "summary": "Delete a role",
+        "summary": "Delete a custom role that no member holds",
         "tags": [
           "roles"
         ]
@@ -480,6 +1347,7 @@
     },
     "/projects/{projectId}/members": {
       "get": {
+        "description": "Contact details are included only for yourself and for system-level callers.",
         "operationId": "ProjectMembersController_list",
         "parameters": [
           {
@@ -504,11 +1372,58 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such project, or not one of yours (`RESOURCE_NOT_FOUND`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "List the members of a project",
@@ -517,6 +1432,7 @@
         ]
       },
       "post": {
+        "description": "You can assign only roles whose permissions you hold in this project yourself.",
         "operationId": "ProjectMembersController_add",
         "parameters": [
           {
@@ -548,14 +1464,71 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such project, role or user (`RESOURCE_NOT_FOUND`, `PROJECT_NOT_FOUND`, `ROLE_NOT_FOUND`, `USER_NOT_FOUND`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Already a member (`MEMBER_ALREADY_EXISTS`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
-        "summary": "Give a user a role in the project",
+        "summary": "Add a user to a project with a role",
         "tags": [
           "project-members"
         ]
@@ -563,7 +1536,8 @@
     },
     "/projects/{projectId}/members/{userId}": {
       "patch": {
-        "operationId": "ProjectMembersController_update",
+        "description": "You can neither assign a role stronger than your own nor change a member who holds one. The last owner cannot be demoted.",
+        "operationId": "ProjectMembersController_changeRole",
         "parameters": [
           {
             "name": "projectId",
@@ -602,14 +1576,71 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such project, member or role (`RESOURCE_NOT_FOUND`, `PROJECT_NOT_FOUND`, `MEMBER_NOT_FOUND`, `ROLE_NOT_FOUND`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The project would be left without an owner (`LAST_OWNER`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
-        "summary": "Change a member's role in the project",
+        "summary": "Change the role of a member",
         "tags": [
           "project-members"
         ]
@@ -637,14 +1668,71 @@
         "responses": {
           "204": {
             "description": ""
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such project or member (`PROJECT_NOT_FOUND`, `MEMBER_NOT_FOUND`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The project would be left without an owner (`LAST_OWNER`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
-        "summary": "Remove a user from the project",
+        "summary": "Remove a member, or leave the project yourself",
         "tags": [
           "project-members"
         ]
@@ -678,7 +1766,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Create a project",
@@ -748,7 +1836,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "List projects",
@@ -784,7 +1872,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Get a project by id",
@@ -828,7 +1916,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Update a project",
@@ -855,7 +1943,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Delete a project",
@@ -893,7 +1981,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Create a boundary",
@@ -972,7 +2060,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "List boundaries",
@@ -1008,7 +2096,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Get a boundary by id",
@@ -1052,7 +2140,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Update a boundary",
@@ -1079,7 +2167,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Delete a boundary",
@@ -1117,7 +2205,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Create a region",
@@ -1205,7 +2293,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "List regions",
@@ -1241,7 +2329,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Get a region by id",
@@ -1285,7 +2373,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Update a region",
@@ -1312,7 +2400,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Delete a region",
@@ -1348,7 +2436,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Get a region with project, boundary, blocks and parcels",
@@ -1387,7 +2475,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "List the parcels a region contains",
@@ -1425,7 +2513,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Create a block",
@@ -1522,7 +2610,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "List blocks",
@@ -1558,7 +2646,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Get a block by id",
@@ -1602,7 +2690,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Update a block",
@@ -1629,7 +2717,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Delete a block",
@@ -1665,7 +2753,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Get a block with project, region, boundary and parcels",
@@ -1704,7 +2792,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "List the parcels a block contains",
@@ -1742,7 +2830,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Create a parcel",
@@ -1848,7 +2936,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "List parcels",
@@ -1884,7 +2972,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Get a parcel by id",
@@ -1928,7 +3016,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Update a parcel",
@@ -1955,7 +3043,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Delete a parcel together with its ownerships and boundary",
@@ -1991,7 +3079,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Get a parcel with project, region, block, boundary and ownerships (with owners)",
@@ -2030,7 +3118,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "List the owners of a parcel with their shares",
@@ -2074,7 +3162,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Give an owner a share of a parcel",
@@ -2128,7 +3216,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Change an owner's share of a parcel",
@@ -2163,7 +3251,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Remove an owner's share from a parcel",
@@ -2200,7 +3288,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Create a owner",
@@ -2279,7 +3367,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "List owners",
@@ -2315,7 +3403,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Get a owner by id",
@@ -2359,7 +3447,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Update a owner",
@@ -2386,7 +3474,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "Delete a owner",
@@ -2425,7 +3513,7 @@
         },
         "security": [
           {
-            "bearer": []
+            "session": []
           }
         ],
         "summary": "List the parcels an owner holds shares in, with the share of each",
@@ -2437,22 +3525,22 @@
   },
   "info": {
     "title": "Zaminnegar API",
-    "description": "Farmland management API. Geometry is GeoJSON in WGS 84 (EPSG:4326) with `[longitude, latitude]` ordering. Errors share one envelope (`ErrorResponseDto`).\n\n**Authentication.** Call `POST /auth/login` with email and password to get a session token, then send it as `Authorization: Bearer <token>` on every other request (use the *Authorize* button here). A missing, invalid or expired token gives `401`; a valid token without the required permission on the project in question gives `403`. Permissions come from roles stored in the database and are granted either globally (global role) or per project (project membership).",
+    "description": "Farmland management API. Geometry is GeoJSON in WGS 84 (EPSG:4326) with `[longitude, latitude]` ordering. Errors raised by the application share one envelope (`ErrorResponseDto`); request validation errors use `ValidationErrorResponseDto`.\n\n**Authentication.** Register with `POST /auth/register` and confirm the phone with `POST /auth/register/verify`, then `POST /auth/login` with username and password. The server answers with an HTTP-only session cookie, which the browser sends on every later request (the session identifier never appears in a response body). A user has one session at a time; it ends after an idle period or an absolute deadline. A missing, invalid or expired session gives `401`; a valid session without the required permission gives `403`.\n\n**Authorization.** Permissions come from roles stored in the database: a *system role* (held once, applies to every project) and one *project role* per project membership (applies to that project only; custom roles belong to a single project). A project or record you have no relationship with answers `404`.",
     "version": "1.0.0",
     "contact": {}
   },
   "tags": [
     {
       "name": "auth",
-      "description": "Sign in / out and inspect the current session. `login` is the only public route."
+      "description": "Registration, sign in / out, password reset and the current session. The registration, login and password routes are public."
     },
     {
       "name": "users",
-      "description": "User administration (global `user:*` permissions, i.e. admin)."
+      "description": "Account administration (system-level `user:*` permissions); every user can read their own account."
     },
     {
       "name": "roles",
-      "description": "Roles and their permissions, stored in the database."
+      "description": "Permission catalogue, predefined system roles, and the roles of a project (predefined and custom)."
     },
     {
       "name": "project-members",
@@ -2486,94 +3574,214 @@
   "servers": [],
   "components": {
     "securitySchemes": {
-      "bearer": {
-        "scheme": "bearer",
-        "bearerFormat": "Opaque session token",
-        "type": "http",
-        "description": "The `token` returned by `POST /auth/login`. Revoked by `POST /auth/logout`."
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "sid",
+        "description": "HTTP-only session cookie set by `POST /auth/login`. Ended by `POST /auth/logout`, a password reset or deactivation."
       }
     },
     "schemas": {
-      "LoginDto": {
+      "ErrorResponseDto": {
         "type": "object",
         "properties": {
-          "email": {
+          "code": {
             "type": "string",
-            "format": "email",
-            "maxLength": 320
+            "example": "PERMISSION_DENIED",
+            "description": "Stable, machine-readable code"
+          },
+          "message": {
+            "type": "string",
+            "example": "You do not have permission to perform this action"
+          },
+          "retryAfterSeconds": {
+            "type": "number",
+            "description": "Present on rate-limit errors (429): seconds until a retry can succeed"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "ValidationErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 400
+          },
+          "message": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "description": "One message, or one per invalid property"
+          },
+          "error": {
+            "type": "string",
+            "example": "Bad Request"
+          }
+        },
+        "required": [
+          "statusCode",
+          "message",
+          "error"
+        ]
+      },
+      "RegisterUserDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "pattern": "^(?!\\d+$)[a-z0-9_]{3,32}$",
+            "minLength": 3,
+            "maxLength": 32,
+            "example": "farmer_ali",
+            "description": "Lower case letters, digits and \"_\"; not only digits. Case-insensitive."
           },
           "password": {
             "type": "string",
             "format": "password",
-            "maxLength": 128
+            "minLength": 10,
+            "maxLength": 128,
+            "writeOnly": true
+          },
+          "phone": {
+            "type": "string",
+            "example": "09123456789",
+            "pattern": "^(?:\\+98|0098|98|0)?9\\d{9}$",
+            "description": "Iranian mobile number in any common format; stored and returned as E.164 (`+989123456789`)"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 320,
+            "description": "Never verified and never used to sign in"
           }
         },
         "required": [
-          "email",
+          "username",
+          "password",
+          "phone"
+        ]
+      },
+      "OtpDispatchResponseDto": {
+        "type": "object",
+        "properties": {
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The code stops working at this time"
+          },
+          "resendAvailableAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "A new code can be requested from this time"
+          }
+        },
+        "required": [
+          "expiresAt",
+          "resendAvailableAt"
+        ]
+      },
+      "VerifyRegistrationDto": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "09123456789",
+            "pattern": "^(?:\\+98|0098|98|0)?9\\d{9}$",
+            "description": "Iranian mobile number in any common format; stored and returned as E.164 (`+989123456789`)"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "phone",
+          "code"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 64,
+            "example": "farmer_ali",
+            "description": "Case-insensitive"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "maxLength": 128,
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "username",
           "password"
         ]
       },
-      "UserResponseDto": {
+      "UserSummaryDto": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
             "format": "uuid"
           },
+          "username": {
+            "type": "string",
+            "example": "farmer_ali"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+989123456789"
+          },
           "email": {
             "type": "string",
-            "format": "email"
-          },
-          "name": {
-            "type": "string"
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "globalRoleId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true,
-            "description": "Role of scope `global`, if any"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
+            "format": "email",
+            "nullable": true
           }
         },
         "required": [
           "id",
-          "email",
-          "name",
-          "isActive",
-          "globalRoleId",
-          "createdAt",
-          "updatedAt"
+          "username",
+          "phone",
+          "email"
         ]
       },
-      "LoginResponseDto": {
+      "SessionResponseDto": {
         "type": "object",
         "properties": {
-          "token": {
-            "type": "string",
-            "description": "Send as `Authorization: Bearer <token>`. Shown once."
-          },
-          "expiresAt": {
-            "format": "date-time",
-            "type": "string"
-          },
           "user": {
-            "$ref": "#/components/schemas/UserResponseDto"
+            "$ref": "#/components/schemas/UserSummaryDto"
+          },
+          "idleExpiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The session ends here unless it is used before"
+          },
+          "absoluteExpiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The session ends here no matter how active it is"
           }
         },
         "required": [
-          "token",
-          "expiresAt",
-          "user"
+          "user",
+          "idleExpiresAt",
+          "absoluteExpiresAt"
         ]
       },
       "RoleSummaryDto": {
@@ -2584,12 +3792,18 @@
             "format": "uuid"
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "example": "manager"
+          },
+          "isSystem": {
+            "type": "boolean",
+            "description": "Predefined (seeded) role"
           }
         },
         "required": [
           "id",
-          "name"
+          "name",
+          "isSystem"
         ]
       },
       "Resource": {
@@ -2603,8 +3817,8 @@
           "owner",
           "ownership",
           "member",
-          "user",
-          "role"
+          "role",
+          "user"
         ]
       },
       "Action": {
@@ -2613,7 +3827,9 @@
           "create",
           "read",
           "update",
-          "delete"
+          "delete",
+          "invite",
+          "manage"
         ]
       },
       "PermissionDto": {
@@ -2639,7 +3855,7 @@
           "action"
         ]
       },
-      "MembershipPermissionsDto": {
+      "CurrentMembershipDto": {
         "type": "object",
         "properties": {
           "projectId": {
@@ -2669,14 +3885,19 @@
             "type": "string",
             "format": "uuid"
           },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "name": {
+          "username": {
             "type": "string"
           },
-          "globalRole": {
+          "phone": {
+            "type": "string",
+            "example": "+989123456789"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "nullable": true
+          },
+          "systemRole": {
             "nullable": true,
             "type": "object",
             "allOf": [
@@ -2685,7 +3906,7 @@
               }
             ]
           },
-          "globalPermissions": {
+          "systemPermissions": {
             "description": "Granted on every project",
             "type": "array",
             "items": {
@@ -2695,48 +3916,58 @@
           "memberships": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MembershipPermissionsDto"
+              "$ref": "#/components/schemas/CurrentMembershipDto"
             }
           }
         },
         "required": [
           "id",
+          "username",
+          "phone",
           "email",
-          "name",
-          "globalRole",
-          "globalPermissions",
+          "systemRole",
+          "systemPermissions",
           "memberships"
         ]
       },
-      "CreateUserDto": {
+      "ForgotPasswordDto": {
         "type": "object",
         "properties": {
-          "email": {
+          "identifier": {
             "type": "string",
-            "format": "email",
-            "maxLength": 320
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 200
-          },
-          "password": {
-            "type": "string",
-            "minLength": 8,
-            "maxLength": 128,
-            "format": "password"
-          },
-          "globalRoleId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true,
-            "description": "A role of scope `global`"
+            "example": "farmer_ali",
+            "description": "Username, or phone number in any common Iranian format (normalised to E.164)"
           }
         },
         "required": [
-          "email",
-          "name",
-          "password"
+          "identifier"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "example": "farmer_ali",
+            "description": "The same username or phone number that requested the code"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "example": "123456"
+          },
+          "newPassword": {
+            "type": "string",
+            "format": "password",
+            "minLength": 10,
+            "maxLength": 128,
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "identifier",
+          "code",
+          "newPassword"
         ]
       },
       "PaginatedResponseDto": {
@@ -2766,36 +3997,112 @@
           "limit"
         ]
       },
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "example": "+989123456789"
+          },
+          "phoneVerifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Null until registration is finished"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "systemRoleId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "phone",
+          "phoneVerifiedAt",
+          "email",
+          "isActive",
+          "systemRoleId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
       "UpdateUserDto": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string",
-            "maxLength": 200
-          },
-          "password": {
-            "type": "string",
-            "minLength": 8,
-            "maxLength": 128,
-            "format": "password",
-            "description": "Revokes all sessions of the user"
-          },
           "isActive": {
             "type": "boolean",
-            "description": "Deactivating a user revokes all sessions"
+            "description": "Deactivating an account also ends its session"
           },
-          "globalRoleId": {
+          "systemRoleId": {
             "type": "string",
             "format": "uuid",
             "nullable": true,
-            "description": "A role of scope `global`; null removes it"
+            "description": "A system role, or null to remove it"
           }
         }
+      },
+      "PermissionDefinitionResponseDto": {
+        "type": "object",
+        "properties": {
+          "resource": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Resource"
+              }
+            ]
+          },
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Action"
+              }
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "projectAssignable": {
+            "type": "boolean",
+            "description": "False when only a system role may hold the permission"
+          }
+        },
+        "required": [
+          "resource",
+          "action",
+          "description",
+          "projectAssignable"
+        ]
       },
       "RoleScope": {
         "type": "string",
         "enum": [
-          "global",
+          "system",
           "project"
         ]
       },
@@ -2821,7 +4128,13 @@
           },
           "isSystem": {
             "type": "boolean",
-            "description": "System roles are seeded and cannot be changed or deleted"
+            "description": "Predefined (seeded) roles cannot be changed or deleted"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "The project a custom role belongs to; null for predefined roles"
           },
           "permissions": {
             "type": "array",
@@ -2844,6 +4157,7 @@
           "description",
           "scope",
           "isSystem",
+          "projectId",
           "permissions",
           "createdAt",
           "updatedAt"
@@ -2854,22 +4168,18 @@
         "properties": {
           "name": {
             "type": "string",
-            "maxLength": 100
+            "minLength": 2,
+            "maxLength": 100,
+            "example": "surveyor"
           },
           "description": {
             "type": "string",
+            "maxLength": 500,
             "default": ""
-          },
-          "scope": {
-            "description": "`global` roles are assigned to a user once; `project` roles are assigned per project",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/RoleScope"
-              }
-            ]
           },
           "permissions": {
             "maxItems": 100,
+            "description": "Only permissions a project role may hold, and only ones you hold yourself",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PermissionDto"
@@ -2878,7 +4188,6 @@
         },
         "required": [
           "name",
-          "scope",
           "permissions"
         ]
       },
@@ -2887,14 +4196,16 @@
         "properties": {
           "name": {
             "type": "string",
+            "minLength": 2,
             "maxLength": 100
           },
           "description": {
             "type": "string",
-            "default": ""
+            "maxLength": 500
           },
           "permissions": {
             "maxItems": 100,
+            "description": "Replaces the whole permission set",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PermissionDto"
@@ -2913,12 +4224,19 @@
             "type": "string",
             "format": "uuid"
           },
-          "userEmail": {
-            "type": "string",
-            "format": "email"
-          },
-          "userName": {
+          "username": {
             "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+989123456789",
+            "description": "Present only for yourself and for callers with system-level access"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "nullable": true,
+            "description": "Present only for yourself and for callers with system-level access"
           },
           "roleId": {
             "type": "string",
@@ -2926,6 +4244,9 @@
           },
           "roleName": {
             "type": "string"
+          },
+          "roleIsSystem": {
+            "type": "boolean"
           },
           "createdAt": {
             "format": "date-time",
@@ -2939,10 +4260,10 @@
         "required": [
           "projectId",
           "userId",
-          "userEmail",
-          "userName",
+          "username",
           "roleId",
           "roleName",
+          "roleIsSystem",
           "createdAt",
           "updatedAt"
         ]
@@ -2950,18 +4271,20 @@
       "AddMemberDto": {
         "type": "object",
         "properties": {
-          "userId": {
+          "username": {
             "type": "string",
-            "format": "uuid"
+            "pattern": "^(?!\\d+$)[a-z0-9_]{3,32}$",
+            "example": "farmer_ali",
+            "description": "Username of an active, phone-verified account"
           },
           "roleId": {
             "type": "string",
             "format": "uuid",
-            "description": "A role of scope `project`"
+            "description": "A predefined project role or a custom role of this project"
           }
         },
         "required": [
-          "userId",
+          "username",
           "roleId"
         ]
       },
@@ -2971,7 +4294,7 @@
           "roleId": {
             "type": "string",
             "format": "uuid",
-            "description": "A role of scope `project`"
+            "description": "A predefined project role or a custom role of this project"
           }
         },
         "required": [
@@ -4268,7 +5591,8 @@
         "properties": {
           "name": {
             "type": "string",
-            "maxLength": 200
+            "maxLength": 200,
+            "minLength": 1
           },
           "status": {
             "default": "active",

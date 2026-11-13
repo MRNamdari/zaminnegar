@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { E164Phone } from '../access.types';
-import { SmsDeliveryError } from '../errors';
+import { SmsDeliveryError } from '../errors/sms-delivery.error';
 import { maskPhone, toLocalIranMobile } from '../utils/iran-phone';
 import { SmsGateway } from './sms.gateway';
 

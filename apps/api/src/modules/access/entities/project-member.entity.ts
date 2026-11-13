@@ -4,7 +4,10 @@ import { Project } from '../../project/entities/project.entity';
 import { Role } from './role.entity';
 import { User } from './user.entity';
 
-/** A user's role inside one project: the unit of data-level authorization. */
+/**
+ * A user's membership of one project, with the one role held there. A database trigger guarantees that the
+ * role is a project role that is either predefined or owned by this very project.
+ */
 @Entity({ name: 'project_members' })
 @Index('ix_project_members__project_id', ['projectId'])
 @Index('ix_project_members__role_id', ['roleId'])
@@ -34,7 +37,8 @@ export class ProjectMember extends TimestampedEntity {
   })
   project?: Relation<Project>;
 
-  @ManyToOne(() => Role, { nullable: false, onDelete: 'RESTRICT' })
+  /** Deferred so that deleting a project can remove its members and its custom roles in one statement. */
+  @ManyToOne(() => Role, { nullable: false, onDelete: 'NO ACTION', deferrable: 'INITIALLY DEFERRED' })
   @JoinColumn({
     name: 'role_id',
     referencedColumnName: 'id',

@@ -1,27 +1,83 @@
 export namespace Schemas {
   // <Schemas>
-  export type LoginDto = { email: string; password: string };
-  export type UserResponseDto = {
-    id: string;
-    email: string;
-    name: string;
-    isActive: boolean;
+  export type ErrorResponseDto = {
     /**
-     * Role of scope `global`, if any
+     * Stable, machine-readable code
      */
-    globalRoleId: string | null;
-    createdAt: Date;
-    updatedAt: Date;
+    code: string;
+    message: string;
+    /**
+     * Present on rate-limit errors (429): seconds until a retry can succeed
+     */
+    retryAfterSeconds?: number;
   };
-  export type LoginResponseDto = {
+  export type ValidationErrorResponseDto = {
+    statusCode: number;
     /**
-     * Send as `Authorization: Bearer <token>`. Shown once.
+     * One message, or one per invalid property
      */
-    token: string;
+    message: string | Array<string>;
+    error: string;
+  };
+  export type RegisterUserDto = {
+    /**
+     * Lower case letters, digits and "_"; not only digits. Case-insensitive.
+     */
+    username: string;
+    password: string;
+    /**
+     * Iranian mobile number in any common format; stored and returned as E.164 (`+989123456789`)
+     */
+    phone: string;
+    /**
+     * Never verified and never used to sign in
+     */
+    email?: string;
+  };
+  export type OtpDispatchResponseDto = {
+    /**
+     * The code stops working at this time
+     */
     expiresAt: Date;
-    user: UserResponseDto;
+    /**
+     * A new code can be requested from this time
+     */
+    resendAvailableAt: Date;
   };
-  export type RoleSummaryDto = { id: string; name: string };
+  export type VerifyRegistrationDto = {
+    /**
+     * Iranian mobile number in any common format; stored and returned as E.164 (`+989123456789`)
+     */
+    phone: string;
+    code: string;
+  };
+  export type LoginDto = {
+    /**
+     * Case-insensitive
+     */
+    username: string;
+    password: string;
+  };
+  export type UserSummaryDto = { id: string; username: string; phone: string; email: string | null };
+  export type SessionResponseDto = {
+    user: UserSummaryDto;
+    /**
+     * The session ends here unless it is used before
+     */
+    idleExpiresAt: Date;
+    /**
+     * The session ends here no matter how active it is
+     */
+    absoluteExpiresAt: Date;
+  };
+  export type RoleSummaryDto = {
+    id: string;
+    name: string;
+    /**
+     * Predefined (seeded) role
+     */
+    isSystem: boolean;
+  };
   export type Resource =
     | "project"
     | "boundary"
@@ -31,30 +87,36 @@ export namespace Schemas {
     | "owner"
     | "ownership"
     | "member"
-    | "user"
-    | "role";
-  export type Action = "create" | "read" | "update" | "delete";
+    | "role"
+    | "user";
+  export type Action = "create" | "read" | "update" | "delete" | "invite" | "manage";
   export type PermissionDto = { resource: Resource; action: Action };
-  export type MembershipPermissionsDto = { projectId: string; role: RoleSummaryDto; permissions: Array<PermissionDto> };
+  export type CurrentMembershipDto = { projectId: string; role: RoleSummaryDto; permissions: Array<PermissionDto> };
   export type CurrentUserResponseDto = {
     id: string;
-    email: string;
-    name: string;
-    globalRole: (RoleSummaryDto & (Record<string, unknown> | null)) | null;
+    username: string;
+    phone: string;
+    email: string | null;
+    systemRole: (RoleSummaryDto & (Record<string, unknown> | null)) | null;
     /**
      * Granted on every project
      */
-    globalPermissions: Array<PermissionDto>;
-    memberships: Array<MembershipPermissionsDto>;
+    systemPermissions: Array<PermissionDto>;
+    memberships: Array<CurrentMembershipDto>;
   };
-  export type CreateUserDto = {
-    email: string;
-    name: string;
-    password: string;
+  export type ForgotPasswordDto = {
     /**
-     * A role of scope `global`
+     * Username, or phone number in any common Iranian format (normalised to E.164)
      */
-    globalRoleId?: string | null;
+    identifier: string;
+  };
+  export type ResetPasswordDto = {
+    /**
+     * The same username or phone number that requested the code
+     */
+    identifier: string;
+    code: string;
+    newPassword: string;
   };
   export type PaginatedResponseDto = {
     items: Array<Record<string, unknown>>;
@@ -65,31 +127,53 @@ export namespace Schemas {
     page: number;
     limit: number;
   };
-  export type UpdateUserDto = Partial<{
-    name: string;
+  export type UserResponseDto = {
+    id: string;
+    username: string;
+    phone: string | null;
     /**
-     * Revokes all sessions of the user
+     * Null until registration is finished
      */
-    password: string;
+    phoneVerifiedAt: Date | null;
+    email: string | null;
+    isActive: boolean;
+    systemRoleId: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  export type UpdateUserDto = Partial<{
     /**
-     * Deactivating a user revokes all sessions
+     * Deactivating an account also ends its session
      */
     isActive: boolean;
     /**
-     * A role of scope `global`; null removes it
+     * A system role, or null to remove it
      */
-    globalRoleId: string | null;
+    systemRoleId: string | null;
   }>;
-  export type RoleScope = "global" | "project";
+  export type PermissionDefinitionResponseDto = {
+    resource: Resource;
+    action: Action;
+    description: string;
+    /**
+     * False when only a system role may hold the permission
+     */
+    projectAssignable: boolean;
+  };
+  export type RoleScope = "system" | "project";
   export type RoleResponseDto = {
     id: string;
     name: string;
     description: string;
     scope: RoleScope;
     /**
-     * System roles are seeded and cannot be changed or deleted
+     * Predefined (seeded) roles cannot be changed or deleted
      */
     isSystem: boolean;
+    /**
+     * The project a custom role belongs to; null for predefined roles
+     */
+    projectId: string | null;
     permissions: Array<PermissionDto>;
     createdAt: Date;
     updatedAt: Date;
@@ -97,30 +181,50 @@ export namespace Schemas {
   export type CreateRoleDto = {
     name: string;
     description?: string;
-    scope: RoleScope;
+    /**
+     * Only permissions a project role may hold, and only ones you hold yourself
+     */
     permissions: Array<PermissionDto>;
   };
-  export type UpdateRoleDto = Partial<{ name: string; description: string; permissions: Array<PermissionDto> }>;
+  export type UpdateRoleDto = Partial<{
+    name: string;
+    description: string;
+    /**
+     * Replaces the whole permission set
+     */
+    permissions: Array<PermissionDto>;
+  }>;
   export type MemberResponseDto = {
     projectId: string;
     userId: string;
-    userEmail: string;
-    userName: string;
+    username: string;
+    /**
+     * Present only for yourself and for callers with system-level access
+     */
+    phone?: string;
+    /**
+     * Present only for yourself and for callers with system-level access
+     */
+    email?: string | null;
     roleId: string;
     roleName: string;
+    roleIsSystem: boolean;
     createdAt: Date;
     updatedAt: Date;
   };
   export type AddMemberDto = {
-    userId: string;
     /**
-     * A role of scope `project`
+     * Username of an active, phone-verified account
+     */
+    username: string;
+    /**
+     * A predefined project role or a custom role of this project
      */
     roleId: string;
   };
   export type UpdateMemberDto = {
     /**
-     * A role of scope `project`
+     * A predefined project role or a custom role of this project
      */
     roleId: string;
   };
@@ -473,7 +577,41 @@ export namespace Endpoints {
   // <Endpoints>
 
   /**
-   * Returns an opaque session token to send as a Bearer token
+   * Sends a verification code to the phone number. The answer is the same whether or not the username or phone is already registered.
+   */
+  export type post_AuthController_register = {
+    method: "POST";
+    path: "/auth/register";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: {
+      body: Schemas.RegisterUserDto;
+    };
+    responses: {
+      202: Schemas.OtpDispatchResponseDto;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      429: Schemas.ErrorResponseDto;
+    };
+  };
+  /**
+   * Activates the account; sign in afterwards.
+   */
+  export type post_AuthController_verifyRegistration = {
+    method: "POST";
+    path: "/auth/register/verify";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: {
+      body: Schemas.VerifyRegistrationDto;
+    };
+    responses: {
+      204: unknown;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      429: Schemas.ErrorResponseDto;
+    };
+  };
+  /**
+   * Sets the session cookie and ends any previous session of this account.
    */
   export type post_AuthController_login = {
     method: "POST";
@@ -481,11 +619,15 @@ export namespace Endpoints {
     requestFormat: "json";
     responseFormat: "json";
     parameters: {
-      header: { "user-agent": string };
-
       body: Schemas.LoginDto;
     };
-    responses: { 200: Schemas.LoginResponseDto };
+    responses: {
+      200: Schemas.SessionResponseDto;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
+    };
+    responseHeaders: { 200: { "Set-Cookie": string } };
   };
   export type post_AuthController_logout = {
     method: "POST";
@@ -493,7 +635,19 @@ export namespace Endpoints {
     requestFormat: "json";
     responseFormat: "json";
     parameters: never;
-    responses: { 204: unknown };
+    responses: { 204: unknown; 401: Schemas.ErrorResponseDto; 403: Schemas.ErrorResponseDto };
+  };
+  /**
+   * Issues a new session identifier and restarts the idle timer. The absolute deadline does not move.
+   */
+  export type post_AuthController_renew = {
+    method: "POST";
+    path: "/auth/session/renew";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: never;
+    responses: { 200: Schemas.SessionResponseDto; 401: Schemas.ErrorResponseDto; 403: Schemas.ErrorResponseDto };
+    responseHeaders: { 200: { "Set-Cookie": string } };
   };
   export type get_AuthController_me = {
     method: "GET";
@@ -501,17 +655,41 @@ export namespace Endpoints {
     requestFormat: "json";
     responseFormat: "json";
     parameters: never;
-    responses: { 200: Schemas.CurrentUserResponseDto };
+    responses: { 200: Schemas.CurrentUserResponseDto; 401: Schemas.ErrorResponseDto; 403: Schemas.ErrorResponseDto };
   };
-  export type post_UsersController_create = {
+  /**
+   * Sends a code to the phone of the account. The answer is the same whether or not the account exists.
+   */
+  export type post_AuthController_forgotPassword = {
     method: "POST";
-    path: "/users";
+    path: "/auth/password/forgot";
     requestFormat: "json";
     responseFormat: "json";
     parameters: {
-      body: Schemas.CreateUserDto;
+      body: Schemas.ForgotPasswordDto;
     };
-    responses: { 201: Schemas.UserResponseDto };
+    responses: {
+      202: Schemas.OtpDispatchResponseDto;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      429: Schemas.ErrorResponseDto;
+    };
+  };
+  /**
+   * Ends the account's session. Sign in with the new password afterwards.
+   */
+  export type post_AuthController_resetPassword = {
+    method: "POST";
+    path: "/auth/password/reset";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: {
+      body: Schemas.ResetPasswordDto;
+    };
+    responses: {
+      204: unknown;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      429: Schemas.ErrorResponseDto;
+    };
   };
   export type get_UsersController_list = {
     method: "GET";
@@ -521,8 +699,16 @@ export namespace Endpoints {
     parameters: {
       query?: Partial<{ page: number; limit: number; search: string }>;
     };
-    responses: { 200: Schemas.PaginatedResponseDto & Partial<{ items: Array<Schemas.UserResponseDto> }> };
+    responses: {
+      200: Schemas.PaginatedResponseDto & Partial<{ items: Array<Schemas.UserResponseDto> }>;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
+    };
   };
+  /**
+   * Your own account, or any account with the system-level `user:read` permission.
+   */
   export type get_UsersController_get = {
     method: "GET";
     path: "/users/{id}";
@@ -531,8 +717,17 @@ export namespace Endpoints {
     parameters: {
       path: { id: string };
     };
-    responses: { 200: Schemas.UserResponseDto };
+    responses: {
+      200: Schemas.UserResponseDto;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
+      404: Schemas.ErrorResponseDto;
+    };
   };
+  /**
+   * Deactivating an account ends its session. You cannot grant a system role stronger than your own.
+   */
   export type patch_UsersController_update = {
     method: "PATCH";
     path: "/users/{id}";
@@ -543,74 +738,133 @@ export namespace Endpoints {
 
       body: Schemas.UpdateUserDto;
     };
-    responses: { 200: Schemas.UserResponseDto };
-  };
-  export type delete_UsersController_remove = {
-    method: "DELETE";
-    path: "/users/{id}";
-    requestFormat: "json";
-    responseFormat: "json";
-    parameters: {
-      path: { id: string };
+    responses: {
+      200: Schemas.UserResponseDto;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
+      404: Schemas.ErrorResponseDto;
+      409: Schemas.ErrorResponseDto;
     };
-    responses: { 204: unknown };
   };
-  export type get_RolesController_list = {
+  export type get_PermissionsController_list = {
     method: "GET";
-    path: "/roles";
+    path: "/permissions";
     requestFormat: "json";
     responseFormat: "json";
     parameters: never;
-    responses: { 200: Array<Schemas.RoleResponseDto> };
-  };
-  export type post_RolesController_create = {
-    method: "POST";
-    path: "/roles";
-    requestFormat: "json";
-    responseFormat: "json";
-    parameters: {
-      body: Schemas.CreateRoleDto;
+    responses: {
+      200: Array<Schemas.PermissionDefinitionResponseDto>;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
     };
-    responses: { 201: Schemas.RoleResponseDto };
   };
-  export type get_RolesController_get = {
+  export type get_SystemRolesController_list = {
     method: "GET";
-    path: "/roles/{id}";
+    path: "/roles/system";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: never;
+    responses: { 200: Array<Schemas.RoleResponseDto>; 401: Schemas.ErrorResponseDto; 403: Schemas.ErrorResponseDto };
+  };
+  export type get_ProjectRolesController_list = {
+    method: "GET";
+    path: "/projects/{projectId}/roles";
     requestFormat: "json";
     responseFormat: "json";
     parameters: {
-      path: { id: string };
+      path: { projectId: string };
     };
-    responses: { 200: Schemas.RoleResponseDto };
+    responses: {
+      200: Array<Schemas.RoleResponseDto>;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
+      404: Schemas.ErrorResponseDto;
+    };
   };
   /**
-   * System roles cannot be changed
+   * The role belongs to this project only. It can hold only permissions that you hold in this project yourself.
    */
-  export type patch_RolesController_update = {
-    method: "PATCH";
-    path: "/roles/{id}";
+  export type post_ProjectRolesController_create = {
+    method: "POST";
+    path: "/projects/{projectId}/roles";
     requestFormat: "json";
     responseFormat: "json";
     parameters: {
-      path: { id: string };
+      path: { projectId: string };
+
+      body: Schemas.CreateRoleDto;
+    };
+    responses: {
+      201: Schemas.RoleResponseDto;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
+      404: Schemas.ErrorResponseDto;
+      409: Schemas.ErrorResponseDto;
+      422: Schemas.ErrorResponseDto;
+    };
+  };
+  export type get_ProjectRolesController_get = {
+    method: "GET";
+    path: "/projects/{projectId}/roles/{roleId}";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: {
+      path: { projectId: string; roleId: string };
+    };
+    responses: {
+      200: Schemas.RoleResponseDto;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
+      404: Schemas.ErrorResponseDto;
+    };
+  };
+  /**
+   * Predefined roles cannot be changed. Changes apply to its members immediately.
+   */
+  export type patch_ProjectRolesController_update = {
+    method: "PATCH";
+    path: "/projects/{projectId}/roles/{roleId}";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: {
+      path: { projectId: string; roleId: string };
 
       body: Schemas.UpdateRoleDto;
     };
-    responses: { 200: Schemas.RoleResponseDto };
+    responses: {
+      200: Schemas.RoleResponseDto;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
+      404: Schemas.ErrorResponseDto;
+      409: Schemas.ErrorResponseDto;
+      422: Schemas.ErrorResponseDto;
+    };
   };
-  /**
-   * System roles and roles still assigned to someone cannot be deleted
-   */
-  export type delete_RolesController_remove = {
+  export type delete_ProjectRolesController_remove = {
     method: "DELETE";
-    path: "/roles/{id}";
+    path: "/projects/{projectId}/roles/{roleId}";
     requestFormat: "json";
     responseFormat: "json";
     parameters: {
-      path: { id: string };
+      path: { projectId: string; roleId: string };
     };
-    responses: { 204: unknown };
+    responses: {
+      204: unknown;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
+      404: Schemas.ErrorResponseDto;
+      409: Schemas.ErrorResponseDto;
+    };
   };
+  /**
+   * Contact details are included only for yourself and for system-level callers.
+   */
   export type get_ProjectMembersController_list = {
     method: "GET";
     path: "/projects/{projectId}/members";
@@ -619,8 +873,17 @@ export namespace Endpoints {
     parameters: {
       path: { projectId: string };
     };
-    responses: { 200: Array<Schemas.MemberResponseDto> };
+    responses: {
+      200: Array<Schemas.MemberResponseDto>;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
+      404: Schemas.ErrorResponseDto;
+    };
   };
+  /**
+   * You can assign only roles whose permissions you hold in this project yourself.
+   */
   export type post_ProjectMembersController_add = {
     method: "POST";
     path: "/projects/{projectId}/members";
@@ -631,9 +894,19 @@ export namespace Endpoints {
 
       body: Schemas.AddMemberDto;
     };
-    responses: { 201: Schemas.MemberResponseDto };
+    responses: {
+      201: Schemas.MemberResponseDto;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
+      404: Schemas.ErrorResponseDto;
+      409: Schemas.ErrorResponseDto;
+    };
   };
-  export type patch_ProjectMembersController_update = {
+  /**
+   * You can neither assign a role stronger than your own nor change a member who holds one. The last owner cannot be demoted.
+   */
+  export type patch_ProjectMembersController_changeRole = {
     method: "PATCH";
     path: "/projects/{projectId}/members/{userId}";
     requestFormat: "json";
@@ -643,7 +916,14 @@ export namespace Endpoints {
 
       body: Schemas.UpdateMemberDto;
     };
-    responses: { 200: Schemas.MemberResponseDto };
+    responses: {
+      200: Schemas.MemberResponseDto;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
+      404: Schemas.ErrorResponseDto;
+      409: Schemas.ErrorResponseDto;
+    };
   };
   export type delete_ProjectMembersController_remove = {
     method: "DELETE";
@@ -653,7 +933,14 @@ export namespace Endpoints {
     parameters: {
       path: { projectId: string; userId: string };
     };
-    responses: { 204: unknown };
+    responses: {
+      204: unknown;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
+      404: Schemas.ErrorResponseDto;
+      409: Schemas.ErrorResponseDto;
+    };
   };
   export type post_ProjectController_create = {
     method: "POST";
@@ -1114,10 +1401,14 @@ export namespace Endpoints {
 // <EndpointByMethod>
 export type EndpointByMethod = {
   post: {
+    "/auth/register": Endpoints.post_AuthController_register;
+    "/auth/register/verify": Endpoints.post_AuthController_verifyRegistration;
     "/auth/login": Endpoints.post_AuthController_login;
     "/auth/logout": Endpoints.post_AuthController_logout;
-    "/users": Endpoints.post_UsersController_create;
-    "/roles": Endpoints.post_RolesController_create;
+    "/auth/session/renew": Endpoints.post_AuthController_renew;
+    "/auth/password/forgot": Endpoints.post_AuthController_forgotPassword;
+    "/auth/password/reset": Endpoints.post_AuthController_resetPassword;
+    "/projects/{projectId}/roles": Endpoints.post_ProjectRolesController_create;
     "/projects/{projectId}/members": Endpoints.post_ProjectMembersController_add;
     "/projects": Endpoints.post_ProjectController_create;
     "/boundaries": Endpoints.post_BoundaryController_create;
@@ -1131,8 +1422,10 @@ export type EndpointByMethod = {
     "/auth/me": Endpoints.get_AuthController_me;
     "/users": Endpoints.get_UsersController_list;
     "/users/{id}": Endpoints.get_UsersController_get;
-    "/roles": Endpoints.get_RolesController_list;
-    "/roles/{id}": Endpoints.get_RolesController_get;
+    "/permissions": Endpoints.get_PermissionsController_list;
+    "/roles/system": Endpoints.get_SystemRolesController_list;
+    "/projects/{projectId}/roles": Endpoints.get_ProjectRolesController_list;
+    "/projects/{projectId}/roles/{roleId}": Endpoints.get_ProjectRolesController_get;
     "/projects/{projectId}/members": Endpoints.get_ProjectMembersController_list;
     "/projects": Endpoints.get_ProjectController_list;
     "/projects/{id}": Endpoints.get_ProjectController_get;
@@ -1156,8 +1449,8 @@ export type EndpointByMethod = {
   };
   patch: {
     "/users/{id}": Endpoints.patch_UsersController_update;
-    "/roles/{id}": Endpoints.patch_RolesController_update;
-    "/projects/{projectId}/members/{userId}": Endpoints.patch_ProjectMembersController_update;
+    "/projects/{projectId}/roles/{roleId}": Endpoints.patch_ProjectRolesController_update;
+    "/projects/{projectId}/members/{userId}": Endpoints.patch_ProjectMembersController_changeRole;
     "/projects/{id}": Endpoints.patch_ProjectController_update;
     "/boundaries/{id}": Endpoints.patch_BoundaryController_update;
     "/regions/{id}": Endpoints.patch_RegionController_update;
@@ -1167,8 +1460,7 @@ export type EndpointByMethod = {
     "/owners/{id}": Endpoints.patch_OwnerController_update;
   };
   delete: {
-    "/users/{id}": Endpoints.delete_UsersController_remove;
-    "/roles/{id}": Endpoints.delete_RolesController_remove;
+    "/projects/{projectId}/roles/{roleId}": Endpoints.delete_ProjectRolesController_remove;
     "/projects/{projectId}/members/{userId}": Endpoints.delete_ProjectMembersController_remove;
     "/projects/{id}": Endpoints.delete_ProjectController_remove;
     "/boundaries/{id}": Endpoints.delete_BoundaryController_remove;

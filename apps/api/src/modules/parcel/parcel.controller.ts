@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiSessionAuth, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
 import { Action, Resource } from '../access/permissions';
 import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
@@ -29,7 +29,7 @@ import { ListParcelOwnershipsQuery } from './queries/list-parcel-ownerships.quer
 import { ListParcelsQuery } from './queries/list-parcels.query';
 
 @ApiTags('parcels')
-@ApiBearerAuth()
+@ApiSessionAuth()
 @Controller('parcels')
 export class ParcelController {
   constructor(
