@@ -1,9 +1,9 @@
-import { notFound } from "next/navigation";
-import { mockBlocks } from "@/app/(dashboard)/mockData";
-import { BackButton } from "@/app/components/dashboard/Backbutton";
-import BlockInformation from "@/app/components/dashboard/blocks/BlocksInformation";
-import { getServerApi } from "@/app/_lib/api.server";
-import { QueryClient } from "@tanstack/react-query";
+import { notFound } from 'next/navigation';
+import { mockBlocks } from '@/app/(dashboard)/mockData';
+import { BackButton } from '@/app/_components/dashboard/Backbutton';
+import BlockInformation from '@/app/_components/dashboard/blocks/BlocksInformation';
+import { getServerApi } from '@/app/_lib/api.server';
+import { QueryClient } from '@tanstack/react-query';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -14,11 +14,11 @@ export default async function BlockDetailsPage({ params }: Props) {
   const queryClient = new QueryClient();
   let block = null;
   try {
-     block = await queryClient.query(
-        getServerApi().get('/blocks/{id}', { path: { id } }).queryOptions,
-      );
+    block = await queryClient.query(
+      getServerApi().get('/blocks/{id}', { path: { id } }).queryOptions,
+    );
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
 
   if (!block) {

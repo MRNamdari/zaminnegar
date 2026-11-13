@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { IParcel } from "@/app/features/parcels/interface";
-import { FiEdit2, FiTrash2 } from "react-icons/fi";
-import Link from "next/link";
-import { Dialog } from "@/app/components/Dialog";
-import ParcelsFormUpdate from "@/app/components/dashboard/parcels/ParcelsFormUpdate";
-import { UpdateParcelFormValues } from "@/app/components/dashboard/parcels/schema/ParcelsUpdate.schema";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { IParcel } from '@/app/features/parcels/interface';
+import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+import Link from 'next/link';
+import { Dialog } from '@/app/_components/Dialog';
+import ParcelsFormUpdate from '@/app/_components/dashboard/parcels/ParcelsFormUpdate';
+import { UpdateParcelFormValues } from '@/app/_components/dashboard/parcels/schema/ParcelsUpdate.schema';
 
 interface ParcelInformationProps {
   parcel: IParcel;
@@ -16,7 +16,7 @@ interface ParcelInformationProps {
 export default function ParcelsInformation({ parcel }: ParcelInformationProps) {
   const router = useRouter();
   const [currentParcel, setCurrentParcel] = useState<IParcel>(parcel);
-  const [activeTab, setActiveTab] = useState<"info" | "details">("info");
+  const [activeTab, setActiveTab] = useState<'info' | 'details'>('info');
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -33,23 +33,23 @@ export default function ParcelsInformation({ parcel }: ParcelInformationProps) {
 
   const confirmDelete = () => {
     setIsDeleteModalOpen(false);
-    router.push("/parcels");
+    router.push('/parcels');
   };
 
   return (
     <div className="w-1/2">
       <div className="w-full flex mb-2">
         <button
-          onClick={() => setActiveTab("info")}
-          disabled={activeTab === "info"}
+          onClick={() => setActiveTab('info')}
+          disabled={activeTab === 'info'}
           className="w-1/3 py-2.5 border-b border-slate-200/10 rounded-t-md cursor-pointer text-center hover:bg-blue-500/20 transition duration-300 disabled:border-b-blue-500 disabled:border-b-2"
         >
           اطلاعات کلی
         </button>
 
         <button
-          onClick={() => setActiveTab("details")}
-          disabled={activeTab === "details"}
+          onClick={() => setActiveTab('details')}
+          disabled={activeTab === 'details'}
           className="w-1/3 py-2.5 border-b border-slate-200/10 rounded-t-md cursor-pointer text-center hover:bg-blue-500/20 transition duration-300 disabled:border-b-blue-500 disabled:border-b-2"
         >
           مالکین
@@ -66,7 +66,7 @@ export default function ParcelsInformation({ parcel }: ParcelInformationProps) {
       <div className="w-full">
         <div
           className="flex flex-col gap-3 aria-hidden:hidden"
-          aria-hidden={activeTab !== "info"}
+          aria-hidden={activeTab !== 'info'}
         >
           <div className="bg-surface-raised rounded-md p-4">
             <div className="flex justify-between px-1 pb-3.5 border-b border-border">
@@ -108,7 +108,7 @@ export default function ParcelsInformation({ parcel }: ParcelInformationProps) {
           </div>
         </div>
         <div
-          aria-hidden={activeTab !== "details"}
+          aria-hidden={activeTab !== 'details'}
           className="aria-hidden:hidden"
         >
           <div className="flex flex-col gap-3">

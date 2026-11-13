@@ -1,18 +1,21 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import type { Owner } from "./OwnersTable";
-import { Dialog } from "@/app/components/Dialog";
-import { FiEdit2 } from "react-icons/fi";
-import { faNum, toPersianNumber } from "@/app/util";
-import OwnersFormUpdate from "./OwnersFormUpdate";
+import { useState } from 'react';
+import type { Owner } from './OwnersTable';
+import { Dialog } from '@/app/_components/Dialog';
+import { FiEdit2 } from 'react-icons/fi';
+import { faNum, toPersianNumber } from '@/app/util';
+import OwnersFormUpdate from './OwnersFormUpdate';
 
 interface OwnerInformationProps {
   owner: Owner;
   onUpdate: (owner: Owner) => void;
 }
 
-export default function OwnersInformation({ owner,  onUpdate }: OwnerInformationProps) {
+export default function OwnersInformation({
+  owner,
+  onUpdate,
+}: OwnerInformationProps) {
   const [ownerInfo, setOwnerInfo] = useState<Owner>(owner);
   const [isOpen, setIsOpen] = useState(false);
   const [editedOwner, setEditedOwner] = useState<Owner | null>(null);

@@ -1,7 +1,7 @@
-import { notFound } from "next/navigation"
-import { parcelMockData } from "@/app/(dashboard)/parcels/ParcelMockData"
-import { BackButton } from "@/app/components/dashboard/Backbutton"
-import ParcelsInformation from "@/app/components/dashboard/parcels/ParcelsInformation"
+import { notFound } from 'next/navigation';
+import { parcelMockData } from '@/app/(dashboard)/parcels/ParcelMockData';
+import { BackButton } from '@/app/_components/dashboard/Backbutton';
+import ParcelsInformation from '@/app/_components/dashboard/parcels/ParcelsInformation';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -32,10 +32,9 @@ export default async function page({ params }: Props) {
         </div>
         <div className="flex gap-4 w-full">
           <ParcelsInformation parcel={parcel} />
-          <div className="w-1/2 rounded-2xl overflow-hidden">
-          </div>
+          <div className="w-1/2 rounded-2xl overflow-hidden"></div>
         </div>
       </div>
     </div>
-  )
+  );
 }

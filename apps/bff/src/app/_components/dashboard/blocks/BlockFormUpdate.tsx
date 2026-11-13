@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { IoChevronDown } from "react-icons/io5";
-import { useAppForm } from "@/app/components/form/hooks/form";
-import { useRouter } from "next/navigation";
+import { IoChevronDown } from 'react-icons/io5';
+import { useAppForm } from '@/app/_components/form/hooks/form';
+import { useRouter } from 'next/navigation';
 import {
   updateFormBlock,
   UpdateBlockFormValues,
-} from "./schemas/BlockUpdate.schema";
-import { Block } from "./BlocksTable";
+} from './schemas/BlockUpdate.schema';
+import { Block } from './BlocksTable';
 
 interface Props {
   block: Block;
@@ -63,11 +63,11 @@ export default function UpdateBlockForm({ onSubmit, onCancel, block }: Props) {
             <field.SelectField
               label="نام منطقه"
               options={[
-                { label: "مرکز", value: "مرکز" },
-                { label: "شمال", value: "شمال" },
-                { label: "جنوب", value: "جنوب" },
-                { label: "شرق", value: "شرق" },
-                { label: "غرب", value: "غرب" },
+                { label: 'مرکز', value: 'مرکز' },
+                { label: 'شمال', value: 'شمال' },
+                { label: 'جنوب', value: 'جنوب' },
+                { label: 'شرق', value: 'شرق' },
+                { label: 'غرب', value: 'غرب' },
               ]}
             />
           )}
@@ -77,9 +77,9 @@ export default function UpdateBlockForm({ onSubmit, onCancel, block }: Props) {
             <field.SelectField
               label="وضعیت بلوک"
               options={[
-                { label: "نهایی", value: "نهایی" },
-                { label: "پیش‌نویس", value: "پیش‌نویس" },
-                { label: "پیشنهادیه", value: "پیشنهادیه" },
+                { label: 'نهایی', value: 'نهایی' },
+                { label: 'پیش‌نویس', value: 'پیش‌نویس' },
+                { label: 'پیشنهادیه', value: 'پیشنهادیه' },
               ]}
             />
           )}
@@ -100,7 +100,7 @@ export default function UpdateBlockForm({ onSubmit, onCancel, block }: Props) {
 
           <button
             type="button"
-            onClick={() => router.push("/map")}
+            onClick={() => router.push('/map')}
             className="w-1/2 py-2.5 rounded-lg bg-action-primary transition duration-300 cursor-pointer"
           >
             برو به نقشه

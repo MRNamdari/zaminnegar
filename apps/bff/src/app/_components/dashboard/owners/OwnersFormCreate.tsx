@@ -1,13 +1,12 @@
-
 'use client';
 
 import { useState } from 'react';
 import { useSelector } from '@tanstack/react-form';
-import { useAppForm } from '@/app/components/form/hooks/form';
+import { useAppForm } from '@/app/_components/form/hooks/form';
 import {
   createFormOwner,
   OwnerFormValues,
-} from '@/app/components/dashboard/owners/schemas/OwnersCreate.schema';
+} from '@/app/_components/dashboard/owners/schemas/OwnersCreate.schema';
 import { FiTrash2 } from 'react-icons/fi';
 
 interface Props {
@@ -50,10 +49,7 @@ const personalInfoFields = [
   'address',
 ] as const;
 
-export default function CreateOwnerForm({
-  onSubmit,
-  onCancel,
-}: Props) {
+export default function CreateOwnerForm({ onSubmit, onCancel }: Props) {
   const [step, setStep] = useState<1 | 2>(1);
 
   const form = useAppForm({
@@ -74,10 +70,7 @@ export default function CreateOwnerForm({
     (state) => state.values.parcelShares,
   );
 
-  const totalArea = useSelector(
-    form.store,
-    (state) => state.values.totalArea,
-  );
+  const totalArea = useSelector(form.store, (state) => state.values.totalArea);
 
   const parcelCount = useSelector(
     form.store,
@@ -87,9 +80,7 @@ export default function CreateOwnerForm({
   // محاسبه مساحت کل سهم مالک
   const calculateTotalArea = (parcels: ParcelShare[]) => {
     return parcels.reduce((total, item) => {
-      const parcel = availableParcels.find(
-        (p) => p.id === item.parcelId,
-      );
+      const parcel = availableParcels.find((p) => p.id === item.parcelId);
 
       if (!parcel) return total;
 
@@ -117,16 +108,11 @@ export default function CreateOwnerForm({
 
   // حذف قطعه
   const removeParcel = (index: number) => {
-    updateParcels(
-      selectedParcels.filter((_, i) => i !== index),
-    );
+    updateParcels(selectedParcels.filter((_, i) => i !== index));
   };
 
   // تغییر اطلاعات قطعه
-  const updateParcel = (
-    index: number,
-    changes: Partial<ParcelShare>,
-  ) => {
+  const updateParcel = (index: number, changes: Partial<ParcelShare>) => {
     const updated = selectedParcels.map((item, i) =>
       i === index ? { ...item, ...changes } : item,
     );
@@ -137,9 +123,7 @@ export default function CreateOwnerForm({
   // اعتبارسنجی تمام فیلدهای مرحله اول
   const goToNextStep = async () => {
     await Promise.all(
-      personalInfoFields.map((field) =>
-        form.validateField(field, 'submit'),
-      ),
+      personalInfoFields.map((field) => form.validateField(field, 'submit')),
     );
 
     const hasErrors = personalInfoFields.some((field) => {
@@ -340,8 +324,7 @@ export default function CreateOwnerForm({
                   (parcel) =>
                     !selectedParcels.some(
                       (selected, i) =>
-                        selected.parcelId === parcel.id &&
-                        i !== index,
+                        selected.parcelId === parcel.id && i !== index,
                     ),
                 );
 
@@ -401,9 +384,7 @@ export default function CreateOwnerForm({
 
                     {item.parcelId && (
                       <p className="text-xs text-foreground">
-                        مساحت سهم:{' '}
-                        {shareArea.toLocaleString('fa-IR')}{' '}
-                        متر مربع
+                        مساحت سهم: {shareArea.toLocaleString('fa-IR')} متر مربع
                       </p>
                     )}
                   </div>

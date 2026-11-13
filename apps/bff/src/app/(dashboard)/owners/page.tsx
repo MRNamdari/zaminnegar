@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
 import OwnersTable, {
   Owner,
-} from "@/app/components/dashboard/owners/OwnersTable";
+} from '@/app/_components/dashboard/owners/OwnersTable';
 
-import { useState } from "react";
-import { AiOutlinePlus } from "react-icons/ai";
-import { Dialog } from "@/app/components/Dialog";
-import { initialOwners } from "../mockData";
-import { CgSearch } from "react-icons/cg";
-import CreateOwnerForm from "@/app/components/dashboard/owners/OwnersFormCreate";
-import { OwnerFormValues } from "@/app/components/dashboard/owners/schemas/OwnersCreate.schema";
-import OwnersFormUpdate from "@/app/components/dashboard/owners/OwnersFormUpdate";
+import { useState } from 'react';
+import { AiOutlinePlus } from 'react-icons/ai';
+import { Dialog } from '@/app/_components/Dialog';
+import { initialOwners } from '../mockData';
+import { CgSearch } from 'react-icons/cg';
+import CreateOwnerForm from '@/app/_components/dashboard/owners/OwnersFormCreate';
+import { OwnerFormValues } from '@/app/_components/dashboard/owners/schemas/OwnersCreate.schema';
+import OwnersFormUpdate from '@/app/_components/dashboard/owners/OwnersFormUpdate';
 
 interface OwnerInformationProps {
   owner: Owner;
   onUpdate: (owner: Owner) => void;
 }
 
-export default function OwnersPage({owner , onUpdate}: OwnerInformationProps) {
-  const [searchValue, setSearchValue] = useState("");
+export default function OwnersPage({ owner, onUpdate }: OwnerInformationProps) {
+  const [searchValue, setSearchValue] = useState('');
   const [owners, setOwners] = useState<Owner[]>(initialOwners);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -30,14 +30,14 @@ export default function OwnersPage({owner , onUpdate}: OwnerInformationProps) {
   const [ownerInfo, setOwnerInfo] = useState<Owner>(owner);
 
   const handleAddOwner = (values: OwnerFormValues) => {
-    console.log("Owner Values:", values);
+    console.log('Owner Values:', values);
 
     const newOwnerData: Owner = {
       id: String(owners.length + 1),
       ...values,
     };
 
-    setOwners((prevOwners) => [...prevOwners, newOwnerData]); 
+    setOwners((prevOwners) => [...prevOwners, newOwnerData]);
     setIsAddModalOpen(false);
   };
 
@@ -68,9 +68,9 @@ export default function OwnersPage({owner , onUpdate}: OwnerInformationProps) {
   };
 
   const handleEdit = (owner: Owner) => {
-  setEditedOwner(owner);
-  setIsOpen(true);
-};
+    setEditedOwner(owner);
+    setIsOpen(true);
+  };
 
   return (
     <div className="w-full h-full overflow-y-auto">
@@ -190,10 +190,10 @@ export default function OwnersPage({owner , onUpdate}: OwnerInformationProps) {
         {selectedOwner && (
           <div className="flex flex-col gap-5 mt-4">
             <p className="text-sm text-slate-300">
-              آیا مطمئن هستید که می‌خواهید مالک{" "}
+              آیا مطمئن هستید که می‌خواهید مالک{' '}
               <span className="text-white font-semibold mx-1">
                 {selectedOwner.name}
-              </span>{" "}
+              </span>{' '}
               را حذف کنید؟
             </p>
 

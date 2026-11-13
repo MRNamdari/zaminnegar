@@ -2,7 +2,7 @@
 
 import { toast } from 'react-toastify';
 import { BlockFormValue, createFormBlock } from './schemas/BlockCreate.schema';
-import { useAppForm } from '@/app/components/form/hooks/form';
+import { useAppForm } from '@/app/_components/form/hooks/form';
 
 interface Props {
   onSubmit: (values: BlockFormValue) => void;
@@ -27,7 +27,7 @@ export default function CreateBlockForm({ onSubmit, onCancel }: Props) {
 
       onSubmit(value);
 
-      toast.success('اطلاعات بلوک با موفقیت دریافت شد!');   
+      toast.success('اطلاعات بلوک با موفقیت دریافت شد!');
     },
   });
 

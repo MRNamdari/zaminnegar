@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { AiOutlinePlus } from "react-icons/ai";
-import { CgSearch } from "react-icons/cg";
+import { useState } from 'react';
+import { AiOutlinePlus } from 'react-icons/ai';
+import { CgSearch } from 'react-icons/cg';
 
-import { AddRegionDialog } from "@/app/components/dashboard/regions/AddRegionDialog";
-import { RegionFormUpdate } from "@/app/components/dashboard/regions/updateRegionDialog";
-import { DeleteRegionDialog } from "@/app/components/dashboard/regions/DeleteRegionDialog";
+import { AddRegionDialog } from '@/app/_components/dashboard/regions/AddRegionDialog';
+import { RegionFormUpdate } from '@/app/_components/dashboard/regions/updateRegionDialog';
+import { DeleteRegionDialog } from '@/app/_components/dashboard/regions/DeleteRegionDialog';
 
-import RegionsTable from "@/app/components/dashboard/regions/RegionsTable";
+import RegionsTable from '@/app/_components/dashboard/regions/RegionsTable';
 
-import { IRegion } from "@/app/features/regions/interface";
-import { UpdateRegionFormValues1 } from "@/app/components/dashboard/regions/schema/RegionUpdate.schema";
+import { IRegion } from '@/app/features/regions/interface';
+import { UpdateRegionFormValues1 } from '@/app/_components/dashboard/regions/schema/RegionUpdate.schema';
 
-import { regionMockData } from "./mockData";
+import { regionMockData } from './mockData';
 
 export default function RegionsPage() {
   const [regions, setRegions] = useState<IRegion[]>(regionMockData);
 
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState('');
 
   const [isAddingRegion, setIsAddingRegion] = useState(false);
   const [isEditingRegion, setIsEditingRegion] = useState(false);
@@ -41,9 +41,7 @@ export default function RegionsPage() {
 
     setRegions((prev) =>
       prev.map((region) =>
-        region.id === selectedRegion.id
-          ? { ...region, ...values }
-          : region,
+        region.id === selectedRegion.id ? { ...region, ...values } : region,
       ),
     );
 
@@ -71,14 +69,12 @@ export default function RegionsPage() {
   return (
     <div className="w-full h-full overflow-y-auto">
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-4 items-center pb-4 pt-6 pr-4">
-
         <h2 className="w-full text-right text-3xl leading-loose font-normal">
           منطقه ها
         </h2>
 
         {/* Search & Add */}
         <div className="block-header w-full flex gap-4 justify-between items-center">
-
           <form
             onSubmit={(e) => e.preventDefault()}
             className="flex w-full items-center gap-2 rounded-lg border border-border bg-[#504e4e52]"
@@ -88,7 +84,6 @@ export default function RegionsPage() {
             </label>
 
             <search className="min-w-0 w-full rounded-lg flex flex-1 border border-border bg-surface focus-within:ring-2 focus-within:ring-action-primary-hover/20">
-
               <input
                 type="search"
                 id="simple-search"
@@ -105,7 +100,6 @@ export default function RegionsPage() {
               >
                 <CgSearch className="text-action-primary text-lg" />
               </button>
-
             </search>
           </form>
 
@@ -116,7 +110,6 @@ export default function RegionsPage() {
             <AiOutlinePlus className="text-white" />
             <span className="text-sm text-white">افزودن منطقه</span>
           </button>
-
         </div>
 
         {/* Regions Table */}
@@ -174,7 +167,6 @@ export default function RegionsPage() {
             className="text-white"
           />
         )}
-
       </div>
     </div>
   );
