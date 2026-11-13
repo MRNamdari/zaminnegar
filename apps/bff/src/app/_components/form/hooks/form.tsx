@@ -1,17 +1,19 @@
-import { createFormHook } from "@tanstack/react-form";
-import SubmitButton from "../components/SubmitButton";
+import { createFormHook } from '@tanstack/react-form';
 
-import {
-  fieldContext,
-  formContext,
-} from "./formContext";
+import { fieldContext, formContext } from './formContext';
+import { NumberField } from '../components/NumberField';
+import { SelectField } from '../components/SelectField';
+import SubmitButton from '../components/SubmitButton';
+import { TextareaField } from '../components/TextareaField';
+import { TextField } from '../components/TextField';
 
-import { TextField } from "../components/TextField";
-import { TextareaField } from "../components/TextareaField";
-import { SelectField } from "../components/SelectField";
-import { NumberField } from "../components/NumberField";
-
-export const { useAppForm, withForm, withFieldGroup, extendForm, useTypedAppFormContext } = createFormHook({
+export const {
+  useAppForm,
+  withForm,
+  withFieldGroup,
+  extendForm,
+  useTypedAppFormContext,
+} = createFormHook({
   fieldContext,
   formContext,
 

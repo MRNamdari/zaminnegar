@@ -6,7 +6,7 @@ z.config(fa());
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import { ToastProvider } from '@/app/components/providers/ToastProvider';
+import { ToastProvider } from '@/app/_components/providers/ToastProvider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

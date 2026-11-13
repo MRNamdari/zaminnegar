@@ -3,7 +3,7 @@
 import { Activity, useRef, useState, type ComponentType } from 'react';
 import type { Draft } from '../domain/lifecycle';
 import { useWorkspaceActions, useWorkspaceState } from './hooks';
-import { Dialog } from '@/app/components/Dialog';
+import { Dialog } from '@/app/_components/Dialog';
 
 export type DraftConfigurationValues<V extends Record<string, unknown>> =
   Readonly<Partial<V>>;

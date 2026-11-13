@@ -1,6 +1,6 @@
-import DashboardNavigation from "../components/dashboard/DashboardNavigation";
-import DashboardHeader from "../components/dashboard/DashboardHeader";
-import { QueryProviders } from "../_lib/QueryProviders";
+import DashboardNavigation from '../_components/dashboard/DashboardNavigation';
+import DashboardHeader from '../_components/dashboard/DashboardHeader';
+import { QueryProviders } from '../_lib/QueryProviders';
 
 export default function DashboardLayout({
   children,

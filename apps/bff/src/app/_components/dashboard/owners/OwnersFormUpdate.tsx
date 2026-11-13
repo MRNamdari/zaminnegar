@@ -1,14 +1,13 @@
-
 'use client';
 
 import { useState } from 'react';
 import { useSelector } from '@tanstack/react-form';
-import { useAppForm } from '@/app/components/form/hooks/form';
-import { Owner } from '@/app/components/dashboard/owners/OwnersTable';
+import { useAppForm } from '@/app/_components/form/hooks/form';
+import { Owner } from '@/app/_components/dashboard/owners/OwnersTable';
 import {
   updateFormOwner,
   UpdateOwnerFormValues,
-} from '@/app/components/dashboard/owners/schemas/OwnersUpdate.schema';
+} from '@/app/_components/dashboard/owners/schemas/OwnersUpdate.schema';
 import { FiTrash2 } from 'react-icons/fi';
 
 interface Props {
@@ -40,9 +39,7 @@ const personalInfoFields = [
   'address',
 ] as const;
 
-const getInitialValues = (
-  owner: Owner,
-): UpdateOwnerFormValues => ({
+const getInitialValues = (owner: Owner): UpdateOwnerFormValues => ({
   name: owner.name,
   fatherName: owner.fatherName,
   nationalCode: owner.nationalCode,
@@ -91,10 +88,7 @@ export default function OwnersFormUpdate({
     (state) => state.values.parcelShares,
   );
 
-  const totalArea = useSelector(
-    form.store,
-    (state) => state.values.totalArea,
-  );
+  const totalArea = useSelector(form.store, (state) => state.values.totalArea);
 
   const parcelCount = useSelector(
     form.store,
@@ -104,9 +98,7 @@ export default function OwnersFormUpdate({
   // محاسبه مساحت کل سهم مالک
   const calculateTotalArea = (parcels: ParcelShare[]) => {
     return parcels.reduce((total, item) => {
-      const parcel = availableParcels.find(
-        (p) => p.id === item.parcelId,
-      );
+      const parcel = availableParcels.find((p) => p.id === item.parcelId);
 
       if (!parcel) return total;
 
@@ -118,10 +110,7 @@ export default function OwnersFormUpdate({
   const updateParcels = (parcels: ParcelShare[]) => {
     form.setFieldValue('parcelShares', parcels);
     form.setFieldValue('parcelCount', parcels.length);
-    form.setFieldValue(
-      'totalArea',
-      calculateTotalArea(parcels),
-    );
+    form.setFieldValue('totalArea', calculateTotalArea(parcels));
   };
 
   // افزودن قطعه
@@ -137,16 +126,11 @@ export default function OwnersFormUpdate({
 
   // حذف قطعه
   const removeParcel = (index: number) => {
-    updateParcels(
-      selectedParcels.filter((_, i) => i !== index),
-    );
+    updateParcels(selectedParcels.filter((_, i) => i !== index));
   };
 
   // تغییر اطلاعات قطعه
-  const updateParcel = (
-    index: number,
-    changes: Partial<ParcelShare>,
-  ) => {
+  const updateParcel = (index: number, changes: Partial<ParcelShare>) => {
     const updated = selectedParcels.map((item, i) =>
       i === index ? { ...item, ...changes } : item,
     );
@@ -157,9 +141,7 @@ export default function OwnersFormUpdate({
   // اعتبارسنجی تمام فیلدهای مرحله اول
   const goToNextStep = async () => {
     await Promise.all(
-      personalInfoFields.map((field) =>
-        form.validateField(field, 'submit'),
-      ),
+      personalInfoFields.map((field) => form.validateField(field, 'submit')),
     );
 
     const hasErrors = personalInfoFields.some((field) => {
@@ -179,9 +161,7 @@ export default function OwnersFormUpdate({
   };
 
   // ثبت نهایی فرم
-  const handleFormSubmit = (
-    e: React.FormEvent<HTMLFormElement>,
-  ) => {
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -321,9 +301,7 @@ export default function OwnersFormUpdate({
               </div>
 
               <div className="rounded-lg border border-border p-3">
-                <p className="mb-1 text-xs text-foreground">
-                  تعداد قطعات
-                </p>
+                <p className="mb-1 text-xs text-foreground">تعداد قطعات</p>
 
                 <p className="text-sm font-medium text-foreground">
                   {parcelCount.toLocaleString('fa-IR')} قطعه
@@ -362,8 +340,7 @@ export default function OwnersFormUpdate({
                   (parcel) =>
                     !selectedParcels.some(
                       (selected, i) =>
-                        selected.parcelId === parcel.id &&
-                        i !== index,
+                        selected.parcelId === parcel.id && i !== index,
                     ),
                 );
 
@@ -423,9 +400,7 @@ export default function OwnersFormUpdate({
 
                     {item.parcelId && (
                       <p className="text-xs text-foreground">
-                        مساحت سهم:{' '}
-                        {shareArea.toLocaleString('fa-IR')}{' '}
-                        متر مربع
+                        مساحت سهم: {shareArea.toLocaleString('fa-IR')} متر مربع
                       </p>
                     )}
                   </div>
@@ -483,4 +458,3 @@ export default function OwnersFormUpdate({
     </form.AppForm>
   );
 }
-  

@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { notFound } from "next/navigation";
-import { useState, use } from "react";
-import { initialOwners } from "@/app/(dashboard)/mockData";
-import { parcelMockData } from "../../parcels/ParcelMockData";
-import { BackButton } from "@/app/components/dashboard/Backbutton";
-import OwnersInformation from "@/app/components/dashboard/owners/OwnersInformation";
+import { notFound } from 'next/navigation';
+import { useState, use } from 'react';
+import { initialOwners } from '@/app/(dashboard)/mockData';
+import { parcelMockData } from '../../parcels/ParcelMockData';
+import { BackButton } from '@/app/_components/dashboard/Backbutton';
+import OwnersInformation from '@/app/_components/dashboard/owners/OwnersInformation';
 import ParcelsTable, {
   Parcel,
-} from "@/app/components/dashboard/parcels/ParcelsTable";
-import type { Owner } from "@/app/components/dashboard/owners/OwnersTable";
-import { Dialog } from "@/app/components/Dialog";
-import ParcelsFormUpdate from "@/app/components/dashboard/parcels/ParcelsFormUpdate";
-import { UpdateParcelFormValues } from "@/app/components/dashboard/parcels/schema/ParcelsUpdate.schema";
+} from '@/app/_components/dashboard/parcels/ParcelsTable';
+import type { Owner } from '@/app/_components/dashboard/owners/OwnersTable';
+import { Dialog } from '@/app/_components/Dialog';
+import ParcelsFormUpdate from '@/app/_components/dashboard/parcels/ParcelsFormUpdate';
+import { UpdateParcelFormValues } from '@/app/_components/dashboard/parcels/schema/ParcelsUpdate.schema';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -88,7 +88,7 @@ export default function OwnerDetailsPage({ params }: Props) {
           <div className="flex items-center">
             <div className="w-15 h-15 bg-slate-400 py-3.5 rounded-full flex items-center justify-center">
               <span className="font-black text-blue-950 -mt-1 text-xl">
-                {owner.name.trim().charAt(0) || "؟"}
+                {owner.name.trim().charAt(0) || '؟'}
               </span>
             </div>
 
@@ -98,9 +98,9 @@ export default function OwnerDetailsPage({ params }: Props) {
 
             <div
               className={`font-normal px-3 py-px rounded-sm ${
-                owner.status === "فعال"
-                  ? "bg-map-green text-surface"
-                  : "bg-surface-muted text-foreground"
+                owner.status === 'فعال'
+                  ? 'bg-map-green text-surface'
+                  : 'bg-surface-muted text-foreground'
               }`}
             >
               {owner.status}

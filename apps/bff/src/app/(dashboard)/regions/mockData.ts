@@ -1,15 +1,15 @@
-import { RegionStatus } from "@/app/components/dashboard/regions/RegionsTable";
+import { RegionStatus } from '@/app/_components/dashboard/regions/RegionsTable';
 
 export const regionMockData = [
   {
-    id: "sdfsdf",
-    createdAt: "",
-    updatedAt: "",
-    description: "i dont have any",
-    name: "TOROQ",
+    id: 'sdfsdf',
+    createdAt: '',
+    updatedAt: '',
+    description: 'i dont have any',
+    name: 'TOROQ',
     status: RegionStatus.INACTIVE,
     territory: {
-      type: "MultiPolygon",
+      type: 'MultiPolygon',
       coordinates: [
         // Polygon 2 (separate island/field)
         [
@@ -23,17 +23,17 @@ export const regionMockData = [
         ],
       ],
     },
-    areaM2: "10222450.45",
+    areaM2: '10222450.45',
   },
   {
-    id: "ssdfmnty",
-    createdAt: "",
-    updatedAt: "",
-    description: "i dont have any",
-    name: "TOROQ2",
+    id: 'ssdfmnty',
+    createdAt: '',
+    updatedAt: '',
+    description: 'i dont have any',
+    name: 'TOROQ2',
     status: RegionStatus.ACTIVE,
     territory: {
-      type: "MultiPolygon",
+      type: 'MultiPolygon',
       coordinates: [
         // Polygon 1 (with a hole)
         [
@@ -56,17 +56,17 @@ export const regionMockData = [
         ],
       ],
     },
-    areaM2: "10222450.45",
+    areaM2: '10222450.45',
   },
   {
-    id: "ssdfmgggnty",
-    createdAt: "",
-    updatedAt: "",
-    description: "i dont have any",
-    name: "TOROQ2",
+    id: 'ssdfmgggnty',
+    createdAt: '',
+    updatedAt: '',
+    description: 'i dont have any',
+    name: 'TOROQ2',
     status: RegionStatus.ACTIVE,
     territory: {
-      type: "MultiPolygon",
+      type: 'MultiPolygon',
       coordinates: [
         // Polygon 1 (with a hole)
         [
@@ -89,17 +89,17 @@ export const regionMockData = [
         ],
       ],
     },
-    areaM2: "10222450.45",
+    areaM2: '10222450.45',
   },
   {
-    id: "ssdfmnasdty",
-    createdAt: "",
-    updatedAt: "",
-    description: "i dont have any",
-    name: "TOROQ2",
+    id: 'ssdfmnasdty',
+    createdAt: '',
+    updatedAt: '',
+    description: 'i dont have any',
+    name: 'TOROQ2',
     status: RegionStatus.ACTIVE,
     territory: {
-      type: "MultiPolygon",
+      type: 'MultiPolygon',
       coordinates: [
         // Polygon 1 (with a hole)
         [
@@ -122,6 +122,6 @@ export const regionMockData = [
         ],
       ],
     },
-    areaM2: "10222450.45",
+    areaM2: '10222450.45',
   },
 ];

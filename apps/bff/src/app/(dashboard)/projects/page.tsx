@@ -2,16 +2,16 @@
 
 import ProjectTable, {
   Project,
-} from '@/app/components/dashboard/projects/ProjectTable';
+} from '@/app/_components/dashboard/projects/ProjectTable';
 import { useState } from 'react';
 import { AiOutlinePlus } from 'react-icons/ai';
 import { CgSearch } from 'react-icons/cg';
 import { projectMockData } from './ProjectMockData';
-import { Dialog } from '@/app/components/Dialog';
-import ProjectFormCreate from '@/app/components/dashboard/projects/ProjectsFormCreate';
-import ProjectsFormUpdate from '@/app/components/dashboard/projects/ProjectsFormUpdate';
-import { UpdateFormProjectValues } from '@/app/components/dashboard/projects/schema/ProjectsUpdate.schema';
-import { ProjectFormValue } from '@/app/components/dashboard/projects/schema/ProjectsCreate.schema';
+import { Dialog } from '@/app/_components/Dialog';
+import ProjectFormCreate from '@/app/_components/dashboard/projects/ProjectsFormCreate';
+import ProjectsFormUpdate from '@/app/_components/dashboard/projects/ProjectsFormUpdate';
+import { UpdateFormProjectValues } from '@/app/_components/dashboard/projects/schema/ProjectsUpdate.schema';
+import { ProjectFormValue } from '@/app/_components/dashboard/projects/schema/ProjectsCreate.schema';
 
 export default function Page() {
   const [searchValue, setSearchValue] = useState('');
@@ -30,10 +30,10 @@ export default function Page() {
       },
       createdAt: new Date(),
       updatedAt: new Date(),
-      regions: "0",
-      blocks: "0",
-      parcels: "0",
-      owners: "0",
+      regions: '0',
+      blocks: '0',
+      parcels: '0',
+      owners: '0',
     };
 
     setProjects((prev) => [...prev, newProject]);
