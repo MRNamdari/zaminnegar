@@ -1,11 +1,16 @@
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn, Relation, Unique } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, OneToOne, PrimaryColumn, Relation, Unique } from 'typeorm';
 import { User } from './user.entity';
 
-/** An opaque bearer session. Only the SHA-256 of the token is stored, so a database leak does not leak sessions. */
+/**
+ * The one active session of a user (`user_id` is unique). Only the SHA-256 of the opaque identifier is stored, so a
+ * database leak does not leak sessions.
+ */
 @Entity({ name: 'sessions' })
+@Unique('uq_sessions__user_id', ['userId'])
 @Unique('uq_sessions__token_hash', ['tokenHash'])
-@Index('ix_sessions__user_id', ['userId'])
-@Index('ix_sessions__expires_at', ['expiresAt'])
+@Index('ix_sessions__previous_token_hash', ['previousTokenHash'])
+@Index('ix_sessions__idle_expires_at', ['idleExpiresAt'])
+@Index('ix_sessions__absolute_expires_at', ['absoluteExpiresAt'])
 export class Session {
   @PrimaryColumn({ type: 'uuid', name: 'id', primaryKeyConstraintName: 'pk_sessions', default: () => 'gen_random_uuid()' })
   id!: string;
@@ -16,19 +21,32 @@ export class Session {
   @Column({ type: 'varchar', length: 64, name: 'token_hash' })
   tokenHash!: string;
 
-  @Column({ type: 'timestamptz', name: 'expires_at' })
-  expiresAt!: Date;
+  /** The identifier before the last rotation; accepted for a short grace period only. */
+  @Column({ type: 'varchar', length: 64, name: 'previous_token_hash', nullable: true })
+  previousTokenHash!: string | null;
+
+  @Column({ type: 'timestamptz', name: 'rotated_at', default: () => 'now()' })
+  rotatedAt!: Date;
 
   @Column({ type: 'timestamptz', name: 'last_used_at', default: () => 'now()' })
   lastUsedAt!: Date;
 
+  @Column({ type: 'timestamptz', name: 'idle_expires_at' })
+  idleExpiresAt!: Date;
+
+  @Column({ type: 'timestamptz', name: 'absolute_expires_at' })
+  absoluteExpiresAt!: Date;
+
   @Column({ type: 'varchar', length: 500, name: 'user_agent', nullable: true })
   userAgent!: string | null;
+
+  @Column({ type: 'varchar', length: 45, name: 'ip', nullable: true })
+  ip!: string | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz', default: () => 'now()' })
   createdAt!: Date;
 
-  @ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
+  @OneToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({
     name: 'user_id',
     referencedColumnName: 'id',

@@ -1,17 +1,34 @@
-import { Column, CreateDateColumn, Entity, Index, PrimaryColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn, Relation } from 'typeorm';
+import { User } from './user.entity';
 
-/** A sent one-time code. Only its keyed HMAC is stored. Rows are single-use, short-lived and purged after a day. */
+export enum OtpPurpose {
+  registration = 'registration',
+  passwordReset = 'password_reset',
+}
+
+/**
+ * A one-time code. Only its keyed HMAC is stored. Rows are single-use and short-lived, and are also written for
+ * requests that name no real account (nothing is sent for those), so limits and error behaviour look identical
+ * whether or not the account exists. Purged after a day.
+ */
 @Entity({ name: 'otp_challenges' })
-@Index('ix_otp_challenges__phone_created_at', ['phone', 'createdAt'])
+@Index('ix_otp_challenges__subject_key_created_at', ['subjectKey', 'createdAt'])
 @Index('ix_otp_challenges__ip_created_at', ['ip', 'createdAt'])
 @Index('ix_otp_challenges__created_at', ['createdAt'])
 export class OtpChallenge {
   @PrimaryColumn({ type: 'uuid', name: 'id', primaryKeyConstraintName: 'pk_otp_challenges', default: () => 'gen_random_uuid()' })
   id!: string;
 
-  /** E.164, e.g. `+989123456789`. */
-  @Column({ type: 'varchar', length: 13, name: 'phone' })
-  phone!: string;
+  /** What the rate limits are counted on: the E.164 phone, or `username:<name>` when no phone is known. */
+  @Column({ type: 'varchar', length: 80, name: 'subject_key' })
+  subjectKey!: string;
+
+  @Column({ type: 'enum', enum: OtpPurpose, enumName: 'otp_purpose', name: 'purpose' })
+  purpose!: OtpPurpose;
+
+  /** The account the code was issued for; null for decoys, which can never succeed. */
+  @Column({ type: 'uuid', name: 'user_id', nullable: true })
+  userId!: string | null;
 
   @Column({ type: 'varchar', length: 64, name: 'code_hash' })
   codeHash!: string;
@@ -31,4 +48,13 @@ export class OtpChallenge {
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz', default: () => 'now()' })
   createdAt!: Date;
+
+  /** SET NULL, not CASCADE: deleting a pending registration must not erase the rate-limit history. */
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({
+    name: 'user_id',
+    referencedColumnName: 'id',
+    foreignKeyConstraintName: 'fk_otp_challenges__user_id__users',
+  })
+  user?: Relation<User> | null;
 }

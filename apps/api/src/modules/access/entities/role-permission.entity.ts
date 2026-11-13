@@ -1,5 +1,6 @@
 import { Entity, JoinColumn, ManyToOne, PrimaryColumn, Relation } from 'typeorm';
 import { Action, Resource } from '../permissions';
+import { Permission } from './permission.entity';
 import { Role } from './role.entity';
 
 @Entity({ name: 'role_permissions' })
@@ -20,4 +21,19 @@ export class RolePermission {
     foreignKeyConstraintName: 'fk_role_permissions__role_id__roles',
   })
   role?: Relation<Role>;
+
+  @ManyToOne(() => Permission, { nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn([
+    {
+      name: 'resource',
+      referencedColumnName: 'resource',
+      foreignKeyConstraintName: 'fk_role_permissions__resource_action__permissions',
+    },
+    {
+      name: 'action',
+      referencedColumnName: 'action',
+      foreignKeyConstraintName: 'fk_role_permissions__resource_action__permissions',
+    },
+  ])
+  permission?: Relation<Permission>;
 }
