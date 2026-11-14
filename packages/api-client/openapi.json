@@ -448,6 +448,91 @@
         ]
       }
     },
+    "/auth/session/project": {
+      "put": {
+        "description": "Records and parcels are created in the active project. It is empty after every login, and cleared if the project is deleted.",
+        "operationId": "ActiveProjectController_setActiveProject",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetActiveProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActiveProjectResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session (`NOT_AUTHENTICATED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing permission (`PERMISSION_DENIED`, `PRIVILEGE_ESCALATION`, `FIELD_NOT_WRITABLE`) or rejected origin (`ORIGIN_NOT_ALLOWED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such project, or not one of yours (`PROJECT_NOT_FOUND`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Choose the active project of this session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/users": {
       "get": {
         "operationId": "UsersController_list",
@@ -2201,6 +2286,16 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "No active project selected (`NO_ACTIVE_PROJECT`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2506,6 +2601,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BlockResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No active project selected (`NO_ACTIVE_PROJECT`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -2823,6 +2928,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ParcelResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No active project selected (`NO_ACTIVE_PROJECT`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -3281,6 +3396,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OwnerResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No active project selected (`NO_ACTIVE_PROJECT`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -3897,6 +4022,12 @@
             "format": "email",
             "nullable": true
           },
+          "activeProjectId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "The project chosen with PUT /auth/session/project; null until chosen"
+          },
           "systemRole": {
             "nullable": true,
             "type": "object",
@@ -3925,6 +4056,7 @@
           "username",
           "phone",
           "email",
+          "activeProjectId",
           "systemRole",
           "systemPermissions",
           "memberships"
@@ -3968,6 +4100,31 @@
           "identifier",
           "code",
           "newPassword"
+        ]
+      },
+      "SetActiveProjectDto": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "A project you are a member of (or can read at system level)"
+          }
+        },
+        "required": [
+          "projectId"
+        ]
+      },
+      "ActiveProjectResponseDto": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "projectId"
         ]
       },
       "PaginatedResponseDto": {
@@ -4554,10 +4711,6 @@
       "CreateRegionDto": {
         "type": "object",
         "properties": {
-          "projectId": {
-            "type": "string",
-            "format": "uuid"
-          },
           "name": {
             "type": "string",
             "maxLength": 200
@@ -4639,7 +4792,6 @@
           }
         },
         "required": [
-          "projectId",
           "name"
         ]
       },
@@ -5051,10 +5203,6 @@
       "CreateBlockDto": {
         "type": "object",
         "properties": {
-          "projectId": {
-            "type": "string",
-            "format": "uuid"
-          },
           "name": {
             "type": "string",
             "maxLength": 200
@@ -5136,7 +5284,6 @@
           }
         },
         "required": [
-          "projectId",
           "name"
         ]
       },
@@ -5304,10 +5451,6 @@
       "CreateParcelDto": {
         "type": "object",
         "properties": {
-          "projectId": {
-            "type": "string",
-            "format": "uuid"
-          },
           "name": {
             "type": "string",
             "maxLength": 200,
@@ -5386,7 +5529,6 @@
           }
         },
         "required": [
-          "projectId",
           "name"
         ]
       },
@@ -5732,10 +5874,6 @@
       "CreateOwnerDto": {
         "type": "object",
         "properties": {
-          "projectId": {
-            "type": "string",
-            "format": "uuid"
-          },
           "name": {
             "type": "string",
             "maxLength": 200
@@ -5768,7 +5906,6 @@
           }
         },
         "required": [
-          "projectId",
           "name",
           "nationalId",
           "status"

@@ -7,6 +7,7 @@ import { AbilityFactory } from './abilities/ability.factory';
 import { AccessPolicyService } from './abilities/access-policy.service';
 import { ACCESS_CONFIG, loadAccessConfig, type AccessConfig } from './access.config';
 import { AccessCommandHandlers } from './commands';
+import { ActiveProjectController } from './controllers/active-project.controller';
 import { AuthController } from './controllers/auth.controller';
 import { PermissionsController } from './controllers/permissions.controller';
 import { ProjectMembersController } from './controllers/project-members.controller';
@@ -50,6 +51,7 @@ import { SmsGateway } from './sms/sms.gateway';
   imports: [CqrsModule, TypeOrmModule.forFeature([User, Role, Permission, RolePermission, ProjectMember, Session, OtpChallenge])],
   controllers: [
     AuthController,
+    ActiveProjectController,
     UsersController,
     PermissionsController,
     SystemRolesController,

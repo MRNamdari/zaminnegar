@@ -10,10 +10,6 @@ interface CreateDtoShape {
 }
 
 export class CreateRegionDto {
-  @ApiProperty({ format: 'uuid' })
-  @IsUUID()
-  projectId!: string;
-
   @ApiProperty({ maxLength: 200 })
   @IsString()
   @IsNotEmpty()

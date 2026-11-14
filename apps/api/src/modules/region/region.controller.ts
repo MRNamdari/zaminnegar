@@ -10,7 +10,8 @@ import {
 import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
 import { PaginatedResult } from '../../common/utils/paginate';
-import { ApiSessionAuth, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import { ActiveProjectId, ApiSessionAuth, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import { ApiErrorResponse } from '../access/decorators/api-error-responses.decorator';
 import { Action, Resource } from '../access/permissions';
 import { ParcelResponseDto } from '../parcel/dto/parcel-response.dto';
 import { ListRegionParcelsQuery } from '../parcel/queries/list-region-parcels.query';
@@ -37,15 +38,16 @@ export class RegionController {
   ) {}
 
   @Post()
-  @RequirePermission(Resource.region, Action.create, { scope: 'body' })
+  @RequirePermission(Resource.region, Action.create, { scope: 'active' })
   @ApiOperation({
     summary: 'Create a region',
     description: 'Send geometry, or the boundaryId of a finished draft',
   })
   @ApiCreatedResponse({ type: RegionResponseDto })
-  async create(@Body() dto: CreateRegionDto): Promise<RegionResponseDto> {
+  @ApiErrorResponse(409, 'No active project selected (`NO_ACTIVE_PROJECT`)')
+  async create(@Body() dto: CreateRegionDto, @ActiveProjectId() projectId: string): Promise<RegionResponseDto> {
     const entity = await this.commandBus.execute<CreateRegionCommand, Region>(
-      new CreateRegionCommand(dto as CreateRegionInput),
+      new CreateRegionCommand({ ...dto, projectId } as CreateRegionInput),
     );
     return RegionResponseDto.from(entity);
   }

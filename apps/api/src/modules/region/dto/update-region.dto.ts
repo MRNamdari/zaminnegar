@@ -1,4 +1,4 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { CreateRegionDto } from './create-region.dto';
 
-export class UpdateRegionDto extends PartialType(OmitType(CreateRegionDto, ['projectId', 'boundaryId'] as const)) {}
+export class UpdateRegionDto extends PartialType(OmitType(CreateRegionDto, ['boundaryId'] as const)) {}

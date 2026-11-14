@@ -10,7 +10,8 @@ import {
 import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
 import { PaginatedResult } from '../../common/utils/paginate';
-import { ApiSessionAuth, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import { ActiveProjectId, ApiSessionAuth, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import { ApiErrorResponse } from '../access/decorators/api-error-responses.decorator';
 import { Action, Resource } from '../access/permissions';
 import { ParcelResponseDto } from '../parcel/dto/parcel-response.dto';
 import { ListBlockParcelsQuery } from '../parcel/queries/list-block-parcels.query';
@@ -37,16 +38,17 @@ export class BlockController {
   ) {}
 
   @Post()
-  @RequirePermission(Resource.block, Action.create, { scope: 'body' })
+  @RequirePermission(Resource.block, Action.create, { scope: 'active' })
   @ApiOperation({
     summary: 'Create a block',
     description:
       'Send geometry, or the boundaryId of a finished draft. The region is not sent: it is the region of the project that contains the block outline.',
   })
   @ApiCreatedResponse({ type: BlockResponseDto })
-  async create(@Body() dto: CreateBlockDto): Promise<BlockResponseDto> {
+  @ApiErrorResponse(409, 'No active project selected (`NO_ACTIVE_PROJECT`)')
+  async create(@Body() dto: CreateBlockDto, @ActiveProjectId() projectId: string): Promise<BlockResponseDto> {
     const entity = await this.commandBus.execute<CreateBlockCommand, Block>(
-      new CreateBlockCommand(dto as CreateBlockInput),
+      new CreateBlockCommand({ ...dto, projectId } as CreateBlockInput),
     );
     return BlockResponseDto.from(entity);
   }

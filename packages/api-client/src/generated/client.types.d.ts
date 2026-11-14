@@ -97,6 +97,10 @@ export namespace Schemas {
     username: string;
     phone: string;
     email: string | null;
+    /**
+     * The project chosen with PUT /auth/session/project; null until chosen
+     */
+    activeProjectId: string | null;
     systemRole: (RoleSummaryDto & (Record<string, unknown> | null)) | null;
     /**
      * Granted on every project
@@ -118,6 +122,13 @@ export namespace Schemas {
     code: string;
     newPassword: string;
   };
+  export type SetActiveProjectDto = {
+    /**
+     * A project you are a member of (or can read at system level)
+     */
+    projectId: string;
+  };
+  export type ActiveProjectResponseDto = { projectId: string };
   export type PaginatedResponseDto = {
     items: Array<Record<string, unknown>>;
     /**
@@ -260,7 +271,6 @@ export namespace Schemas {
   }>;
   export type RegionStatus = "active" | "inactive";
   export type CreateRegionDto = {
-    projectId: string;
     name: string;
     description?: string;
     status?: RegionStatus;
@@ -284,10 +294,6 @@ export namespace Schemas {
      * Geodesic area in square meters
      */
     areaM2: number;
-    /**
-     * Geodesic area in square meters
-     */
-    areaM2: number;
     createdAt: Date;
     updatedAt: Date;
     /**
@@ -298,24 +304,7 @@ export namespace Schemas {
      * Number of parcels in the region. Only present in list responses
      */
     parcelsCount?: number;
-    /**
-     * Number of blocks in the region. Only present in list responses
-     */
-    blocksCount?: number;
-    /**
-     * Number of parcels in the region. Only present in list responses
-     */
-    parcelsCount?: number;
   };
-  export type BlockStatus = "active" | "inactive";
-  export type BlockResponseDto = {
-    id: string;
-    projectId: string;
-    /**
-     * Derived from the block outline by the database
-     */
-    regionId: string;
-    boundaryId: string;
   export type BlockStatus = "active" | "inactive";
   export type BlockResponseDto = {
     id: string;
@@ -328,19 +317,7 @@ export namespace Schemas {
     name: string;
     description: string;
     status: BlockStatus;
-    status: BlockStatus;
     /**
-     * Geodesic area in square meters
-     */
-    areaM2: number;
-    createdAt: Date;
-    updatedAt: Date;
-    /**
-     * Number of parcels in the block. Only present in list responses
-     */
-    parcelsCount?: number;
-    region?: RegionResponseDto;
-  };
      * Geodesic area in square meters
      */
     areaM2: number;
@@ -359,13 +336,7 @@ export namespace Schemas {
     /**
      * Derived from the parcel outline by the database
      */
-    /**
-     * Derived from the parcel outline by the database
-     */
     regionId: string;
-    /**
-     * Derived from the parcel outline by the database; null when no block contains the parcel
-     */
     /**
      * Derived from the parcel outline by the database; null when no block contains the parcel
      */
@@ -385,7 +356,6 @@ export namespace Schemas {
      * % of the block this parcel occupies
      */
     blockOccupancyPct?: number | null;
-    blockOccupancyPct?: number | null;
     createdAt: Date;
     updatedAt: Date;
     /**
@@ -397,17 +367,7 @@ export namespace Schemas {
      * Only present in list responses; null when the parcel is in no block
      */
     block?: (BlockResponseDto & (Record<string, unknown> | null)) | null;
-    /**
-     * Number of owners holding a share. Only present in list responses
-     */
-    ownershipsCount?: number;
-    region?: RegionResponseDto;
-    /**
-     * Only present in list responses; null when the parcel is in no block
-     */
-    block?: (BlockResponseDto & (Record<string, unknown> | null)) | null;
   };
-  export type RegionDetailResponseDto = {
   export type RegionDetailResponseDto = {
     id: string;
     projectId: string;
@@ -419,24 +379,8 @@ export namespace Schemas {
      * Geodesic area in square meters
      */
     areaM2: number;
-    /**
-     * Geodesic area in square meters
-     */
-    areaM2: number;
     createdAt: Date;
     updatedAt: Date;
-    /**
-     * Number of blocks in the region. Only present in list responses
-     */
-    blocksCount?: number;
-    /**
-     * Number of parcels in the region. Only present in list responses
-     */
-    parcelsCount?: number;
-    project: ProjectResponseDto;
-    boundary: BoundaryResponseDto;
-    blocks: Array<BlockResponseDto>;
-    parcels: Array<ParcelResponseDto>;
     /**
      * Number of blocks in the region. Only present in list responses
      */
@@ -459,17 +403,7 @@ export namespace Schemas {
      */
     geometry: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
   }>;
-  export type UpdateRegionDto = Partial<{
-    name: string;
-    description: string;
-    status: RegionStatus;
-    /**
-     * GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
-     */
-    geometry: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
-  }>;
   export type CreateBlockDto = {
-    projectId: string;
     name: string;
     description?: string;
     status?: BlockStatus;
@@ -483,12 +417,8 @@ export namespace Schemas {
     geometry?: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
   };
   export type BlockDetailResponseDto = {
-  export type BlockDetailResponseDto = {
     id: string;
     projectId: string;
-    /**
-     * Derived from the block outline by the database
-     */
     /**
      * Derived from the block outline by the database
      */
@@ -501,20 +431,8 @@ export namespace Schemas {
      * Geodesic area in square meters
      */
     areaM2: number;
-    /**
-     * Geodesic area in square meters
-     */
-    areaM2: number;
     createdAt: Date;
     updatedAt: Date;
-    /**
-     * Number of parcels in the block. Only present in list responses
-     */
-    parcelsCount?: number;
-    project: ProjectResponseDto;
-    region: RegionResponseDto;
-    boundary: BoundaryResponseDto;
-    parcels: Array<ParcelResponseDto>;
     /**
      * Number of parcels in the block. Only present in list responses
      */
@@ -534,7 +452,6 @@ export namespace Schemas {
     geometry: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
   }>;
   export type CreateParcelDto = {
-    projectId: string;
     name: string;
     status?: ParcelStatus;
     /**
@@ -554,7 +471,7 @@ export namespace Schemas {
     email?: string | null;
     notes?: string | null;
     nationalId: string;
-    status: "active" | "inactive" | "pending";
+    status: string;
     createdAt: Date;
     updatedAt: Date;
   };
@@ -566,52 +483,6 @@ export namespace Schemas {
     updatedAt: Date;
     owner: OwnerResponseDto;
   };
-  export type ParcelDetailResponseDto = {
-    id: string;
-    projectId: string;
-    /**
-     * Derived from the parcel outline by the database
-     */
-    regionId: string;
-    /**
-     * Derived from the parcel outline by the database; null when no block contains the parcel
-     */
-    blockId?: string | null;
-    boundaryId: string;
-    name: string;
-    status: ParcelStatus;
-    /**
-     * Geodesic area in square meters
-     */
-    areaM2: number;
-    /**
-     * % of the region this parcel occupies
-     */
-    regionOccupancyPct: number;
-    /**
-     * % of the block this parcel occupies
-     */
-    blockOccupancyPct?: number | null;
-    createdAt: Date;
-    updatedAt: Date;
-    /**
-     * Number of owners holding a share. Only present in list responses
-     */
-    ownershipsCount?: number;
-    project: ProjectResponseDto;
-    region: RegionResponseDto;
-    block: (BlockResponseDto & (Record<string, unknown> | null)) | null;
-    boundary: BoundaryResponseDto;
-    ownerships: Array<OwnershipWithOwnerResponseDto>;
-  };
-  export type UpdateParcelDto = Partial<{
-    name: string;
-    status: ParcelStatus;
-    /**
-     * GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
-     */
-    geometry: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
-  }>;
   export type ParcelDetailResponseDto = {
     id: string;
     projectId: string;
@@ -682,7 +553,6 @@ export namespace Schemas {
     sharePct: number;
   };
   export type CreateOwnerDto = {
-    projectId: string;
     name: string;
     phone?: string | null;
     email?: string | null;
@@ -826,6 +696,25 @@ export namespace Endpoints {
       204: unknown;
       400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
       429: Schemas.ErrorResponseDto;
+    };
+  };
+  /**
+   * Records and parcels are created in the active project. It is empty after every login, and cleared if the project is deleted.
+   */
+  export type put_ActiveProjectController_setActiveProject = {
+    method: "PUT";
+    path: "/auth/session/project";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: {
+      body: Schemas.SetActiveProjectDto;
+    };
+    responses: {
+      200: Schemas.ActiveProjectResponseDto;
+      400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
+      401: Schemas.ErrorResponseDto;
+      403: Schemas.ErrorResponseDto;
+      404: Schemas.ErrorResponseDto;
     };
   };
   export type get_UsersController_list = {
@@ -1197,11 +1086,8 @@ export namespace Endpoints {
     parameters: {
       body: Schemas.CreateRegionDto;
     };
-    responses: { 201: Schemas.RegionResponseDto };
+    responses: { 201: Schemas.RegionResponseDto; 409: Schemas.ErrorResponseDto };
   };
-  /**
-   * Each region carries the number of blocks and parcels it contains
-   */
   /**
    * Each region carries the number of blocks and parcels it contains
    */
@@ -1257,16 +1143,6 @@ export namespace Endpoints {
     };
     responses: { 200: Schemas.RegionDetailResponseDto };
   };
-  export type get_RegionController_getDetail = {
-    method: "GET";
-    path: "/regions/{id}/detail";
-    requestFormat: "json";
-    responseFormat: "json";
-    parameters: {
-      path: { id: string };
-    };
-    responses: { 200: Schemas.RegionDetailResponseDto };
-  };
   export type get_RegionController_listParcels = {
     method: "GET";
     path: "/regions/{id}/parcels";
@@ -1276,10 +1152,8 @@ export namespace Endpoints {
       path: { id: string };
     };
     responses: { 200: Array<Schemas.ParcelResponseDto> };
-    responses: { 200: Array<Schemas.ParcelResponseDto> };
   };
   /**
-   * Send geometry, or the boundaryId of a finished draft. The region is not sent: it is the region of the project that contains the block outline.
    * Send geometry, or the boundaryId of a finished draft. The region is not sent: it is the region of the project that contains the block outline.
    */
   export type post_BlockController_create = {
@@ -1290,11 +1164,8 @@ export namespace Endpoints {
     parameters: {
       body: Schemas.CreateBlockDto;
     };
-    responses: { 201: Schemas.BlockResponseDto };
+    responses: { 201: Schemas.BlockResponseDto; 409: Schemas.ErrorResponseDto };
   };
-  /**
-   * Each block carries its region and the number of parcels it contains
-   */
   /**
    * Each block carries its region and the number of parcels it contains
    */
@@ -1357,16 +1228,6 @@ export namespace Endpoints {
     };
     responses: { 200: Schemas.BlockDetailResponseDto };
   };
-  export type get_BlockController_getDetail = {
-    method: "GET";
-    path: "/blocks/{id}/detail";
-    requestFormat: "json";
-    responseFormat: "json";
-    parameters: {
-      path: { id: string };
-    };
-    responses: { 200: Schemas.BlockDetailResponseDto };
-  };
   export type get_BlockController_listParcels = {
     method: "GET";
     path: "/blocks/{id}/parcels";
@@ -1376,10 +1237,8 @@ export namespace Endpoints {
       path: { id: string };
     };
     responses: { 200: Array<Schemas.ParcelResponseDto> };
-    responses: { 200: Array<Schemas.ParcelResponseDto> };
   };
   /**
-   * Send geometry, or the boundaryId of a finished draft. Region and block are not sent: they are the region and block that contain the parcel outline.
    * Send geometry, or the boundaryId of a finished draft. Region and block are not sent: they are the region and block that contain the parcel outline.
    */
   export type post_ParcelController_create = {
@@ -1390,11 +1249,8 @@ export namespace Endpoints {
     parameters: {
       body: Schemas.CreateParcelDto;
     };
-    responses: { 201: Schemas.ParcelResponseDto };
+    responses: { 201: Schemas.ParcelResponseDto; 409: Schemas.ErrorResponseDto };
   };
-  /**
-   * Each parcel carries its region, its block (or null) and the number of owners holding a share
-   */
   /**
    * Each parcel carries its region, its block (or null) and the number of owners holding a share
    */
@@ -1458,16 +1314,6 @@ export namespace Endpoints {
     };
     responses: { 200: Schemas.ParcelDetailResponseDto };
   };
-  export type get_ParcelController_getDetail = {
-    method: "GET";
-    path: "/parcels/{id}/detail";
-    requestFormat: "json";
-    responseFormat: "json";
-    parameters: {
-      path: { id: string };
-    };
-    responses: { 200: Schemas.ParcelDetailResponseDto };
-  };
   export type get_ParcelController_listOwners = {
     method: "GET";
     path: "/parcels/{id}/owners";
@@ -1520,7 +1366,7 @@ export namespace Endpoints {
     parameters: {
       body: Schemas.CreateOwnerDto;
     };
-    responses: { 201: Schemas.OwnerResponseDto };
+    responses: { 201: Schemas.OwnerResponseDto; 409: Schemas.ErrorResponseDto };
   };
   export type get_OwnerController_list = {
     method: "GET";
@@ -1614,21 +1460,21 @@ export type EndpointByMethod = {
     "/regions": Endpoints.get_RegionController_list;
     "/regions/{id}": Endpoints.get_RegionController_get;
     "/regions/{id}/detail": Endpoints.get_RegionController_getDetail;
-    "/regions/{id}/detail": Endpoints.get_RegionController_getDetail;
     "/regions/{id}/parcels": Endpoints.get_RegionController_listParcels;
     "/blocks": Endpoints.get_BlockController_list;
     "/blocks/{id}": Endpoints.get_BlockController_get;
-    "/blocks/{id}/detail": Endpoints.get_BlockController_getDetail;
     "/blocks/{id}/detail": Endpoints.get_BlockController_getDetail;
     "/blocks/{id}/parcels": Endpoints.get_BlockController_listParcels;
     "/parcels": Endpoints.get_ParcelController_list;
     "/parcels/{id}": Endpoints.get_ParcelController_get;
     "/parcels/{id}/detail": Endpoints.get_ParcelController_getDetail;
-    "/parcels/{id}/detail": Endpoints.get_ParcelController_getDetail;
     "/parcels/{id}/owners": Endpoints.get_ParcelController_listOwners;
     "/owners": Endpoints.get_OwnerController_list;
     "/owners/{id}": Endpoints.get_OwnerController_get;
     "/owners/{id}/parcels": Endpoints.get_OwnerController_listParcels;
+  };
+  put: {
+    "/auth/session/project": Endpoints.put_ActiveProjectController_setActiveProject;
   };
   patch: {
     "/users/{id}": Endpoints.patch_UsersController_update;
@@ -1660,6 +1506,7 @@ export type EndpointByMethod = {
 // <EndpointByMethod.Shorthands>
 export type PostEndpoints = EndpointByMethod["post"];
 export type GetEndpoints = EndpointByMethod["get"];
+export type PutEndpoints = EndpointByMethod["put"];
 export type PatchEndpoints = EndpointByMethod["patch"];
 export type DeleteEndpoints = EndpointByMethod["delete"];
 // </EndpointByMethod.Shorthands>

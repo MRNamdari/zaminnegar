@@ -6,15 +6,10 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUUID,
   MaxLength,
 } from 'class-validator';
 
 export class CreateOwnerDto {
-  @ApiProperty({ format: 'uuid' })
-  @IsUUID()
-  projectId!: string;
-
   @ApiProperty({ maxLength: 200 })
   @IsString()
   @IsNotEmpty()

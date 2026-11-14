@@ -1,7 +1,8 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiSessionAuth, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import { ActiveProjectId, ApiSessionAuth, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import { ApiErrorResponse } from '../access/decorators/api-error-responses.decorator';
 import { Action, Resource } from '../access/permissions';
 import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
@@ -38,16 +39,17 @@ export class ParcelController {
   ) {}
 
   @Post()
-  @RequirePermission(Resource.parcel, Action.create, { scope: 'body' })
+  @RequirePermission(Resource.parcel, Action.create, { scope: 'active' })
   @ApiOperation({
     summary: 'Create a parcel',
     description:
       'Send geometry, or the boundaryId of a finished draft. Region and block are not sent: they are the region and block that contain the parcel outline.',
   })
   @ApiCreatedResponse({ type: ParcelResponseDto })
-  async create(@Body() dto: CreateParcelDto): Promise<ParcelResponseDto> {
+  @ApiErrorResponse(409, 'No active project selected (`NO_ACTIVE_PROJECT`)')
+  async create(@Body() dto: CreateParcelDto, @ActiveProjectId() projectId: string): Promise<ParcelResponseDto> {
     const parcel = await this.commandBus.execute<CreateParcelCommand, Parcel>(
-      new CreateParcelCommand(dto as CreateParcelInput),
+      new CreateParcelCommand({ ...dto, projectId } as CreateParcelInput),
     );
     return ParcelResponseDto.from(parcel);
   }

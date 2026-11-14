@@ -22,10 +22,6 @@ interface CreateDtoShape {
 }
 
 export class CreateParcelDto {
-  @ApiProperty({ format: 'uuid' })
-  @IsUUID()
-  projectId!: string;
-
   @ApiProperty({ maxLength: 200, minLength: 1 })
   @IsString()
   @IsNotEmpty()

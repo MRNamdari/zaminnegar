@@ -148,6 +148,11 @@ export const CurrentUserResponseDto = z.strictObject({
   username: z.string(),
   phone: z.string(),
   email: z.email().nullable(),
+  activeProjectId: z
+    .uuid()
+    .describe("The project chosen with PUT /auth/session/project; null until chosen")
+    .nullable()
+    .describe("The project chosen with PUT /auth/session/project; null until chosen"),
   systemRole: RoleSummaryDto.and(z.record(z.string(), z.unknown()).nullable()).nullable(),
   systemPermissions: z.array(PermissionDto).describe("Granted on every project"),
   memberships: z.array(CurrentMembershipDto),
@@ -164,6 +169,14 @@ export const ResetPasswordDto = z.strictObject({
   code: z.string().regex(new RegExp("^[0-9]{6}$")),
   newPassword: z.string().min(10).max(128),
 });
+
+export type SetActiveProjectDto = __TypedOpenapi.Schemas.SetActiveProjectDto;
+export const SetActiveProjectDto = z.strictObject({
+  projectId: z.uuid().describe("A project you are a member of (or can read at system level)"),
+});
+
+export type ActiveProjectResponseDto = __TypedOpenapi.Schemas.ActiveProjectResponseDto;
+export const ActiveProjectResponseDto = z.strictObject({ projectId: z.uuid() });
 
 export type PaginatedResponseDto = __TypedOpenapi.Schemas.PaginatedResponseDto;
 export const PaginatedResponseDto = z.strictObject({
@@ -387,7 +400,6 @@ export const RegionStatus = z.enum(["active", "inactive"]);
 
 export type CreateRegionDto = __TypedOpenapi.Schemas.CreateRegionDto;
 export const CreateRegionDto = z.strictObject({
-  projectId: z.uuid(),
   name: z.string().max(200),
   description: z.string().default(""),
   status: RegionStatus.optional(),
@@ -547,7 +559,6 @@ export const UpdateRegionDto = z
 
 export type CreateBlockDto = __TypedOpenapi.Schemas.CreateBlockDto;
 export const CreateBlockDto = z.strictObject({
-  projectId: z.uuid(),
   name: z.string().max(200),
   description: z.string().default(""),
   status: BlockStatus.optional(),
@@ -607,7 +618,6 @@ export const UpdateBlockDto = z
 
 export type CreateParcelDto = __TypedOpenapi.Schemas.CreateParcelDto;
 export const CreateParcelDto = z.strictObject({
-  projectId: z.uuid(),
   name: z.string().min(1).max(200),
   status: ParcelStatus.optional(),
   boundaryId: z.uuid().describe("Existing draft boundary to use instead of geometry").optional(),
@@ -752,7 +762,6 @@ export const UpdateOwnershipDto = z.strictObject({
 
 export type CreateOwnerDto = __TypedOpenapi.Schemas.CreateOwnerDto;
 export const CreateOwnerDto = z.strictObject({
-  projectId: z.uuid(),
   name: z.string().max(200),
   phone: z.string().max(50).nullable().optional(),
   email: z.string().max(320).nullable().optional(),
@@ -929,6 +938,30 @@ export const post_AuthController_resetPassword = {
         { message: "oneOf" },
       ),
     429: ErrorResponseDto,
+  },
+};
+
+export type put_ActiveProjectController_setActiveProject =
+  __TypedOpenapi.Endpoints.put_ActiveProjectController_setActiveProject;
+export const put_ActiveProjectController_setActiveProject = {
+  method: z.literal("PUT"),
+  path: z.literal("/auth/session/project"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { body: SetActiveProjectDto },
+  responses: {
+    200: ActiveProjectResponseDto,
+    400: z
+      .union([ValidationErrorResponseDto, ErrorResponseDto])
+      .refine(
+        (data) =>
+          [ValidationErrorResponseDto.safeParse(data).success, ErrorResponseDto.safeParse(data).success].filter(Boolean)
+            .length === 1,
+        { message: "oneOf" },
+      ),
+    401: ErrorResponseDto,
+    403: ErrorResponseDto,
+    404: ErrorResponseDto,
   },
 };
 
@@ -1372,7 +1405,7 @@ export const post_RegionController_create = {
   requestFormat: z.literal("json"),
   responseFormat: z.literal("json"),
   parameters: { body: CreateRegionDto },
-  responses: { 201: RegionResponseDto },
+  responses: { 201: RegionResponseDto, 409: ErrorResponseDto },
 };
 
 export type get_RegionController_list = __TypedOpenapi.Endpoints.get_RegionController_list;
@@ -1453,7 +1486,7 @@ export const post_BlockController_create = {
   requestFormat: z.literal("json"),
   responseFormat: z.literal("json"),
   parameters: { body: CreateBlockDto },
-  responses: { 201: BlockResponseDto },
+  responses: { 201: BlockResponseDto, 409: ErrorResponseDto },
 };
 
 export type get_BlockController_list = __TypedOpenapi.Endpoints.get_BlockController_list;
@@ -1535,7 +1568,7 @@ export const post_ParcelController_create = {
   requestFormat: z.literal("json"),
   responseFormat: z.literal("json"),
   parameters: { body: CreateParcelDto },
-  responses: { 201: ParcelResponseDto },
+  responses: { 201: ParcelResponseDto, 409: ErrorResponseDto },
 };
 
 export type get_ParcelController_list = __TypedOpenapi.Endpoints.get_ParcelController_list;
@@ -1648,7 +1681,7 @@ export const post_OwnerController_create = {
   requestFormat: z.literal("json"),
   responseFormat: z.literal("json"),
   parameters: { body: CreateOwnerDto },
-  responses: { 201: OwnerResponseDto },
+  responses: { 201: OwnerResponseDto, 409: ErrorResponseDto },
 };
 
 export type get_OwnerController_list = __TypedOpenapi.Endpoints.get_OwnerController_list;
@@ -1762,6 +1795,9 @@ export const EndpointByMethod = {
     "/owners/{id}": get_OwnerController_get,
     "/owners/{id}/parcels": get_OwnerController_listParcels,
   },
+  put: {
+    "/auth/session/project": put_ActiveProjectController_setActiveProject,
+  },
   patch: {
     "/users/{id}": patch_UsersController_update,
     "/projects/{projectId}/roles/{roleId}": patch_ProjectRolesController_update,
@@ -1794,6 +1830,7 @@ export type EndpointByMethod = __TypedOpenapi.EndpointByMethod;
 // <EndpointByMethod.Shorthands>
 export type PostEndpoints = EndpointByMethod["post"];
 export type GetEndpoints = EndpointByMethod["get"];
+export type PutEndpoints = EndpointByMethod["put"];
 export type PatchEndpoints = EndpointByMethod["patch"];
 export type DeleteEndpoints = EndpointByMethod["delete"];
 // </EndpointByMethod.Shorthands>
@@ -2673,6 +2710,70 @@ export class ApiClient {
     return this.request("get", path, params[0] as never) as Promise<unknown>;
   }
   // </ApiClient.get>
+
+  // <ApiClient.put>
+  put<Path extends keyof PutEndpoints, TEndpoint extends PutEndpoints[Path]>(
+    path: Path,
+    ...params: MaybeOptionalArg<
+      TEndpoint extends { parameters: infer UParams }
+        ? NotNever<InferSchemaInput<UParams>> extends true
+          ? InferSchemaInput<UParams> & {
+              overrides?: RequestInit;
+              queryOptions?: ApiQueryOptions;
+              withResponse: true;
+              throwOnStatusError?: boolean;
+              validate?: ValidateSide;
+            }
+          : {
+              overrides?: RequestInit;
+              queryOptions?: ApiQueryOptions;
+              withResponse: true;
+              throwOnStatusError?: boolean;
+              validate?: ValidateSide;
+            }
+        : {
+            overrides?: RequestInit;
+            queryOptions?: ApiQueryOptions;
+            withResponse: true;
+            throwOnStatusError?: boolean;
+            validate?: ValidateSide;
+          }
+    >
+  ): Promise<SafeApiResponse<TEndpoint>>;
+
+  put<Path extends keyof PutEndpoints, TEndpoint extends PutEndpoints[Path]>(
+    path: Path,
+    ...params: MaybeOptionalArg<
+      TEndpoint extends { parameters: infer UParams }
+        ? NotNever<InferSchemaInput<UParams>> extends true
+          ? InferSchemaInput<UParams> & {
+              overrides?: RequestInit;
+              queryOptions?: ApiQueryOptions;
+              withResponse?: false;
+              throwOnStatusError?: boolean;
+              validate?: ValidateSide;
+            }
+          : {
+              overrides?: RequestInit;
+              queryOptions?: ApiQueryOptions;
+              withResponse?: false;
+              throwOnStatusError?: boolean;
+              validate?: ValidateSide;
+            }
+        : {
+            overrides?: RequestInit;
+            queryOptions?: ApiQueryOptions;
+            withResponse?: false;
+            throwOnStatusError?: boolean;
+            validate?: ValidateSide;
+          }
+    >
+  ): Promise<InferSuccessData<TEndpoint>>;
+
+  put<Path extends keyof PutEndpoints>(path: Path, ...params: [config?: unknown]): Promise<unknown> {
+    return this.request("put", path, params[0] as never) as Promise<unknown>;
+  }
+  // </ApiClient.put>
 
   // <ApiClient.patch>
   patch<Path extends keyof PatchEndpoints, TEndpoint extends PatchEndpoints[Path]>(

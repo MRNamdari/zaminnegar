@@ -1,6 +1,7 @@
 import { applyDecorators, createParamDecorator, ExecutionContext, SetMetadata } from '@nestjs/common';
 import { ApiCookieAuth } from '@nestjs/swagger';
 import type { AuthenticatedRequest, Principal } from '../access.types';
+import { NoActiveProjectError } from '../errors/no-active-project.error';
 import { NotAuthenticatedError } from '../errors/not-authenticated.error';
 import { Action, Resource } from '../permissions';
 
@@ -28,9 +29,10 @@ export const AuthenticatedOnly = (): MethodDecorator & ClassDecorator => applyDe
  *  - `param` (default): `idOf` (default: the permission's resource) record whose id is in route param `param` (default `id`)
  *  - `body`: `projectId` in the request body
  *  - `query`: optional `projectId` in the query string; without it `@ProjectScope()` carries the accessible projects
+ *  - `active`: the session's active project (`PUT /auth/session/project`); 409 `NO_ACTIVE_PROJECT` when none is set
  *  - `system`: no project; the permission must be held at system level
  */
-export type PermissionScope = 'param' | 'body' | 'query' | 'system';
+export type PermissionScope = 'param' | 'body' | 'query' | 'active' | 'system';
 
 export interface PermissionOptions {
   scope?: PermissionScope;
@@ -60,6 +62,14 @@ export const CurrentPrincipal = createParamDecorator((_data: unknown, context: E
   const { principal } = context.switchToHttp().getRequest<AuthenticatedRequest>();
   if (!principal) throw new NotAuthenticatedError();
   return principal;
+});
+
+/** The session's active project, for routes declared with `scope: 'active'`. */
+export const ActiveProjectId = createParamDecorator((_data: unknown, context: ExecutionContext): string => {
+  const { principal } = context.switchToHttp().getRequest<AuthenticatedRequest>();
+  if (!principal) throw new NotAuthenticatedError();
+  if (!principal.activeProjectId) throw new NoActiveProjectError();
+  return principal.activeProjectId;
 });
 
 /** Projects the caller may access on a `scope: 'query'` route; `null` = all, `[]` = none. */

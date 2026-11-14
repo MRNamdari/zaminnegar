@@ -30,6 +30,7 @@ interface SessionRow {
   session_id: string;
   user_id: string;
   is_current: boolean;
+  active_project_id: string | null;
   since_used: number;
   since_rotated: number;
   username: string;
@@ -75,7 +76,7 @@ export class SessionService {
       `INSERT INTO sessions (user_id, token_hash, idle_expires_at, absolute_expires_at, user_agent, ip)
        VALUES ($1, $2, now() + make_interval(secs => $3), now() + make_interval(secs => $4), $5, $6)
        ON CONFLICT (user_id) DO UPDATE SET
-         id = gen_random_uuid(), token_hash = EXCLUDED.token_hash, previous_token_hash = NULL,
+         id = gen_random_uuid(), token_hash = EXCLUDED.token_hash, previous_token_hash = NULL, active_project_id = NULL,
          rotated_at = now(), last_used_at = now(), created_at = now(),
          idle_expires_at = EXCLUDED.idle_expires_at, absolute_expires_at = EXCLUDED.absolute_expires_at,
          user_agent = EXCLUDED.user_agent, ip = EXCLUDED.ip
@@ -92,7 +93,7 @@ export class SessionService {
     const tokenHash = hashToken(token);
     const row = await firstRow<SessionRow>(
       this.dataSource,
-      `SELECT s.id AS session_id, s.user_id, (s.token_hash = $1) AS is_current,
+      `SELECT s.id AS session_id, s.user_id, (s.token_hash = $1) AS is_current, s.active_project_id,
               EXTRACT(EPOCH FROM (now() - s.last_used_at))::float8 AS since_used,
               EXTRACT(EPOCH FROM (now() - s.rotated_at))::float8 AS since_rotated,
               u.username, u.phone, u.email, u.system_role_id,
@@ -131,6 +132,7 @@ export class SessionService {
 
     const principal: Principal = {
       sessionId: row.session_id,
+      activeProjectId: row.active_project_id,
       user: { id: row.user_id, username: row.username, phone: row.phone, email: row.email },
       systemRole: row.system_role_id
         ? { id: row.system_role_id, name: row.system_role_name ?? '', isSystem: row.system_role_is_system ?? false }
@@ -165,6 +167,11 @@ export class SessionService {
       [sessionId, hashToken(token), this.config.session.idleTtlSeconds, expectedHash ?? null],
     );
     return row ? this.toIssued(token, row.idle_expires_at, row.absolute_expires_at) : null;
+  }
+
+  /** Sets the project the session works in. False when the session no longer exists. */
+  async setActiveProject(db: Queryable, sessionId: string, projectId: string): Promise<boolean> {
+    return (await execute(db, `UPDATE sessions SET active_project_id = $2 WHERE id = $1`, [sessionId, projectId])) > 0;
   }
 
   revoke(db: Queryable, sessionId: string): Promise<number> {

@@ -23,6 +23,10 @@ export class CurrentUserResponseDto {
   @Expose()
   email!: string | null;
 
+  @ApiProperty({ type: String, format: 'uuid', nullable: true, description: 'The project chosen with PUT /auth/session/project; null until chosen' })
+  @Expose()
+  activeProjectId!: string | null;
+
   @ApiProperty({ type: () => RoleSummaryDto, nullable: true })
   @Expose()
   @Type(() => RoleSummaryDto)
@@ -43,6 +47,7 @@ export class CurrentUserResponseDto {
       CurrentUserResponseDto,
       {
         ...principal.user,
+        activeProjectId: principal.activeProjectId,
         systemRole: principal.systemRole,
         systemPermissions: principal.systemPermissions,
         memberships: [...principal.memberships].map(([projectId, membership]) => ({

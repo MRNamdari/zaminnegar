@@ -22,6 +22,11 @@ export interface PrincipalMembership {
  */
 export interface Principal {
   readonly sessionId: string;
+  /**
+   * The project the user chose to work in (`PUT /auth/session/project`); null until they choose. It only says which
+   * project to act in: every action is still authorized against the user's role in that project.
+   */
+  readonly activeProjectId: string | null;
   readonly user: {
     readonly id: string;
     readonly username: string;

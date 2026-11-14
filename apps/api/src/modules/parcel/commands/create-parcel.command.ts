@@ -2,7 +2,7 @@ import { BoundarySource } from '../../../common/interfaces/boundary-source.inter
 import { CreateParcelDto } from '../dto/create-parcel.dto';
 
 /** The boundary comes from `geometry` or from the `boundaryId` of a finished draft. */
-export type CreateParcelInput = Omit<CreateParcelDto, 'geometry' | 'boundaryId'> & BoundarySource;
+export type CreateParcelInput = Omit<CreateParcelDto, 'geometry' | 'boundaryId'> & BoundarySource & { projectId: string };
 
 export class CreateParcelCommand {
   constructor(public readonly input: CreateParcelInput) {}

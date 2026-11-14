@@ -9,6 +9,7 @@ import {
   type PermissionRequirement,
 } from '../decorators/access.decorators';
 import { InvalidProjectIdError } from '../errors/invalid-project-id.error';
+import { NoActiveProjectError } from '../errors/no-active-project.error';
 import { NotAuthenticatedError } from '../errors/not-authenticated.error';
 import { PermissionDeniedError } from '../errors/permission-denied.error';
 import { ResourceNotFoundError } from '../errors/resource-not-found.error';
@@ -44,6 +45,14 @@ export class PermissionsGuard implements CanActivate {
 
     if (scope === 'system') {
       this.policy.assertSystem(principal, action, resource);
+      return true;
+    }
+
+    if (scope === 'active') {
+      const { activeProjectId } = principal;
+      if (!activeProjectId) throw new NoActiveProjectError();
+      // Still authorized like any other project: the active project is a choice, not a grant.
+      this.policy.assertCan(principal, action, resource, projectAttributes(resource, activeProjectId));
       return true;
     }
 

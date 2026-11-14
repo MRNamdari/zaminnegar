@@ -72,6 +72,7 @@ export const invalidateEndpoint = (queryClient: QueryClient, path: PropertyKey, 
 // <EndpointByMethod.Shorthands>
 export type PostEndpoints = EndpointByMethod["post"];
 export type GetEndpoints = EndpointByMethod["get"];
+export type PutEndpoints = EndpointByMethod["put"];
 export type PatchEndpoints = EndpointByMethod["patch"];
 export type DeleteEndpoints = EndpointByMethod["delete"];
 // </EndpointByMethod.Shorthands>
@@ -305,6 +306,98 @@ export class TanstackQueryApiClient {
     return query;
   }
   // </ApiClient.get>
+
+  // <ApiClient.put>
+  put<Path extends keyof PutEndpoints, TEndpoint extends PutEndpoints[Path]>(
+    path: Path,
+    ...params: MaybeOptionalArg<ApiCallParams<TEndpoint>>
+  ) {
+    const queryKey = createQueryKey(path, params[0]);
+    const endpointQueryOptions = params[0]?.queryOptions;
+    const endpointParams = { ...(params[0] || {}) } as Record<string, unknown>;
+    delete endpointParams["queryOptions"];
+    const consumeQuerySignal = endpointQueryOptions?.consumeQuerySignal ?? this.options.consumeQuerySignal;
+    const sharedQueryOptions = queryOptions({
+      queryFn: async (queryContext) => {
+        const { queryKey } = queryContext;
+        const keyParams = { ...(queryKey[2] || {}) } as Record<string, unknown>;
+        delete keyParams["_infinite"];
+        const requestParams = {
+          ...endpointParams,
+          ...keyParams,
+          ...(consumeQuerySignal ? { overrides: { signal: queryContext.signal } } : {}),
+          withResponse: false as const,
+        };
+        const res = await this.client.put(path, requestParams as never);
+        return res as InferResponseData<TEndpoint, SuccessStatusCode>;
+      },
+      queryKey: queryKey,
+    });
+    const query = {
+      /** type-only property if you need easy access to the endpoint params */
+      "~endpoint": {} as TEndpoint,
+      queryKey,
+      queryFn: {} as "You need to pass .queryOptions to the useQuery hook",
+      queryOptions: sharedQueryOptions,
+      /** Same options for `useSuspenseQuery` / `prefetchQuery` (TanStack v5). */
+      suspenseQueryOptions: sharedQueryOptions,
+      /**
+       * Infinite query options. Pass `pageParamKey` to merge `pageParam` into `query[pageParamKey]`.
+       * Query key is tagged with `_infinite: true` so it does not collide with regular queries.
+       */
+      infiniteQueryOptions: <TPageParam = unknown>(infiniteOpts: {
+        initialPageParam: TPageParam;
+        getNextPageParam: (
+          lastPage: InferResponseData<TEndpoint, SuccessStatusCode>,
+          allPages: InferResponseData<TEndpoint, SuccessStatusCode>[],
+          lastPageParam: TPageParam,
+          allPageParams: TPageParam[],
+        ) => TPageParam | undefined | null;
+        getPreviousPageParam?: (
+          firstPage: InferResponseData<TEndpoint, SuccessStatusCode>,
+          allPages: InferResponseData<TEndpoint, SuccessStatusCode>[],
+          firstPageParam: TPageParam,
+          allPageParams: TPageParam[],
+        ) => TPageParam | undefined | null;
+        /** When set, `pageParam` is written into `query[pageParamKey]` before each fetch. */
+        pageParamKey?: string;
+      }) => {
+        const infiniteKey = createQueryKey(path, params[0], true);
+        return infiniteQueryOptions({
+          queryKey: infiniteKey,
+          initialPageParam: infiniteOpts.initialPageParam,
+          getNextPageParam: infiniteOpts.getNextPageParam,
+          ...(infiniteOpts.getPreviousPageParam ? { getPreviousPageParam: infiniteOpts.getPreviousPageParam } : {}),
+          queryFn: async (queryContext) => {
+            const { pageParam } = queryContext;
+            const base = { ...endpointParams } as Record<string, unknown>;
+            const query = {
+              ...((base["query"] as Record<string, unknown> | undefined) || {}),
+            };
+            if (infiniteOpts.pageParamKey) {
+              query[infiniteOpts.pageParamKey] = pageParam;
+            }
+            const requestParams = {
+              ...base,
+              ...(Object.keys(query).length ? { query } : {}),
+              ...(consumeQuerySignal ? { overrides: { signal: queryContext.signal } } : {}),
+              withResponse: false as const,
+            };
+            const res = await this.client.put(path, requestParams as never);
+            return res as InferResponseData<TEndpoint, SuccessStatusCode>;
+          },
+        });
+      },
+      /** Invalidate this endpoint's regular (non-infinite) queries. */
+      invalidate: (queryClient: QueryClient) => queryClient.invalidateQueries({ queryKey }),
+      /** Invalidate this endpoint's infinite queries. */
+      invalidateInfinite: (queryClient: QueryClient) =>
+        queryClient.invalidateQueries({ queryKey: createQueryKey(path, params[0], true) }),
+    };
+
+    return query;
+  }
+  // </ApiClient.put>
 
   // <ApiClient.patch>
   patch<Path extends keyof PatchEndpoints, TEndpoint extends PatchEndpoints[Path]>(

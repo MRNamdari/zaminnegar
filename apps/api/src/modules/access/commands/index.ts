@@ -7,6 +7,7 @@ import { LogoutHandler } from './logout.handler';
 import { RegisterUserHandler } from './register-user.handler';
 import { RemoveProjectMemberHandler } from './remove-project-member.handler';
 import { RenewSessionHandler } from './renew-session.handler';
+import { SetActiveProjectHandler } from './set-active-project.handler';
 import { RequestPasswordResetHandler } from './request-password-reset.handler';
 import { ResetPasswordHandler } from './reset-password.handler';
 import { UpdateProjectRoleHandler } from './update-project-role.handler';
@@ -19,6 +20,7 @@ export const AccessCommandHandlers = [
   LoginHandler,
   LogoutHandler,
   RenewSessionHandler,
+  SetActiveProjectHandler,
   RequestPasswordResetHandler,
   ResetPasswordHandler,
   UpdateUserHandler,

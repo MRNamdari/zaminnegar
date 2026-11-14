@@ -17,13 +17,13 @@ export class CreateOwnerHandler implements ICommandHandler<
     private readonly projects: ProjectRepository,
   ) {}
 
-  execute({ dto }: CreateOwnerCommand): Promise<Owner> {
+  execute({ dto, projectId }: CreateOwnerCommand): Promise<Owner> {
     return this.dataSource.transaction(async (manager) => {
-      if (!(await this.projects.findById(dto.projectId, manager)))
-        throw new ProjectNotFoundError(dto.projectId);
+      if (!(await this.projects.findById(projectId, manager)))
+        throw new ProjectNotFoundError(projectId);
       return this.owners.save(
         this.owners.build({
-          projectId: dto.projectId,
+          projectId,
           name: dto.name,
           phone: dto.phone ?? null,
           email: dto.email ?? null,
