@@ -54,6 +54,8 @@ export type AreaCollection = z.infer<typeof areaCollectionSchema>;
 export const draftConfigurationPropertiesSchema = z.looseObject({
   name: z.string().trim().min(1).optional(),
   parentId: z.string().nullable().optional(),
+  description: z.string().optional(),
+  status: z.enum(["active", "inactive"]).optional(),
 });
 export type DraftConfigurationProperties = z.infer<
   typeof draftConfigurationPropertiesSchema
@@ -67,6 +69,8 @@ export const createFeatureRequestSchema = z.object({
     level: levelSchema,
     name: z.string().min(1),
     parentId: z.string().nullable().optional(),
+    description: z.string().optional(),
+    status: z.enum(["active", "inactive"]).optional(),
   }),
 });
 export type CreateFeatureRequest = z.infer<typeof createFeatureRequestSchema>;

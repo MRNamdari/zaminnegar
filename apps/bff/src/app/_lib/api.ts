@@ -20,7 +20,7 @@ export const API_PROXY_PREFIX = 'api';
  * - PATCH bodies gain schema defaults, e.g. `{ name }` is sent as `{ name, description: '' }`
  *   and silently wipes the description.
  *
- * Responses are validated where they are consumed (see `feature-gateway.ts`). Note that the
+ * Feature API responses are validated at their feature-specific boundaries. Note that the
  * generated *types* still say `Date` for timestamps; at runtime they are ISO strings.
  */
 export const API_CLIENT_OPTIONS: { validate: ValidateSide } = {

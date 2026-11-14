@@ -28,6 +28,12 @@ export { useFeatureOperations } from "./infrastructure/query/use-feature-operati
 export type { FeatureGateway } from "./infrastructure/query/use-feature-operations";
 export { EditorFailure, fromPromise, parseResponse, toEditorError, toPromise } from "./infrastructure/query/result-adapters";
 
+// API integration: anti-corruption layer over the generated `@zaminnegar/api-client`.
+export { createFeatureGateway } from "./infrastructure/api/feature-gateway";
+export type { ApiFeatureClient, FeatureGatewayOptions } from "./infrastructure/api/feature-gateway";
+export type { GatewayDiagnostic } from "./infrastructure/api/error-translation";
+export { useApiFeatureGateway } from "./infrastructure/query/use-api-feature-gateway";
+
 export { resolveEditorConfig, editorConfigSchema } from "./core/config";
 export type { EditorConfig, EditorConfigInput } from "./core/config";
 export * from "./core/schemas";
