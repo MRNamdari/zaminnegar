@@ -5420,7 +5420,12 @@
             "type": "string"
           },
           "status": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive",
+              "pending"
+            ]
           },
           "createdAt": {
             "format": "date-time",

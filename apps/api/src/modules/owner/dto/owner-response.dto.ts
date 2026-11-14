@@ -17,7 +17,7 @@ export class OwnerResponseDto {
   @Expose()
   notes?: string | null;
   @ApiProperty() @Expose() nationalId!: string;
-  @ApiProperty() @Expose() status!: OwnerStatus;
+  @ApiProperty({ enum: OwnerStatus }) @Expose() status!: OwnerStatus;
   @ApiProperty() @Expose() createdAt!: Date;
   @ApiProperty() @Expose() updatedAt!: Date;
 
