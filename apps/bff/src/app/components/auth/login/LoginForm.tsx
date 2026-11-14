@@ -5,11 +5,14 @@ import { useLoginMutation } from '@/app/features/auth/mutation';
 import { fa } from 'zod/locales';
 import z from 'zod';
 
-z.config(fa());
-
 import { LoginDto } from '@zaminnegar/api-client';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+import { useState } from 'react';
+import { BsEye, BsEyeSlash } from 'react-icons/bs';
+
+z.config(fa());
 
 const initialValues: LoginDto = {
   username: '',
@@ -17,8 +20,10 @@ const initialValues: LoginDto = {
 };
 
 export default function LoginForm() {
+  const [showPassword, setShowPassword] = useState(false);
   const loginMutation = useLoginMutation();
   const router = useRouter();
+
   const form = useAppForm({
     defaultValues: initialValues,
 
@@ -27,16 +32,28 @@ export default function LoginForm() {
     },
 
     onSubmit: async ({ value }) => {
-      const result = await loginMutation.mutateAsync(value);
-      console.log(result);
-      if (result.success) {
+      try {
+        const result = await loginMutation.mutateAsync(value);
+
+        if (!result.success) {
+          toast.error(result.message || 'نام کاربری یا رمز عبور اشتباه است');
+          return;
+        }
+
+        toast.success('ورود با موفقیت انجام شد');
+
         router.replace('/map');
         router.refresh();
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'خطایی هنگام ورود رخ داد';
+
+        toast.error(message);
       }
     },
   });
 
-  const handleFormSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -53,16 +70,20 @@ export default function LoginForm() {
             width={100}
             height={100}
           />
+
           <h1 className="text-5xl text-foreground font-black mt-3">
             زمین نگار
           </h1>
+
           <h4 className="text-lg text-foreground font-semibold mt-7">
             به زمین نگار خوش آمدید
           </h4>
+
           <span className="text-foreground text-sm mt-2 mb-5">
             برای ادامه وارد حساب کاربری خود شوید
           </span>
         </div>
+
         <div className="w-full z-5">
           <form.AppForm>
             <form
@@ -88,10 +109,23 @@ export default function LoginForm() {
                 }}
               >
                 {(field) => (
-                  <field.TextField
-                    placeholder="رمز عبور خود را وارد کنید"
-                    type="password"
-                  />
+                  <div className="relative">
+                    <field.TextField
+                      placeholder="رمز عبور خود را وارد کنید"
+                      type={showPassword ? 'text' : 'password'}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute cursor-pointer left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      aria-label={
+                        showPassword ? 'مخفی کردن رمز عبور' : 'نمایش رمز عبور'
+                      }
+                    >
+                      {showPassword ? <BsEyeSlash fill='#d1d1d1' size={18} /> : <BsEye fill='#d1d1d1' size={18} />}
+                    </button>
+                  </div>
                 )}
               </form.AppField>
 
@@ -99,6 +133,7 @@ export default function LoginForm() {
             </form>
           </form.AppForm>
         </div>
+
         <div className="absolute -top-15 -left-62.5 rotate-125">
           <Image
             width={500}
@@ -110,6 +145,7 @@ export default function LoginForm() {
 
           <div className="absolute inset-0 bg-linear-to-b from-surface to-transparent" />
         </div>
+
         <div className="absolute -top-15 -right-170 rotate-90">
           <Image
             width={500}
