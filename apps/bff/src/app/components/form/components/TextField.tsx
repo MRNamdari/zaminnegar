@@ -3,7 +3,7 @@ import { useFieldContext } from '../hooks/formContext';
 import React from 'react';
 
 interface TextFieldProps {
-  label: string;
+  label?: string;
   placeholder?: string;
   type?: React.HTMLInputTypeAttribute;
   required?: boolean;
@@ -21,10 +21,12 @@ export function TextField({
   const errors = useSelector(field.store, (state) => state.meta.errors);
   return (
     <div className="flex flex-col gap-1">
-      <label className="block text-foreground text-sm mb-2">
-        {label}
-        {required && <span className="text-red-400">*</span>}
-      </label>
+      {label && (
+        <label className="block text-foreground text-sm mb-2">
+          {label}
+          {required && <span className="text-red-400">*</span>}
+        </label>
+      )}
       <input
         type={type}
         required={required}

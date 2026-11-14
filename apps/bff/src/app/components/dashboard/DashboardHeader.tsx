@@ -41,7 +41,7 @@ export default function DashboardHeader() {
       <nav className="left_nav flex gap-3 items-center justify-end">
         <strong>سامانه زمین نگار</strong>
         <Image
-          src="/zaminnegar-logo.png"
+          src="/zaminnegar-logo-2.png"
           alt="Zaminnegar"
           width={40}
           height={40}
