@@ -8,19 +8,30 @@ import {
 } from '@zaminnegar/api-client';
 import { cookies } from 'next/headers';
 import { API_CLIENT_OPTIONS } from './api';
+import { sessionCookieHeader } from './auth/session-cookie';
+import { applySetCookies } from './auth/set-cookie';
 
-/** Forwards the incoming request's cookies to the API, then lets the generated fetcher do the rest. */
+/**
+ * Session cookie in, session cookie out:
+ *  - forwards the incoming request's session cookie (and only that) to the API;
+ *  - copies the API's `Set-Cookie` (login, logout, rotation) onto the response to the browser.
+ *    Without this a server-side login succeeds but the browser never receives the session.
+ */
 const fetcher: Fetcher = {
   async fetch(input) {
-    const cookie = (await cookies()).toString();
+    const cookie = sessionCookieHeader((await cookies()).getAll());
     const headers = new Headers(input.overrides?.headers);
 
     if (cookie) headers.set('cookie', cookie);
 
-    return defaultFetcher({
+    const response = await defaultFetcher({
       ...input,
       overrides: { ...input.overrides, headers },
     });
+
+    await applySetCookies(response);
+
+    return response;
   },
 };
 
