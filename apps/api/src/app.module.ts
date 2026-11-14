@@ -7,6 +7,7 @@ import { AccessModule } from './modules/access/access.module';
 import { BlockModule } from './modules/block/block.module';
 import { BoundaryModule } from './modules/boundary/boundary.module';
 import { GeometryModule } from './modules/geometry/geometry.module';
+import { MapModule } from './modules/map/map.module';
 import { OwnerModule } from './modules/owner/owner.module';
 import { ParcelModule } from './modules/parcel/parcel.module';
 import { ProjectModule } from './modules/project/project.module';
@@ -36,6 +37,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     GeometryModule,
     ProjectModule,
     BoundaryModule,
+    MapModule,
     RegionModule,
     BlockModule,
     ParcelModule,
