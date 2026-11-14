@@ -463,7 +463,7 @@ export namespace Schemas {
     email?: string | null;
     notes?: string | null;
     nationalId: string;
-    status: string;
+    status: "active" | "inactive" | "pending";
     createdAt: Date;
     updatedAt: Date;
   };

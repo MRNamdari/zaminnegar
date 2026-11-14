@@ -630,7 +630,7 @@ export const OwnerResponseDto = z.strictObject({
   email: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   nationalId: z.string(),
-  status: z.string(),
+  status: z.enum(["active", "inactive", "pending"]),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
     if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
