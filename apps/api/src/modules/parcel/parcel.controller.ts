@@ -17,14 +17,12 @@ import { CreateParcelDto } from './dto/create-parcel.dto';
 import { OwnershipResponseDto } from './dto/ownership-response.dto';
 import { OwnershipWithOwnerResponseDto } from './dto/ownership-with-owner-response.dto';
 import { ParcelDetailResponseDto } from './dto/parcel-detail-response.dto';
-import { ParcelDetailResponseDto } from './dto/parcel-detail-response.dto';
 import { ParcelQueryDto } from './dto/parcel-query.dto';
 import { ParcelResponseDto } from './dto/parcel-response.dto';
 import { UpdateOwnershipDto } from './dto/update-ownership.dto';
 import { UpdateParcelDto } from './dto/update-parcel.dto';
 import { ParcelOwnership } from './entities/parcel-ownership.entity';
 import { Parcel } from './entities/parcel.entity';
-import { GetParcelDetailQuery } from './queries/get-parcel-detail.query';
 import { GetParcelDetailQuery } from './queries/get-parcel-detail.query';
 import { GetParcelQuery } from './queries/get-parcel.query';
 import { ListParcelOwnershipsQuery } from './queries/list-parcel-ownerships.query';
@@ -46,12 +44,6 @@ export class ParcelController {
     description:
       'Send geometry, or the boundaryId of a finished draft. Region and block are not sent: they are the region and block that contain the parcel outline.',
   })
-  @RequirePermission(Resource.parcel, Action.create, { scope: 'body' })
-  @ApiOperation({
-    summary: 'Create a parcel',
-    description:
-      'Send geometry, or the boundaryId of a finished draft. Region and block are not sent: they are the region and block that contain the parcel outline.',
-  })
   @ApiCreatedResponse({ type: ParcelResponseDto })
   async create(@Body() dto: CreateParcelDto): Promise<ParcelResponseDto> {
     const parcel = await this.commandBus.execute<CreateParcelCommand, Parcel>(
@@ -66,19 +58,7 @@ export class ParcelController {
     summary: 'List parcels',
     description: 'Each parcel carries its region, its block (or null) and the number of owners holding a share',
   })
-  @RequirePermission(Resource.parcel, Action.read, { scope: 'query' })
-  @ApiOperation({
-    summary: 'List parcels',
-    description: 'Each parcel carries its region, its block (or null) and the number of owners holding a share',
-  })
   @ApiPaginatedResponse(ParcelResponseDto)
-  async list(
-    @Query() query: ParcelQueryDto,
-    @ProjectScope() projectScope: string[] | null,
-  ): Promise<PaginatedResponseDto<ParcelResponseDto>> {
-    const result = await this.queryBus.execute<ListParcelsQuery, PaginatedResult<Parcel>>(
-      new ListParcelsQuery(query, projectScope),
-    );
   async list(
     @Query() query: ParcelQueryDto,
     @ProjectScope() projectScope: string[] | null,
@@ -90,7 +70,6 @@ export class ParcelController {
   }
 
   @Get(':id')
-  @RequirePermission(Resource.parcel, Action.read)
   @RequirePermission(Resource.parcel, Action.read)
   @ApiOperation({ summary: 'Get a parcel by id' })
   @ApiOkResponse({ type: ParcelResponseDto })
@@ -108,17 +87,7 @@ export class ParcelController {
     return ParcelDetailResponseDto.from(parcel);
   }
 
-  @Get(':id/detail')
-  @RequirePermission(Resource.parcel, Action.read)
-  @ApiOperation({ summary: 'Get a parcel with project, region, block, boundary and ownerships (with owners)' })
-  @ApiOkResponse({ type: ParcelDetailResponseDto })
-  async getDetail(@Param('id', ParseUUIDPipe) id: string): Promise<ParcelDetailResponseDto> {
-    const parcel = await this.queryBus.execute<GetParcelDetailQuery, Parcel>(new GetParcelDetailQuery(id));
-    return ParcelDetailResponseDto.from(parcel);
-  }
-
   @Patch(':id')
-  @RequirePermission(Resource.parcel, Action.update)
   @RequirePermission(Resource.parcel, Action.update)
   @ApiOperation({ summary: 'Update a parcel' })
   @ApiOkResponse({ type: ParcelResponseDto })
@@ -129,7 +98,6 @@ export class ParcelController {
 
   @Delete(':id')
   @RequirePermission(Resource.parcel, Action.delete)
-  @RequirePermission(Resource.parcel, Action.delete)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a parcel together with its ownerships and boundary' })
   @ApiNoContentResponse()
@@ -138,7 +106,6 @@ export class ParcelController {
   }
 
   @Get(':id/owners')
-  @RequirePermission(Resource.ownership, Action.read, { idOf: Resource.parcel })
   @RequirePermission(Resource.ownership, Action.read, { idOf: Resource.parcel })
   @ApiOperation({ summary: 'List the owners of a parcel with their shares' })
   @ApiOkResponse({ type: OwnershipWithOwnerResponseDto, isArray: true })
@@ -150,7 +117,6 @@ export class ParcelController {
   }
 
   @Post(':id/owners')
-  @RequirePermission(Resource.ownership, Action.create, { idOf: Resource.parcel })
   @RequirePermission(Resource.ownership, Action.create, { idOf: Resource.parcel })
   @ApiOperation({ summary: 'Give an owner a share of a parcel' })
   @ApiCreatedResponse({ type: OwnershipResponseDto })
@@ -166,7 +132,6 @@ export class ParcelController {
 
   @Patch(':id/owners/:ownerId')
   @RequirePermission(Resource.ownership, Action.update, { idOf: Resource.parcel })
-  @RequirePermission(Resource.ownership, Action.update, { idOf: Resource.parcel })
   @ApiOperation({ summary: "Change an owner's share of a parcel" })
   @ApiOkResponse({ type: OwnershipResponseDto })
   async updateOwnership(
@@ -181,7 +146,6 @@ export class ParcelController {
   }
 
   @Delete(':id/owners/:ownerId')
-  @RequirePermission(Resource.ownership, Action.delete, { idOf: Resource.parcel })
   @RequirePermission(Resource.ownership, Action.delete, { idOf: Resource.parcel })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: "Remove an owner's share from a parcel" })

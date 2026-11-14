@@ -41,21 +41,15 @@ export interface PermissionRef {
 const RESOURCE_VALUES: ReadonlySet<string> = new Set(Object.values(Resource));
 const ACTION_VALUES: ReadonlySet<string> = new Set(Object.values(Action));
 
-export const isResource = (value: string): value is Resource =>
-  RESOURCE_VALUES.has(value);
-export const isAction = (value: string): value is Action =>
-  ACTION_VALUES.has(value);
+export const isResource = (value: string): value is Resource => RESOURCE_VALUES.has(value);
+export const isAction = (value: string): value is Action => ACTION_VALUES.has(value);
 
 /** Rows that name an unknown resource or action are dropped: unknown permissions grant nothing. */
-export function parsePermission(
-  resource: string,
-  action: string,
-): PermissionRef | null {
+export function parsePermission(resource: string, action: string): PermissionRef | null {
   return isResource(resource) && isAction(action) ? { resource, action } : null;
 }
 
-export const permissionKey = ({ resource, action }: PermissionRef): string =>
-  `${resource}:${action}`;
+export const permissionKey = ({ resource, action }: PermissionRef): string => `${resource}:${action}`;
 
 /** Seeded system roles (see the `AccessControlRework` migration). */
 export const SystemRoleName = {

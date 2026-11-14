@@ -28,7 +28,6 @@ export class BoundaryController {
 
   @Post()
   @RequirePermission(Resource.boundary, Action.create, { scope: 'body' })
-  @RequirePermission(Resource.boundary, Action.create, { scope: 'body' })
   @ApiOperation({ summary: 'Create a boundary', description: 'Creates a draft boundary; it becomes a region, block or parcel outline when one is created with its boundaryId' })
   @ApiCreatedResponse({ type: BoundaryResponseDto })
   async create(@Body() dto: CreateBoundaryDto): Promise<BoundaryResponseDto> {
@@ -38,18 +37,14 @@ export class BoundaryController {
 
   @Get()
   @RequirePermission(Resource.boundary, Action.read, { scope: 'query' })
-  @RequirePermission(Resource.boundary, Action.read, { scope: 'query' })
   @ApiOperation({ summary: 'List boundaries' })
   @ApiPaginatedResponse(BoundaryResponseDto)
-  async list(@Query() query: BoundaryQueryDto, @ProjectScope() projectScope: string[] | null): Promise<PaginatedResponseDto<BoundaryResponseDto>> {
-    const result = await this.queryBus.execute<ListBoundariesQuery, PaginatedResult<Boundary>>(new ListBoundariesQuery(query, projectScope));
   async list(@Query() query: BoundaryQueryDto, @ProjectScope() projectScope: string[] | null): Promise<PaginatedResponseDto<BoundaryResponseDto>> {
     const result = await this.queryBus.execute<ListBoundariesQuery, PaginatedResult<Boundary>>(new ListBoundariesQuery(query, projectScope));
     return PaginatedResponseDto.of(result, BoundaryResponseDto.from);
   }
 
   @Get(':id')
-  @RequirePermission(Resource.boundary, Action.read)
   @RequirePermission(Resource.boundary, Action.read)
   @ApiOperation({ summary: 'Get a boundary by id' })
   @ApiOkResponse({ type: BoundaryResponseDto })
@@ -60,7 +55,6 @@ export class BoundaryController {
 
   @Patch(':id')
   @RequirePermission(Resource.boundary, Action.update)
-  @RequirePermission(Resource.boundary, Action.update)
   @ApiOperation({ summary: 'Update a boundary' })
   @ApiOkResponse({ type: BoundaryResponseDto })
   async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateBoundaryDto): Promise<BoundaryResponseDto> {
@@ -69,7 +63,6 @@ export class BoundaryController {
   }
 
   @Delete(':id')
-  @RequirePermission(Resource.boundary, Action.delete)
   @RequirePermission(Resource.boundary, Action.delete)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a boundary' })

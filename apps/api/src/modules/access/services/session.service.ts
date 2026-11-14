@@ -1,20 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { ACCESS_CONFIG, type AccessConfig } from '../access.config';
-import type {
-  E164Phone,
-  Principal,
-  PrincipalMembership,
-  RoleRef,
-} from '../access.types';
+import type { E164Phone, Principal, PrincipalMembership, RoleRef } from '../access.types';
 import { parsePermission, type PermissionRef } from '../permissions';
-import {
-  execute,
-  firstRow,
-  returning,
-  rows,
-  type Queryable,
-} from '../utils/sql';
+import { execute, firstRow, returning, rows, type Queryable } from '../utils/sql';
 import { generateToken, hashToken } from '../utils/token';
 
 export interface SessionClientInfo {
@@ -34,10 +23,7 @@ export interface IssuedSession {
 export interface AuthenticatedSession {
   readonly principal: Principal;
   /** Present when the identifier was just replaced; the response must carry the new cookie. */
-  readonly rotation: {
-    readonly token: string;
-    readonly cookieMaxAgeMs: number;
-  } | null;
+  readonly rotation: { readonly token: string; readonly cookieMaxAgeMs: number } | null;
 }
 
 interface SessionRow {
@@ -80,21 +66,11 @@ export class SessionService {
    * upsert race-free, and the identifier is always new, so a pre-existing identifier can never be "adopted"
    * (session fixation). Pass the transaction's manager to make it atomic with the surrounding work.
    */
-  async issue(
-    db: Queryable,
-    userId: string,
-    client: SessionClientInfo,
-  ): Promise<IssuedSession> {
+  async issue(db: Queryable, userId: string, client: SessionClientInfo): Promise<IssuedSession> {
     const { idleTtlSeconds, absoluteTtlSeconds } = this.config.session;
-    await execute(
-      db,
-      `DELETE FROM sessions WHERE absolute_expires_at < now() OR idle_expires_at < now()`,
-    );
+    await execute(db, `DELETE FROM sessions WHERE absolute_expires_at < now() OR idle_expires_at < now()`);
     const token = generateToken();
-    const row = await firstRow<{
-      idle_expires_at: Date;
-      absolute_expires_at: Date;
-    }>(
+    const row = await firstRow<{ idle_expires_at: Date; absolute_expires_at: Date }>(
       db,
       `INSERT INTO sessions (user_id, token_hash, idle_expires_at, absolute_expires_at, user_agent, ip)
        VALUES ($1, $2, now() + make_interval(secs => $3), now() + make_interval(secs => $4), $5, $6)
@@ -104,14 +80,7 @@ export class SessionService {
          idle_expires_at = EXCLUDED.idle_expires_at, absolute_expires_at = EXCLUDED.absolute_expires_at,
          user_agent = EXCLUDED.user_agent, ip = EXCLUDED.ip
        RETURNING idle_expires_at, absolute_expires_at`,
-      [
-        userId,
-        hashToken(token),
-        idleTtlSeconds,
-        absoluteTtlSeconds,
-        client.userAgent?.slice(0, 500) ?? null,
-        client.ip,
-      ],
+      [userId, hashToken(token), idleTtlSeconds, absoluteTtlSeconds, client.userAgent?.slice(0, 500) ?? null, client.ip],
     );
     if (!row) throw new Error('Session was not stored');
     return this.toIssued(token, row.idle_expires_at, row.absolute_expires_at);
@@ -162,40 +131,20 @@ export class SessionService {
 
     const principal: Principal = {
       sessionId: row.session_id,
-      user: {
-        id: row.user_id,
-        username: row.username,
-        phone: row.phone,
-        email: row.email,
-      },
+      user: { id: row.user_id, username: row.username, phone: row.phone, email: row.email },
       systemRole: row.system_role_id
-        ? {
-            id: row.system_role_id,
-            name: row.system_role_name ?? '',
-            isSystem: row.system_role_is_system ?? false,
-          }
+        ? { id: row.system_role_id, name: row.system_role_name ?? '', isSystem: row.system_role_is_system ?? false }
         : null,
       systemPermissions: this.toPermissions(systemRows),
       memberships: this.toMemberships(membershipRows),
     };
 
     // Only the identifier that is current may rotate; a grace-period identifier just rides along.
-    if (
-      row.is_current &&
-      row.since_rotated >= session.rotationIntervalSeconds
-    ) {
+    if (row.is_current && row.since_rotated >= session.rotationIntervalSeconds) {
       const rotated = await this.rotate(row.session_id, tokenHash);
-      if (rotated)
-        return {
-          principal,
-          rotation: {
-            token: rotated.token,
-            cookieMaxAgeMs: rotated.cookieMaxAgeMs,
-          },
-        };
+      if (rotated) return { principal, rotation: { token: rotated.token, cookieMaxAgeMs: rotated.cookieMaxAgeMs } };
     }
-    if (row.since_used >= session.touchIntervalSeconds)
-      await this.touch(row.session_id);
+    if (row.since_used >= session.touchIntervalSeconds) await this.touch(row.session_id);
     return { principal, rotation: null };
   }
 
@@ -203,15 +152,9 @@ export class SessionService {
    * Replaces the identifier and extends the idle deadline (never past the absolute one). With `expectedHash` the
    * update only applies if nobody rotated in between, so concurrent requests cannot fork the session.
    */
-  async rotate(
-    sessionId: string,
-    expectedHash?: string,
-  ): Promise<IssuedSession | null> {
+  async rotate(sessionId: string, expectedHash?: string): Promise<IssuedSession | null> {
     const token = generateToken();
-    const [row] = await returning<{
-      idle_expires_at: Date;
-      absolute_expires_at: Date;
-    }>(
+    const [row] = await returning<{ idle_expires_at: Date; absolute_expires_at: Date }>(
       this.dataSource,
       `UPDATE sessions SET
          previous_token_hash = token_hash, token_hash = $2, rotated_at = now(), last_used_at = now(),
@@ -219,16 +162,9 @@ export class SessionService {
        WHERE id = $1 AND ($4::text IS NULL OR token_hash = $4)
          AND idle_expires_at > now() AND absolute_expires_at > now()
        RETURNING idle_expires_at, absolute_expires_at`,
-      [
-        sessionId,
-        hashToken(token),
-        this.config.session.idleTtlSeconds,
-        expectedHash ?? null,
-      ],
+      [sessionId, hashToken(token), this.config.session.idleTtlSeconds, expectedHash ?? null],
     );
-    return row
-      ? this.toIssued(token, row.idle_expires_at, row.absolute_expires_at)
-      : null;
+    return row ? this.toIssued(token, row.idle_expires_at, row.absolute_expires_at) : null;
   }
 
   revoke(db: Queryable, sessionId: string): Promise<number> {
@@ -249,11 +185,7 @@ export class SessionService {
     );
   }
 
-  private toIssued(
-    token: string,
-    idleExpiresAt: Date,
-    absoluteExpiresAt: Date,
-  ): IssuedSession {
+  private toIssued(token: string, idleExpiresAt: Date, absoluteExpiresAt: Date): IssuedSession {
     return {
       token,
       idleExpiresAt,
@@ -276,17 +208,11 @@ export class SessionService {
     return result;
   }
 
-  private toMemberships(
-    source: readonly MembershipRow[],
-  ): Map<string, PrincipalMembership> {
+  private toMemberships(source: readonly MembershipRow[]): Map<string, PrincipalMembership> {
     const grouped = new Map<string, { role: RoleRef; rows: PermissionRow[] }>();
     for (const row of source) {
       const entry = grouped.get(row.project_id) ?? {
-        role: {
-          id: row.role_id,
-          name: row.role_name,
-          isSystem: row.role_is_system,
-        },
+        role: { id: row.role_id, name: row.role_name, isSystem: row.role_is_system },
         rows: [],
       };
       if (row.resource !== null && row.action !== null) entry.rows.push(row);
@@ -294,10 +220,7 @@ export class SessionService {
     }
     const memberships = new Map<string, PrincipalMembership>();
     for (const [projectId, { role, rows: permissionRows }] of grouped) {
-      memberships.set(projectId, {
-        role,
-        permissions: this.toPermissions(permissionRows),
-      });
+      memberships.set(projectId, { role, permissions: this.toPermissions(permissionRows) });
     }
     return memberships;
   }

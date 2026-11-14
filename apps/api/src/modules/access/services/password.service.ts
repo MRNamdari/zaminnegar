@@ -18,12 +18,7 @@ export class PasswordService {
 
   private get options(): argon2.HashOptions {
     const { memoryCostKib, timeCost, parallelism } = this.config.password;
-    return {
-      type: argon2.argon2id,
-      memoryCost: memoryCostKib,
-      timeCost,
-      parallelism,
-    };
+    return { type: argon2.argon2id, memoryCost: memoryCostKib, timeCost, parallelism };
   }
 
   hash(password: string): Promise<string> {
@@ -34,10 +29,7 @@ export class PasswordService {
    * Always performs one Argon2 verification, even when there is no stored hash (unknown user, cleared password),
    * so response time does not reveal whether the account exists.
    */
-  async verify(
-    storedHash: string | null | undefined,
-    password: string,
-  ): Promise<PasswordCheck> {
+  async verify(storedHash: string | null | undefined, password: string): Promise<PasswordCheck> {
     this.decoyHash ??= this.hash(randomBytes(16).toString('hex'));
     const target = storedHash ?? (await this.decoyHash);
     let matches = false;
@@ -47,9 +39,6 @@ export class PasswordService {
       matches = false; // malformed hash: treat as a failed login, never as an error that distinguishes accounts
     }
     const valid = matches && storedHash != null;
-    return {
-      valid,
-      needsRehash: valid && argon2.needsRehash(target, this.options),
-    };
+    return { valid, needsRehash: valid && argon2.needsRehash(target, this.options) };
   }
 }

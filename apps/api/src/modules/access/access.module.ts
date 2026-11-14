@@ -1,13 +1,11 @@
 import { Global, Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AbilityFactory } from './abilities/ability.factory';
 import { AccessPolicyService } from './abilities/access-policy.service';
-import {
-  ACCESS_CONFIG,
-  loadAccessConfig,
-  type AccessConfig,
-} from './access.config';
+import { ACCESS_CONFIG, loadAccessConfig, type AccessConfig } from './access.config';
 import { AccessCommandHandlers } from './commands';
 import { AuthController } from './controllers/auth.controller';
 import { PermissionsController } from './controllers/permissions.controller';
@@ -49,18 +47,7 @@ import { SmsGateway } from './sms/sms.gateway';
  */
 @Global()
 @Module({
-  imports: [
-    CqrsModule,
-    TypeOrmModule.forFeature([
-      User,
-      Role,
-      Permission,
-      RolePermission,
-      ProjectMember,
-      Session,
-      OtpChallenge,
-    ]),
-  ],
+  imports: [CqrsModule, TypeOrmModule.forFeature([User, Role, Permission, RolePermission, ProjectMember, Session, OtpChallenge])],
   controllers: [
     AuthController,
     UsersController,
@@ -70,25 +57,14 @@ import { SmsGateway } from './sms/sms.gateway';
     ProjectMembersController,
   ],
   providers: [
-    {
-      provide: ACCESS_CONFIG,
-      inject: [ConfigService],
-      useFactory: (config: ConfigService): AccessConfig =>
-        loadAccessConfig(config),
-    },
+    { provide: ACCESS_CONFIG, inject: [ConfigService], useFactory: (config: ConfigService): AccessConfig => loadAccessConfig(config) },
     {
       provide: SmsGateway,
       inject: [ACCESS_CONFIG, ConfigService],
       useFactory: (access: AccessConfig, config: ConfigService): SmsGateway => {
-        if (access.sms.driver === 'simorgh')
-          return new SimorghSmsGateway(config);
-        if (
-          config.get<string>('NODE_ENV') === 'production' &&
-          !access.sms.allowConsoleInProduction
-        ) {
-          throw new Error(
-            'SMS_DRIVER=console would print one-time codes to the log; configure a real SMS driver for production',
-          );
+        if (access.sms.driver === 'simorgh') return new SimorghSmsGateway(config);
+        if (config.get<string>('NODE_ENV') === 'production' && !access.sms.allowConsoleInProduction) {
+          throw new Error('SMS_DRIVER=console would print one-time codes to the log; configure a real SMS driver for production');
         }
         return new ConsoleSmsGateway();
       },

@@ -38,18 +38,14 @@ export class ProjectController {
 
   @Get()
   @RequirePermission(Resource.project, Action.read, { scope: 'query' })
-  @RequirePermission(Resource.project, Action.read, { scope: 'query' })
   @ApiOperation({ summary: 'List projects' })
   @ApiPaginatedResponse(ProjectResponseDto)
-  async list(@Query() query: ProjectQueryDto, @ProjectScope() projectScope: string[] | null): Promise<PaginatedResponseDto<ProjectResponseDto>> {
-    const result = await this.queryBus.execute<ListProjectsQuery, PaginatedResult<Project>>(new ListProjectsQuery(query, projectScope));
   async list(@Query() query: ProjectQueryDto, @ProjectScope() projectScope: string[] | null): Promise<PaginatedResponseDto<ProjectResponseDto>> {
     const result = await this.queryBus.execute<ListProjectsQuery, PaginatedResult<Project>>(new ListProjectsQuery(query, projectScope));
     return PaginatedResponseDto.of(result, ProjectResponseDto.from);
   }
 
   @Get(':id')
-  @RequirePermission(Resource.project, Action.read)
   @RequirePermission(Resource.project, Action.read)
   @ApiOperation({ summary: 'Get a project by id' })
   @ApiOkResponse({ type: ProjectResponseDto })
@@ -60,7 +56,6 @@ export class ProjectController {
 
   @Patch(':id')
   @RequirePermission(Resource.project, Action.update)
-  @RequirePermission(Resource.project, Action.update)
   @ApiOperation({ summary: 'Update a project' })
   @ApiOkResponse({ type: ProjectResponseDto })
   async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProjectDto): Promise<ProjectResponseDto> {
@@ -69,7 +64,6 @@ export class ProjectController {
   }
 
   @Delete(':id')
-  @RequirePermission(Resource.project, Action.delete)
   @RequirePermission(Resource.project, Action.delete)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a project' })

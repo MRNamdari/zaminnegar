@@ -1,14 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  Index,
-  JoinColumn,
-  OneToOne,
-  PrimaryColumn,
-  Relation,
-  Unique,
-} from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, OneToOne, PrimaryColumn, Relation, Unique } from 'typeorm';
 import { User } from './user.entity';
 
 /**
@@ -22,12 +12,7 @@ import { User } from './user.entity';
 @Index('ix_sessions__idle_expires_at', ['idleExpiresAt'])
 @Index('ix_sessions__absolute_expires_at', ['absoluteExpiresAt'])
 export class Session {
-  @PrimaryColumn({
-    type: 'uuid',
-    name: 'id',
-    primaryKeyConstraintName: 'pk_sessions',
-    default: () => 'gen_random_uuid()',
-  })
+  @PrimaryColumn({ type: 'uuid', name: 'id', primaryKeyConstraintName: 'pk_sessions', default: () => 'gen_random_uuid()' })
   id!: string;
 
   @Column({ type: 'uuid', name: 'user_id' })
@@ -37,12 +22,7 @@ export class Session {
   tokenHash!: string;
 
   /** The identifier before the last rotation; accepted for a short grace period only. */
-  @Column({
-    type: 'varchar',
-    length: 64,
-    name: 'previous_token_hash',
-    nullable: true,
-  })
+  @Column({ type: 'varchar', length: 64, name: 'previous_token_hash', nullable: true })
   previousTokenHash!: string | null;
 
   @Column({ type: 'timestamptz', name: 'rotated_at', default: () => 'now()' })
@@ -63,11 +43,7 @@ export class Session {
   @Column({ type: 'varchar', length: 45, name: 'ip', nullable: true })
   ip!: string | null;
 
-  @CreateDateColumn({
-    name: 'created_at',
-    type: 'timestamptz',
-    default: () => 'now()',
-  })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz', default: () => 'now()' })
   createdAt!: Date;
 
   @OneToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
