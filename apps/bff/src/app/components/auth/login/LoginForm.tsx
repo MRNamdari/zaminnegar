@@ -1,32 +1,42 @@
 'use client';
 
-import { useAppForm } from '@/app/components/form/hooks/form';
-import { loginFormUser, LoginFormValue } from './schema/AddUser.schema';
+import { useAppForm } from '@/app/_components/form/hooks/form';
+import { useLoginMutation } from '@/app/features/auth/mutation';
+import { fa } from 'zod/locales';
+import z from 'zod';
+
+z.config(fa());
+
+import { LoginDto } from '@zaminnegar/api-client';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
-interface Props {
-  onSubmit: (values: LoginFormValue) => void;
-}
-
-const initialValues: LoginFormValue = {
-  phonenumber: '',
+const initialValues: LoginDto = {
+  username: '',
   password: '',
 };
 
-export default function LoginForm({ onSubmit }: Props) {
+export default function LoginForm() {
+  const loginMutation = useLoginMutation();
+  const router = useRouter();
   const form = useAppForm({
     defaultValues: initialValues,
 
     validators: {
-      onSubmit: loginFormUser,
+      onSubmit: LoginDto,
     },
 
     onSubmit: async ({ value }) => {
-      onSubmit(value);
+      const result = await loginMutation.mutateAsync(value);
+      console.log(result);
+      if (result.success) {
+        router.replace('/map');
+        router.refresh();
+      }
     },
   });
 
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -61,24 +71,27 @@ export default function LoginForm({ onSubmit }: Props) {
               className="flex flex-col gap-4"
             >
               <form.AppField
-                name="phonenumber"
+                name="username"
                 validators={{
-                  onSubmit: loginFormUser.shape.phonenumber,
+                  onSubmit: LoginDto.shape.username,
                 }}
               >
                 {(field) => (
-                  <field.TextField placeholder="شماره تلفن خود را وارد کنید" />
+                  <field.TextField placeholder="نام کاربری خود را وارد کنید" />
                 )}
               </form.AppField>
 
               <form.AppField
                 name="password"
                 validators={{
-                  onSubmit: loginFormUser.shape.password,
+                  onSubmit: LoginDto.shape.password,
                 }}
               >
                 {(field) => (
-                  <field.TextField placeholder="رمز عبور خود را وارد کنید" />
+                  <field.TextField
+                    placeholder="رمز عبور خود را وارد کنید"
+                    type="password"
+                  />
                 )}
               </form.AppField>
 
