@@ -1,6 +1,5 @@
 // bff/src/app/api/[...path]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { sessionCookieHeader } from '@/app/_lib/auth/session-cookie';
 
 /**
  * Forwards `/api/*` to the Nest API (`NEST_API_URL`), so the browser only ever talks to this
@@ -51,6 +50,24 @@ const problem = (status: number, code: string, message: string) =>
   Response.json({ code, message }, { status });
 
 /**
+ * Must match SESSION_COOKIE_NAME on the API. Unset: the API's two defaults
+ * (`__Host-sid` when cookies are Secure, `sid` otherwise).
+ */
+function sessionCookieNames(): string[] {
+  const configured = process.env.SESSION_COOKIE_NAME;
+  return configured ? [configured] : ['__Host-sid', 'sid'];
+}
+
+function sessionCookieHeader(request: NextRequest): string | undefined {
+  const names = sessionCookieNames();
+  const pairs = request.cookies
+    .getAll()
+    .filter(({ name }) => names.includes(name))
+    .map(({ name, value }) => `${name}=${value}`);
+  return pairs.length > 0 ? pairs.join('; ') : undefined;
+}
+
+/**
  * The API rate-limits OTP requests per client IP, so it must see the real client, not this server.
  * Only a value set by the platform/proxy in front of the BFF is trusted. If the BFF is exposed
  * directly, that proxy must overwrite these headers, otherwise a client can spoof its address.
@@ -85,7 +102,7 @@ async function proxy(request: NextRequest, { params }: Context) {
   const headers = new Headers(request.headers);
   for (const name of REQUEST_STRIP) headers.delete(name);
 
-  const cookie = sessionCookieHeader(request.cookies.getAll());
+  const cookie = sessionCookieHeader(request);
   if (cookie) headers.set('cookie', cookie);
 
   // Forwarded as sent by the browser: the API checks it against TRUSTED_ORIGINS on state-changing requests.
