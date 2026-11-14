@@ -1,7 +1,7 @@
 'use client';
 import { QueryProviders } from '@/app/_lib/QueryProviders';
 import LoginBg from '../../../../public/login-bg.png';
-import LoginForm from '@/app/components/auth/login/LoginForm';
+import LoginForm from '@/app/_components/auth/login/LoginForm';
 export default function LoginPage() {
   return (
     <QueryProviders>
