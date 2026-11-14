@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { createFormHook } from '@tanstack/react-form';
 
 import { fieldContext, formContext } from './formContext';
@@ -15,22 +14,6 @@ export const {
   extendForm,
   useTypedAppFormContext,
 } = createFormHook({
-=======
-import { createFormHook } from "@tanstack/react-form";
-import SubmitButton from "../components/SubmitButton";
-
-import {
-  fieldContext,
-  formContext,
-} from "./formContext";
-
-import { TextField } from "../components/TextField";
-import { TextareaField } from "../components/TextareaField";
-import { SelectField } from "../components/SelectField";
-import { NumberField } from "../components/NumberField";
-
-export const { useAppForm, withForm, withFieldGroup, extendForm, useTypedAppFormContext } = createFormHook({
->>>>>>> 4cb1c72 (chore(bff): rename component dir to _component)
   fieldContext,
   formContext,
 
@@ -44,8 +27,4 @@ export const { useAppForm, withForm, withFieldGroup, extendForm, useTypedAppForm
   formComponents: {
     SubmitButton,
   },
-<<<<<<< HEAD
 });
-=======
-});
->>>>>>> 4cb1c72 (chore(bff): rename component dir to _component)

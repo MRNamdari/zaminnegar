@@ -7,8 +7,6 @@ import type {
 import { CreateParcelDto } from '@zaminnegar/api-client';
 import { useAppForm } from '../../form/hooks/form';
 
-CreateParcelDto.shape.geometry;
-
 export function ParcelCreateForm({
   draft,
   values,
@@ -21,19 +19,20 @@ export function ParcelCreateForm({
   console.log({ parentId, parentType });
   const form = useAppForm({
     defaultValues: {
-      projectId: '6d758969-a52c-48fc-bca3-2b79676aa366',
       name: draft.name,
       geometry: {
         type: 'MultiPolygon' as const,
         coordinates: [draft.geometry.coordinates],
       },
-    } as CreateParcelDto,
+      projectId: '6d758969-a52c-48fc-bca3-2b79676aa366',
+      status: 'active',
+    },
     validators: {
       onSubmit: CreateParcelDto,
     },
     onSubmit: async ({ value }) => {
       console.log(value);
-      onSubmit(value);
+      // onSubmit(value);
     },
     onSubmitInvalid: console.log,
   });
