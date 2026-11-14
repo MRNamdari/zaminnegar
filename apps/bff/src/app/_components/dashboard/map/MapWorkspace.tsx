@@ -1,30 +1,31 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import {
   FeatureWorkspaceProvider,
   describeError,
   toEditorError,
   useFeatureOperations,
   type AreaCollection,
-} from "@/app/features/map-editor";
-import { createFeatureGateway } from "@/app/_lib/feature-gateway";
-import {
-  featuresQueryKey,
-  featuresQueryOptions,
-  projectQueryOptions,
-} from "@/app/_lib/queries";
+} from '@/app/features/map-editor';
+import { createFeatureGateway } from '@/app/_lib/feature-gateway';
+import { featuresQueryKey, featuresQueryOptions } from '@/app/_lib/queries';
+import { api } from '@/app/_lib/api.client';
 
-const EMPTY: AreaCollection = { type: "FeatureCollection", features: [] };
+const EMPTY: AreaCollection = { type: 'FeatureCollection', features: [] };
 
 /** Client entry point: API data in, controlled workspace out. */
 export function MapWorkspace({ children }: { children: React.ReactNode }) {
-  const project = useQuery(projectQueryOptions());
-  const projectId = project.data;
+  const query = api.get('/auth/me');
+  const project = useQuery(query.queryOptions);
+  const projectId = project.data?.activeProjectId;
   const features = useQuery(featuresQueryOptions(projectId));
 
-  const gateway = useMemo(() => createFeatureGateway(projectId ?? undefined), [projectId]);
+  const gateway = useMemo(
+    () => createFeatureGateway(projectId ?? undefined),
+    [projectId],
+  );
   const operations = useFeatureOperations(gateway, featuresQueryKey(projectId));
 
   // The application owns selection, visibility and edit-ability and could drive them from anywhere (URL, store, ...).
@@ -46,7 +47,7 @@ export function MapWorkspace({ children }: { children: React.ReactNode }) {
     : features.isError
       ? describeError(toEditorError(features.error)).message
       : project.isSuccess && projectId === null
-        ? "پروژه‌ای وجود ندارد؛ ابتدا یک پروژه بسازید."
+        ? 'پروژه‌ای وجود ندارد؛ ابتدا یک پروژه بسازید.'
         : null;
 
   return (
