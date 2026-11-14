@@ -57,13 +57,13 @@ export default function LoginForm() {
     onSubmit: async ({ value }) => {
       try {
         const result = await loginMutation.mutateAsync(value);
-        toast.success('با موفقیت وارد شدید')
-        
+        toast.success('با موفقیت وارد شدید');
+
         if (!result.success) {
           toast.error(result.message || 'نام کاربری یا رمز عبور اشتباه است');
           return;
         }
-        
+
         // دریافت پروژه‌ها بعد از ورود موفق
         const projectsResult = await refetch();
 
@@ -74,14 +74,14 @@ export default function LoginForm() {
         setIsOpen(true);
       } catch (error) {
         const message =
-        error instanceof Error ? error.message : 'خطایی هنگام ورود رخ داد';
-        
+          error instanceof Error ? error.message : 'خطایی هنگام ورود رخ داد';
+
         toast.error(message);
       }
     },
   });
 
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     e.stopPropagation();
 
