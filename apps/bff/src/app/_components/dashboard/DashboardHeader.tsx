@@ -1,42 +1,43 @@
 'use client';
 
+import { type ProjectResponseDto as Project } from '@zaminnegar/api-client';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 
 import {
-  BsArrowLeft,
   BsArrowLeftRight,
   BsBoxArrowRight,
-  BsCalendar3,
   BsChevronDown,
   BsFolder2Open,
 } from 'react-icons/bs';
 
 import { CgSearch } from 'react-icons/cg';
 
-import { Dialog } from '@/app/_components/Dialog';
-
 import { api } from '@/app/_lib/api.client';
 import { useQuery } from '@tanstack/react-query';
-import { useLogoutMutation } from '@/app/features/auth/mutation';
+import {
+  useLogoutMutation,
+  useActiveProjectMutation,
+} from '@/app/features/auth/mutation';
 import { useRouter } from 'next/navigation';
+import SelectProject from '../auth/SelectProject';
+import { useQueryClient } from '@tanstack/react-query';
 
-type Project = {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
 
 export default function DashboardHeader() {
   const userName = 'مدیر';
 
+  const { data: meData } = useQuery(api.get('/auth/me').queryOptions);
+
+  const activeProjectId = meData?.activeProjectId;
+
+  const queryClient = useQueryClient();
   const { data, isLoading, isError, error, refetch } = useQuery(
     api.get('/projects').queryOptions,
   );
 
-  const logoutMutation = useLogoutMutation()
+  const logoutMutation = useLogoutMutation();
+  const activeProjectMutation = useActiveProjectMutation();
   const router = useRouter();
   const projects: Project[] = (data?.items ?? []) as Project[];
 
@@ -70,19 +71,34 @@ export default function DashboardHeader() {
   const handleLogout = async () => {
     setIsOpen(false);
     console.log('Logout clicked');
-   const result = await logoutMutation.mutateAsync();
-   if (result.success) {
-    router.replace('/login');
-    router.refresh();
-   }else{
-    // handle error
-   }
+    const result = await logoutMutation.mutateAsync();
+    if (result.success) {
+      router.replace('/login');
+      router.refresh();
+    } else {
+      // handle error
+    }
   };
 
-  // انتخاب پروژه (فعلاً نمایشی)
-  const handleSelectProject = (projectId: string) => {
-    console.log('Selected project:', projectId);
-    setIsProjectDialogOpen(false);
+  const handleSelectProject = async (project: Project) => {
+    try {
+      console.log(project)
+      const result = await activeProjectMutation.mutateAsync({
+        projectId: project.id,
+      });
+
+      console.log('Project changed:', result);
+
+      // پاک کردن اطلاعات Cache پروژه قبلی
+      queryClient.clear();
+
+      setIsProjectDialogOpen(false);
+
+      router.replace('/map');
+      router.refresh();
+    } catch (error) {
+      console.error('Error selecting project:', error);
+    }
   };
 
   return (
@@ -234,91 +250,18 @@ export default function DashboardHeader() {
       </header>
 
       {/* Project Selection Dialog */}
-      <Dialog
+      <SelectProject
+        activeProjectId={activeProjectId}
         open={isProjectDialogOpen}
         onOpenChange={setIsProjectDialogOpen}
-        title="پروژه‌های شما"
-        description="برای ادامه، پروژه موردنظر خود را انتخاب کنید."
-      >
-        <div className="flex flex-col gap-3">
-          {isLoading ? (
-            <p className="text-center text-sm text-foreground-secondary py-8">
-              در حال دریافت پروژه‌ها...
-            </p>
-          ) : isError ? (
-            <div className="text-center py-8 flex flex-col gap-3">
-              <p className="text-sm text-red-500">
-                {error instanceof Error
-                  ? error.message
-                  : 'خطا در دریافت پروژه‌ها'}
-              </p>
-
-              <button
-                type="button"
-                onClick={() => void refetch()}
-                className="text-sm text-primary hover:underline"
-              >
-                تلاش مجدد
-              </button>
-            </div>
-          ) : projects.length === 0 ? (
-            <p className="text-center text-sm text-foreground-secondary py-8">
-              هیچ پروژه‌ای برای شما ثبت نشده است.
-            </p>
-          ) : (
-            projects.map((project) => (
-              <button
-                key={project.id}
-                type="button"
-                onClick={() => handleSelectProject(project.id)}
-                className="group relative w-full overflow-hidden rounded-2xl border border-border bg-surface p-5 text-right transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 cursor-pointer"
-              >
-                {/* افکت پس‌زمینه */}
-                <div className="absolute -left-10 -top-10 size-32 rounded-full bg-primary/5 blur-2xl transition-all duration-300 group-hover:bg-primary/10" />
-
-                <div className="relative flex items-start justify-between gap-4">
-                  {/* آیکون پروژه */}
-                  <div className="flex bg-surface-muted hover:bg-surface-muted-hover size-12 shrink-0 items-center justify-center rounded-2xl text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white">
-                    <BsFolder2Open size={23} />
-                  </div>
-
-                  {/* اطلاعات پروژه */}
-                  <div className="flex min-w-0 flex-1 flex-col gap-2">
-                    <h3 className="truncate text-base font-bold text-foreground transition-colors group-hover:text-primary">
-                      {project.name}
-                    </h3>
-
-                    <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
-                      {project.description ||
-                        'توضیحاتی برای این پروژه ثبت نشده است.'}
-                    </p>
-                  </div>
-
-                  {/* فلش انتخاب */}
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition-all duration-300 group-hover:bg-primary group-hover:text-white">
-                    <BsArrowLeft size={18} />
-                  </div>
-                </div>
-
-                {/* جداکننده */}
-                <div className="my-4 h-px w-full bg-border/70" />
-
-                {/* تاریخ ایجاد */}
-                <div className="relative flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <BsCalendar3 size={14} />
-                    <span>تاریخ ایجاد</span>
-                  </div>
-
-                  <span className="text-xs font-medium text-foreground">
-                    {new Date(project.createdAt).toLocaleDateString('fa-IR')}
-                  </span>
-                </div>
-              </button>
-            ))
-          )}
-        </div>
-      </Dialog>
+        projects={projects}
+        isLoading={isLoading}
+        isError={isError}
+        error={error instanceof Error ? error.message : undefined}
+        isSelecting={activeProjectMutation.isPending}
+        onRetry={() => void refetch()}
+        onSelect={handleSelectProject}
+      />
     </>
   );
 }
