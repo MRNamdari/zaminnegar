@@ -6,6 +6,8 @@ import z from 'zod';
 z.config(fa());
 
 import { LoginDto } from '@zaminnegar/api-client';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 import { QueryProviders } from '@/app/_lib/QueryProviders';
 import { useLoginMutation } from '@/app/features/auth/mutation';
 export default function LoginPage() {
@@ -17,6 +19,7 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
+  const router = useRouter();
   const loginMutation = useLoginMutation();
   const form = useAppForm({
     defaultValues: {
@@ -28,7 +31,15 @@ function LoginForm() {
     },
     onSubmit: async ({ value }) => {
       const result = await loginMutation.mutateAsync(value);
-      console.log(result);
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      // The session cookie is already stored; navigate so server components see it.
+      router.replace('/map');
+      router.refresh();
     },
   });
   return (
