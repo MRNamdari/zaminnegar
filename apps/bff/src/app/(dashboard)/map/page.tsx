@@ -3,16 +3,12 @@
 import DetailsLevel from '@/app/_components/dashboard/map/DetailsLevel';
 import LevelManagement from '@/app/_components/dashboard/map/LevelManagement';
 import { MapWorkspace } from '@/app/_components/dashboard/map/MapWorkspace';
-import { ParcelCreateForm } from '@/app/_components/dashboard/map/ParcelCreateForm';
+import { FeatureCreateForm } from '@/app/_components/dashboard/map/FeatureCreateForm';
 import SelectedParcels from '@/app/_components/dashboard/map/SelectedParcels';
 import SelectedParcelsOwnersTable from '@/app/_components/dashboard/map/SelectedParcelsOwnersTable';
-import { api } from '@/app/_lib/api.client';
 import { DraftConfigurationFlow, MapEditor } from '@/app/features/map-editor';
 
-
-
 export default function MapPage() {
-  api.client.get('/auth/me').then(console.log)
   return (
     <MapWorkspace>
       <div className="grid grid-cols-12 h-full">
@@ -26,10 +22,10 @@ export default function MapPage() {
               <DraftConfigurationFlow
                 steps={[
                   {
-                    id: 'parcel-information',
-                    label: 'مشخصات قطعه',
-                    description: ' اطلاعات اولیه قطعه جدید را وارد کنید.',
-                    component: ParcelCreateForm,
+                    id: 'feature-information',
+                    label: 'مشخصات محدوده',
+                    description: 'اطلاعات اولیه محدوده جدید را وارد کنید.',
+                    component: FeatureCreateForm,
                   },
                 ]}
               />

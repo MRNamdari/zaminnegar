@@ -1,32 +1,60 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { skipToken, useQuery, type QueryKey } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import {
   FeatureWorkspaceProvider,
   describeError,
   toEditorError,
+  useApiFeatureGateway,
   useFeatureOperations,
   type AreaCollection,
+  areaCollectionSchema,
+  type GatewayDiagnostic,
 } from '@/app/features/map-editor';
-import { createFeatureGateway } from '@/app/_lib/feature-gateway';
-import { featuresQueryKey, featuresQueryOptions } from '@/app/_lib/queries';
-import { api } from '@/app/_lib/api.client';
+import { api as browserApi } from '@/app/_lib/api.client';
 
 const EMPTY: AreaCollection = { type: 'FeatureCollection', features: [] };
 
+export const featuresQueryKey = (projectId: string | null) =>
+  ['map-editor', 'features', projectId] as const satisfies QueryKey;
+
+const logDiagnostic = (d: GatewayDiagnostic): void =>
+  console.warn('[features-api]', d);
+
+const api = browserApi.client;
+
+async function fetchProjectFeatures(
+  projectId: string,
+  signal: AbortSignal,
+): Promise<AreaCollection> {
+  const response = await api.get('/map/features', {
+    query: { projectId },
+    overrides: { signal },
+  });
+  return areaCollectionSchema.parse(response);
+}
+
 /** Client entry point: API data in, controlled workspace out. */
 export function MapWorkspace({ children }: { children: React.ReactNode }) {
-  const query = api.get('/auth/me');
-  const project = useQuery(query.queryOptions);
-  const projectId = project.data?.activeProjectId;
-  const features = useQuery(featuresQueryOptions(projectId));
+  const project = useQuery({
+    queryKey: ['auth', 'me'],
+    queryFn: () => api.get('/auth/me'),
+  });
+  const projectId = project.data?.activeProjectId ?? null;
+  const featuresKey = featuresQueryKey(projectId);
+  const features = useQuery({
+    queryKey: featuresKey,
+    queryFn: projectId
+      ? ({ signal }) => fetchProjectFeatures(projectId, signal)
+      : skipToken,
+  });
 
-  const gateway = useMemo(
-    () => createFeatureGateway(projectId ?? undefined),
-    [projectId],
-  );
-  const operations = useFeatureOperations(gateway, featuresQueryKey(projectId));
+  const gateway = useApiFeatureGateway(api, featuresKey, {
+    onDiagnostic: logDiagnostic,
+  });
+
+  const operations = useFeatureOperations(gateway, featuresKey);
 
   // The application owns selection, visibility and edit-ability and could drive them from anywhere (URL, store, ...).
   const [selected, setSelected] = useState<string | null>(null);
@@ -46,7 +74,7 @@ export function MapWorkspace({ children }: { children: React.ReactNode }) {
     ? describeError(toEditorError(project.error)).message
     : features.isError
       ? describeError(toEditorError(features.error)).message
-      : project.isSuccess && projectId === null
+      : project.isSuccess && !projectId
         ? 'پروژه‌ای وجود ندارد؛ ابتدا یک پروژه بسازید.'
         : null;
 

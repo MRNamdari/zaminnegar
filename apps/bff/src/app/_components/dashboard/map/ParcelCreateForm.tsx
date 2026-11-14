@@ -1,55 +1,48 @@
 'use client';
 
-import type {
-  DraftConfigurationStepProps,
-  Level,
-} from '@/app/features/map-editor';
 import { CreateParcelDto } from '@zaminnegar/api-client';
+import type { z } from 'zod';
 import { useAppForm } from '../../form/hooks/form';
+import type { FeatureCreateFormProps } from './feature-create-form.types';
 
 export function ParcelCreateForm({
   draft,
   values,
   onSubmit,
-}: DraftConfigurationStepProps<CreateParcelDto>) {
-  const [parentType, parentId] = (draft.parentId?.split(':') as [
-    Level,
-    string,
-  ]) ?? ['block', ''];
-  console.log({ parentId, parentType });
+  onCancel,
+  isSubmitting,
+  errorMessage,
+}: FeatureCreateFormProps) {
+  const defaultValues: z.input<typeof CreateParcelDto> = {
+    name: values.name ?? draft.name,
+    status: values.status ?? 'active',
+  };
   const form = useAppForm({
-    defaultValues: {
-      name: draft.name,
-      geometry: {
-        type: 'MultiPolygon' as const,
-        coordinates: [draft.geometry.coordinates],
-      },
-      projectId: '6d758969-a52c-48fc-bca3-2b79676aa366',
-      status: 'active',
-    },
+    defaultValues,
     validators: {
       onSubmit: CreateParcelDto,
     },
     onSubmit: async ({ value }) => {
-      console.log(value);
-      // onSubmit(value);
+      onSubmit({
+        name: value.name,
+        status: value.status,
+      });
     },
-    onSubmitInvalid: console.log,
   });
+
   return (
     <form.AppForm>
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
+        onSubmit={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
           void form.handleSubmit();
         }}
+        className="space-y-4"
       >
         <form.AppField
           name="name"
-          validators={{
-            onBlur: CreateParcelDto.shape.name,
-          }}
+          validators={{ onBlur: CreateParcelDto.shape.name }}
         >
           {(field) => (
             <field.TextField
@@ -60,34 +53,51 @@ export function ParcelCreateForm({
           )}
         </form.AppField>
 
-        <label className="block text-sm my-3">وضعیت قطعه</label>
+        <form.AppField
+          name="status"
+          validators={{ onBlur: CreateParcelDto.shape.status }}
+        >
+          {(field) => (
+            <field.SelectField
+              label="وضعیت قطعه"
+              required
+              options={[
+                { label: 'فعال', value: 'active' },
+                { label: 'غیرفعال', value: 'inactive' },
+              ]}
+            />
+          )}
+        </form.AppField>
 
-        <div className="w-full rounded-lg border border-border bg-white/5 px-3 py-3 text-sm text-gray-400 cursor-not-allowed">
-          در انتظار تکمیل
-        </div>
+        {errorMessage && (
+          <p role="alert" className="text-sm text-action-error">
+            {errorMessage}
+          </p>
+        )}
 
-        <p className="text-xs text-gray-500 my-2">
-          وضعیت قطعه پس از ثبت و طی مراحل بررسی تغییر می‌کند.
-        </p>
         <form.Subscribe
           selector={(state) => ({
             canSubmit: state.canSubmit,
             isSubmitting: state.isSubmitting,
-            isSubmitted: state.isSubmitted,
-            errors: state.errors,
-            values: state.values,
           })}
         >
           {(state) => (
-            <>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={isSubmitting || state.isSubmitting}
+                className="w-full rounded-lg border border-border px-4 py-2 text-sm hover:bg-surface-hover disabled:opacity-50"
+              >
+                انصراف
+              </button>
               <form.SubmitButton
                 label="ثبت قطعه"
-                disabled={!state.canSubmit || state.isSubmitting}
+                disabled={
+                  !state.canSubmit || state.isSubmitting || isSubmitting
+                }
               />
-              <pre className="text-xs whitespace-pre-wrap">
-                {JSON.stringify(state, null, 2)}
-              </pre>
-            </>
+            </div>
           )}
         </form.Subscribe>
       </form>
