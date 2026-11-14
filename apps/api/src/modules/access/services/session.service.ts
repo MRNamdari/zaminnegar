@@ -1,106 +1,227 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { createHash, randomBytes } from 'node:crypto';
+import { Inject, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { AuthContext } from '../access.types';
+import { ACCESS_CONFIG, type AccessConfig } from '../access.config';
+import type { E164Phone, Principal, PrincipalMembership, RoleRef } from '../access.types';
+import { parsePermission, type PermissionRef } from '../permissions';
+import { execute, firstRow, returning, rows, type Queryable } from '../utils/sql';
+import { generateToken, hashToken } from '../utils/token';
 
-const TOUCH_AFTER_MS = 60_000;
+export interface SessionClientInfo {
+  readonly userAgent: string | null;
+  readonly ip: string | null;
+}
 
-const sha256 = (value: string): string => createHash('sha256').update(value).digest('hex');
+export interface IssuedSession {
+  /** The opaque identifier. Goes into the cookie only. */
+  readonly token: string;
+  readonly idleExpiresAt: Date;
+  readonly absoluteExpiresAt: Date;
+  /** Lifetime for the cookie: until the absolute deadline. */
+  readonly cookieMaxAgeMs: number;
+}
+
+export interface AuthenticatedSession {
+  readonly principal: Principal;
+  /** Present when the identifier was just replaced; the response must carry the new cookie. */
+  readonly rotation: { readonly token: string; readonly cookieMaxAgeMs: number } | null;
+}
 
 interface SessionRow {
   session_id: string;
-  last_used_at: Date;
   user_id: string;
-  email: string;
-  name: string;
-  global_role_id: string | null;
-  global_role_name: string | null;
+  is_current: boolean;
+  since_used: number;
+  since_rotated: number;
+  username: string;
+  phone: E164Phone;
+  email: string | null;
+  system_role_id: string | null;
+  system_role_name: string | null;
+  system_role_is_system: boolean | null;
+}
+interface PermissionRow {
+  resource: string;
+  action: string;
+}
+interface MembershipRow extends PermissionRow {
+  project_id: string;
+  role_id: string;
+  role_name: string;
+  role_is_system: boolean;
 }
 
+/**
+ * Database-backed opaque sessions: one row per user, holding only the SHA-256 of the identifier. A session is valid
+ * while it is inside both its idle and absolute deadlines and its user is active and phone-verified.
+ */
 @Injectable()
 export class SessionService {
-  private readonly ttlMs: number;
-
   constructor(
     private readonly dataSource: DataSource,
-    config: ConfigService,
-  ) {
-    this.ttlMs = Number(config.get('SESSION_TTL_HOURS') ?? 72) * 3_600_000;
-  }
+    @Inject(ACCESS_CONFIG) private readonly config: AccessConfig,
+  ) {}
 
-  /** Opens a session and returns the token, which is shown to the client exactly once. */
-  async create(userId: string, userAgent: string | null): Promise<{ token: string; expiresAt: Date }> {
-    const token = randomBytes(32).toString('base64url');
-    const expiresAt = new Date(Date.now() + this.ttlMs);
-    await this.dataSource.query(`DELETE FROM sessions WHERE user_id = $1 AND expires_at < now()`, [userId]);
-    await this.dataSource.query(
-      `INSERT INTO sessions (user_id, token_hash, expires_at, user_agent) VALUES ($1, $2, $3, $4)`,
-      [userId, sha256(token), expiresAt, userAgent?.slice(0, 500) ?? null],
+  /**
+   * Creates the user's session, replacing any previous one in the same statement: the unique `user_id` makes the
+   * upsert race-free, and the identifier is always new, so a pre-existing identifier can never be "adopted"
+   * (session fixation). Pass the transaction's manager to make it atomic with the surrounding work.
+   */
+  async issue(db: Queryable, userId: string, client: SessionClientInfo): Promise<IssuedSession> {
+    const { idleTtlSeconds, absoluteTtlSeconds } = this.config.session;
+    await execute(db, `DELETE FROM sessions WHERE absolute_expires_at < now() OR idle_expires_at < now()`);
+    const token = generateToken();
+    const row = await firstRow<{ idle_expires_at: Date; absolute_expires_at: Date }>(
+      db,
+      `INSERT INTO sessions (user_id, token_hash, idle_expires_at, absolute_expires_at, user_agent, ip)
+       VALUES ($1, $2, now() + make_interval(secs => $3), now() + make_interval(secs => $4), $5, $6)
+       ON CONFLICT (user_id) DO UPDATE SET
+         id = gen_random_uuid(), token_hash = EXCLUDED.token_hash, previous_token_hash = NULL,
+         rotated_at = now(), last_used_at = now(), created_at = now(),
+         idle_expires_at = EXCLUDED.idle_expires_at, absolute_expires_at = EXCLUDED.absolute_expires_at,
+         user_agent = EXCLUDED.user_agent, ip = EXCLUDED.ip
+       RETURNING idle_expires_at, absolute_expires_at`,
+      [userId, hashToken(token), idleTtlSeconds, absoluteTtlSeconds, client.userAgent?.slice(0, 500) ?? null, client.ip],
     );
-    return { token, expiresAt };
+    if (!row) throw new Error('Session was not stored');
+    return this.toIssued(token, row.idle_expires_at, row.absolute_expires_at);
   }
 
-  revoke(sessionId: string): Promise<unknown> {
-    return this.dataSource.query(`DELETE FROM sessions WHERE id = $1`, [sessionId]);
-  }
-
-  revokeAllOf(userId: string): Promise<unknown> {
-    return this.dataSource.query(`DELETE FROM sessions WHERE user_id = $1`, [userId]);
-  }
-
-  /** Resolves a bearer token to the caller and everything the caller may do; null when invalid/expired/inactive. */
-  async authenticate(token: string): Promise<AuthContext | null> {
-    const rows: SessionRow[] = await this.dataSource.query(
-      `SELECT s.id AS session_id, s.last_used_at, u.id AS user_id, u.email, u.name,
-              u.global_role_id, gr.name AS global_role_name
-         FROM sessions s
-         JOIN users u ON u.id = s.user_id
-         LEFT JOIN roles gr ON gr.id = u.global_role_id
-        WHERE s.token_hash = $1 AND s.expires_at > now() AND u.is_active`,
-      [sha256(token)],
+  /** Resolves a cookie value to the caller, extending the idle deadline and rotating the identifier when due. */
+  async authenticate(token: string): Promise<AuthenticatedSession | null> {
+    const { session } = this.config;
+    const tokenHash = hashToken(token);
+    const row = await firstRow<SessionRow>(
+      this.dataSource,
+      `SELECT s.id AS session_id, s.user_id, (s.token_hash = $1) AS is_current,
+              EXTRACT(EPOCH FROM (now() - s.last_used_at))::float8 AS since_used,
+              EXTRACT(EPOCH FROM (now() - s.rotated_at))::float8 AS since_rotated,
+              u.username, u.phone, u.email, u.system_role_id,
+              sr.name AS system_role_name, sr.is_system AS system_role_is_system
+       FROM sessions s
+       JOIN users u ON u.id = s.user_id
+       LEFT JOIN roles sr ON sr.id = u.system_role_id AND sr.scope = 'system'
+       WHERE (s.token_hash = $1
+              OR (s.previous_token_hash = $1 AND s.rotated_at > now() - make_interval(secs => $2)))
+         AND s.idle_expires_at > now() AND s.absolute_expires_at > now()
+         AND u.is_active AND u.phone_verified_at IS NOT NULL`,
+      [tokenHash, session.rotationGraceSeconds],
     );
-    const row = rows[0];
     if (!row) return null;
 
-    if (Date.now() - new Date(row.last_used_at).getTime() > TOUCH_AFTER_MS) {
-      await this.dataSource.query(`UPDATE sessions SET last_used_at = now() WHERE id = $1`, [row.session_id]);
-    }
-
-    const globalPermissions = new Set<string>();
-    if (row.global_role_id) {
-      const rows: Array<{ resource: string; action: string }> = await this.dataSource.query(
-        `SELECT resource, action FROM role_permissions WHERE role_id = $1`,
-        [row.global_role_id],
-      );
-      for (const { resource, action } of rows) globalPermissions.add(`${resource}:${action}`);
-    }
-
-    const projectPermissions = new Map<string, Set<string>>();
-    const memberships = new Map<string, { roleId: string; roleName: string }>();
-    const memberRows: Array<{ project_id: string; role_id: string; role_name: string; resource: string | null; action: string | null }> =
-      await this.dataSource.query(
-        `SELECT pm.project_id, pm.role_id, r.name AS role_name, rp.resource, rp.action
-           FROM project_members pm
-           JOIN roles r ON r.id = pm.role_id
-           LEFT JOIN role_permissions rp ON rp.role_id = pm.role_id
-          WHERE pm.user_id = $1`,
+    const [systemRows, membershipRows] = await Promise.all([
+      row.system_role_id
+        ? rows<PermissionRow>(
+            this.dataSource,
+            `SELECT rp.resource, rp.action FROM role_permissions rp
+             JOIN roles r ON r.id = rp.role_id AND r.scope = 'system' WHERE rp.role_id = $1`,
+            [row.system_role_id],
+          )
+        : Promise.resolve([]),
+      rows<MembershipRow>(
+        this.dataSource,
+        `SELECT pm.project_id, r.id AS role_id, r.name AS role_name, r.is_system AS role_is_system, rp.resource, rp.action
+         FROM project_members pm
+         JOIN roles r ON r.id = pm.role_id AND r.scope = 'project'
+         LEFT JOIN role_permissions rp ON rp.role_id = r.id AND EXISTS (
+           SELECT 1 FROM permissions p WHERE p.resource = rp.resource AND p.action = rp.action AND p.project_assignable)
+         WHERE pm.user_id = $1`,
         [row.user_id],
-      );
-    for (const m of memberRows) {
-      memberships.set(m.project_id, { roleId: m.role_id, roleName: m.role_name });
-      const set = projectPermissions.get(m.project_id) ?? new Set<string>();
-      if (m.resource && m.action) set.add(`${m.resource}:${m.action}`);
-      projectPermissions.set(m.project_id, set);
-    }
+      ),
+    ]);
 
-    return {
+    const principal: Principal = {
       sessionId: row.session_id,
-      user: { id: row.user_id, email: row.email, name: row.name },
-      globalRole: row.global_role_id ? { id: row.global_role_id, name: row.global_role_name as string } : null,
-      globalPermissions,
-      projectPermissions,
-      memberships,
+      user: { id: row.user_id, username: row.username, phone: row.phone, email: row.email },
+      systemRole: row.system_role_id
+        ? { id: row.system_role_id, name: row.system_role_name ?? '', isSystem: row.system_role_is_system ?? false }
+        : null,
+      systemPermissions: this.toPermissions(systemRows),
+      memberships: this.toMemberships(membershipRows),
     };
+
+    // Only the identifier that is current may rotate; a grace-period identifier just rides along.
+    if (row.is_current && row.since_rotated >= session.rotationIntervalSeconds) {
+      const rotated = await this.rotate(row.session_id, tokenHash);
+      if (rotated) return { principal, rotation: { token: rotated.token, cookieMaxAgeMs: rotated.cookieMaxAgeMs } };
+    }
+    if (row.since_used >= session.touchIntervalSeconds) await this.touch(row.session_id);
+    return { principal, rotation: null };
+  }
+
+  /**
+   * Replaces the identifier and extends the idle deadline (never past the absolute one). With `expectedHash` the
+   * update only applies if nobody rotated in between, so concurrent requests cannot fork the session.
+   */
+  async rotate(sessionId: string, expectedHash?: string): Promise<IssuedSession | null> {
+    const token = generateToken();
+    const [row] = await returning<{ idle_expires_at: Date; absolute_expires_at: Date }>(
+      this.dataSource,
+      `UPDATE sessions SET
+         previous_token_hash = token_hash, token_hash = $2, rotated_at = now(), last_used_at = now(),
+         idle_expires_at = LEAST(now() + make_interval(secs => $3), absolute_expires_at)
+       WHERE id = $1 AND ($4::text IS NULL OR token_hash = $4)
+         AND idle_expires_at > now() AND absolute_expires_at > now()
+       RETURNING idle_expires_at, absolute_expires_at`,
+      [sessionId, hashToken(token), this.config.session.idleTtlSeconds, expectedHash ?? null],
+    );
+    return row ? this.toIssued(token, row.idle_expires_at, row.absolute_expires_at) : null;
+  }
+
+  revoke(db: Queryable, sessionId: string): Promise<number> {
+    return execute(db, `DELETE FROM sessions WHERE id = $1`, [sessionId]);
+  }
+
+  /** Security events (password reset, deactivation): ends the user's session, wherever it is in use. */
+  revokeAllForUser(db: Queryable, userId: string): Promise<number> {
+    return execute(db, `DELETE FROM sessions WHERE user_id = $1`, [userId]);
+  }
+
+  private async touch(sessionId: string): Promise<void> {
+    await execute(
+      this.dataSource,
+      `UPDATE sessions SET last_used_at = now(), idle_expires_at = LEAST(now() + make_interval(secs => $2), absolute_expires_at)
+       WHERE id = $1`,
+      [sessionId, this.config.session.idleTtlSeconds],
+    );
+  }
+
+  private toIssued(token: string, idleExpiresAt: Date, absoluteExpiresAt: Date): IssuedSession {
+    return {
+      token,
+      idleExpiresAt,
+      absoluteExpiresAt,
+      cookieMaxAgeMs: absoluteExpiresAt.getTime() - Date.now(),
+    };
+  }
+
+  private toPermissions(source: readonly PermissionRow[]): PermissionRef[] {
+    const seen = new Set<string>();
+    const result: PermissionRef[] = [];
+    for (const row of source) {
+      const permission = parsePermission(row.resource, row.action);
+      const key = `${row.resource}:${row.action}`;
+      if (permission && !seen.has(key)) {
+        seen.add(key);
+        result.push(permission);
+      }
+    }
+    return result;
+  }
+
+  private toMemberships(source: readonly MembershipRow[]): Map<string, PrincipalMembership> {
+    const grouped = new Map<string, { role: RoleRef; rows: PermissionRow[] }>();
+    for (const row of source) {
+      const entry = grouped.get(row.project_id) ?? {
+        role: { id: row.role_id, name: row.role_name, isSystem: row.role_is_system },
+        rows: [],
+      };
+      if (row.resource !== null && row.action !== null) entry.rows.push(row);
+      grouped.set(row.project_id, entry);
+    }
+    const memberships = new Map<string, PrincipalMembership>();
+    for (const [projectId, { role, rows: permissionRows }] of grouped) {
+      memberships.set(projectId, { role, permissions: this.toPermissions(permissionRows) });
+    }
+    return memberships;
   }
 }

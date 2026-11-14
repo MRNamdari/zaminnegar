@@ -1,15 +1,15 @@
 'use client';
 import { BlockResponseDto as Block } from '@zaminnegar/api-client';
 import { AiOutlinePlus } from 'react-icons/ai';
-import BlocksTable from '@/app/components/dashboard/blocks/BlocksTable';
+import BlocksTable from '@/app/_components/dashboard/blocks/BlocksTable';
 import { useState } from 'react';
-import { Dialog } from '@/app/components/Dialog';
+import { Dialog } from '@/app/_components/Dialog';
 import { useRouter } from 'next/navigation';
 import { mockBlocks } from '@/app/(dashboard)/mockData';
 import { CgSearch } from 'react-icons/cg';
-import CreateBlockForm from '@/app/components/dashboard/blocks/BlockFormCreate';
-import { BlockFormValue } from '@/app/components/dashboard/blocks/schemas/BlockCreate.schema';
-import UpdateBlockForm from '@/app/components/dashboard/blocks/BlockFormUpdate';
+import CreateBlockForm from '@/app/_components/dashboard/blocks/BlockFormCreate';
+import { BlockFormValue } from '@/app/_components/dashboard/blocks/schemas/BlockCreate.schema';
+import UpdateBlockForm from '@/app/_components/dashboard/blocks/BlockFormUpdate';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/app/_lib/api.client';
 
@@ -118,9 +118,9 @@ export default function BlockPage() {
         </div>
         {isLoading ? (
           <p>{'در حال بارگذاری...'}</p>
-        ) : error ?(
+        ) : error ? (
           <p>{'خطا در بارگذاری!'}</p>
-        ):(
+        ) : (
           <BlocksTable
             data={data?.items ?? []}
             onDelete={handleDelete}

@@ -1,7 +1,8 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiSessionAuth, CurrentPrincipal, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import type { Principal } from '../access/access.types';
 import { Action, Resource } from '../access/permissions';
 import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
@@ -18,7 +19,7 @@ import { GetProjectQuery } from './queries/get-project.query';
 import { ListProjectsQuery } from './queries/list-projects.query';
 
 @ApiTags('projects')
-@ApiBearerAuth()
+@ApiSessionAuth()
 @Controller('projects')
 export class ProjectController {
   constructor(
@@ -27,11 +28,11 @@ export class ProjectController {
   ) {}
 
   @Post()
-  @RequirePermission(Resource.project, Action.create, { scope: 'global' })
+  @RequirePermission(Resource.project, Action.create, { scope: 'system' })
   @ApiOperation({ summary: 'Create a project' })
   @ApiCreatedResponse({ type: ProjectResponseDto })
-  async create(@Body() dto: CreateProjectDto): Promise<ProjectResponseDto> {
-    const entity = await this.commandBus.execute<CreateProjectCommand, Project>(new CreateProjectCommand(dto));
+  async create(@Body() dto: CreateProjectDto, @CurrentPrincipal() principal: Principal): Promise<ProjectResponseDto> {
+    const entity = await this.commandBus.execute<CreateProjectCommand, Project>(new CreateProjectCommand(dto, principal.user.id));
     return ProjectResponseDto.from(entity);
   }
 

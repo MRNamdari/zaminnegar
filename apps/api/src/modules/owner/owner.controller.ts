@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiSessionAuth, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
 import { Action, Resource } from '../access/permissions';
 import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
@@ -21,7 +21,7 @@ import { ParcelOwnership } from '../parcel/entities/parcel-ownership.entity';
 import { OwnershipWithParcelResponseDto } from '../parcel/dto/ownership-with-parcel-response.dto';
 
 @ApiTags('owners')
-@ApiBearerAuth()
+@ApiSessionAuth()
 @Controller('owners')
 export class OwnerController {
   constructor(

@@ -84,14 +84,14 @@ const encodeRequestBody = ((requestFormat, body) => {
 }) as (requestFormat: RequestFormat, body: unknown) => { body?: BodyInit; contentType?: string };
 
 export type AuthCredentials = {
-  /** The `token` returned by `POST /auth/login`. Revoked by `POST /auth/logout`. */
-  bearer?: string;
+  /** HTTP-only session cookie set by `POST /auth/login`. Ended by `POST /auth/logout`, a password reset or deactivation. */
+  session?: string;
 };
 
 export type SecurityRequirements = readonly (readonly string[])[];
 
 const securitySchemeProperties: Record<string, keyof AuthCredentials> = {
-  bearer: "bearer",
+  session: "session",
 };
 
 /** Pick the first OpenAPI security requirement satisfied by the available credentials. */
@@ -117,15 +117,15 @@ const selectSecuritySchemes = (
  */
 export const applyAuth = (
   headers: Headers,
-  _url: URL,
+  url: URL,
   auth: AuthCredentials,
   requirements: SecurityRequirements,
 ): void => {
   const allowed = selectSecuritySchemes(auth, requirements);
-  if (allowed.has("bearer") && auth["bearer"]) {
-    const raw = auth["bearer"]!.trim();
-    const token = /^bearer\s+/i.test(raw) ? raw.replace(/^bearer\s+/i, "").trim() : raw;
-    headers.set("Authorization", "Bearer " + token);
+  if (allowed.has("session") && auth["session"]) {
+    const existing = headers.get("cookie");
+    const part = "sid=" + encodeURIComponent(auth["session"]!);
+    headers.set("cookie", existing ? existing + "; " + part : part);
   }
 };
 

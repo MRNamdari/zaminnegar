@@ -1,4 +1,7 @@
-/** Everything a role can be granted on. `user` and `role` are administered globally, never per project. */
+/**
+ * Everything a role can be granted on. The values are also the CASL subject types, so a permission
+ * `parcel:update` becomes the rule `can('update', 'parcel', ...)`.
+ */
 export enum Resource {
   project = 'project',
   boundary = 'boundary',
@@ -8,8 +11,8 @@ export enum Resource {
   owner = 'owner',
   ownership = 'ownership',
   member = 'member',
-  user = 'user',
   role = 'role',
+  user = 'user',
 }
 
 export enum Action {
@@ -17,21 +20,49 @@ export enum Action {
   read = 'read',
   update = 'update',
   delete = 'delete',
+  /** Adds a user to a project. */
+  invite = 'invite',
+  /** CASL's wildcard: every action on the resource, including ones added later. */
+  manage = 'manage',
 }
 
 export enum RoleScope {
-  /** Granted once to a user (`users.global_role_id`); applies to every project. */
-  global = 'global',
-  /** Granted to a user inside one project (`project_members`). */
+  /** Predefined roles held once per user (`users.system_role_id`); their permissions apply to every project. */
+  system = 'system',
+  /** Held per project (`project_members`): predefined ones are shared, custom ones belong to exactly one project. */
   project = 'project',
 }
 
-/** Resources (and `project:create`) that only a global role can hold. */
-export const GLOBAL_ONLY_RESOURCES: readonly Resource[] = [Resource.user, Resource.role];
-
-export const permissionKey = (resource: Resource, action: Action): string => `${resource}:${action}`;
-
-export function isGrantableToProjectRole(resource: Resource, action: Action): boolean {
-  if (GLOBAL_ONLY_RESOURCES.includes(resource)) return false;
-  return !(resource === Resource.project && action === Action.create);
+export interface PermissionRef {
+  readonly resource: Resource;
+  readonly action: Action;
 }
+
+const RESOURCE_VALUES: ReadonlySet<string> = new Set(Object.values(Resource));
+const ACTION_VALUES: ReadonlySet<string> = new Set(Object.values(Action));
+
+export const isResource = (value: string): value is Resource => RESOURCE_VALUES.has(value);
+export const isAction = (value: string): value is Action => ACTION_VALUES.has(value);
+
+/** Rows that name an unknown resource or action are dropped: unknown permissions grant nothing. */
+export function parsePermission(resource: string, action: string): PermissionRef | null {
+  return isResource(resource) && isAction(action) ? { resource, action } : null;
+}
+
+export const permissionKey = ({ resource, action }: PermissionRef): string => `${resource}:${action}`;
+
+/** Seeded system roles (see the `AccessControlRework` migration). */
+export const SystemRoleName = {
+  superadmin: 'superadmin',
+  auditor: 'system_auditor',
+  /** Given to every account when its phone number is verified. */
+  user: 'user',
+} as const;
+
+/** Seeded project roles. Custom roles are created per project and can never reuse these names. */
+export const ProjectRoleName = {
+  owner: 'owner',
+  manager: 'manager',
+  editor: 'editor',
+  viewer: 'viewer',
+} as const;

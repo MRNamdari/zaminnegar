@@ -1,7 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
-  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
@@ -11,7 +10,7 @@ import {
 import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
 import { PaginatedResult } from '../../common/utils/paginate';
-import { ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import { ApiSessionAuth, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
 import { Action, Resource } from '../access/permissions';
 import { ParcelResponseDto } from '../parcel/dto/parcel-response.dto';
 import { ListBlockParcelsQuery } from '../parcel/queries/list-block-parcels.query';
@@ -29,7 +28,7 @@ import { GetBlockQuery } from './queries/get-block.query';
 import { ListBlocksQuery } from './queries/list-blocks.query';
 
 @ApiTags('blocks')
-@ApiBearerAuth()
+@ApiSessionAuth()
 @Controller('blocks')
 export class BlockController {
   constructor(

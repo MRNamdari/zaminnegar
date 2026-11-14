@@ -6,17 +6,17 @@ import { CgSearch } from 'react-icons/cg';
 
 import ParcelsTable, {
   Parcel,
-} from '@/app/components/dashboard/parcels/ParcelsTable';
+} from '@/app/_components/dashboard/parcels/ParcelsTable';
 
 import ParcelsFormCreate, {
   ParcelCreatePayload,
-} from '@/app/components/dashboard/parcels/ParcelsFormCreate';
+} from '@/app/_components/dashboard/parcels/ParcelsFormCreate';
 
-import ParcelsFormUpdate from '@/app/components/dashboard/parcels/ParcelsFormUpdate';
+import ParcelsFormUpdate from '@/app/_components/dashboard/parcels/ParcelsFormUpdate';
 
-import { UpdateParcelFormValues } from '@/app/components/dashboard/parcels/schema/ParcelsUpdate.schema';
+import { UpdateParcelFormValues } from '@/app/_components/dashboard/parcels/schema/ParcelsUpdate.schema';
 
-import { Dialog } from '@/app/components/Dialog';
+import { Dialog } from '@/app/_components/Dialog';
 
 import { parcelMockData } from './ParcelMockData';
 import { initialOwners } from '../mockData';
