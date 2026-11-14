@@ -2,7 +2,7 @@ import { useSelector } from "@tanstack/react-form";
 import { useFieldContext } from "../hooks/formContext";
 
 interface NumberFieldProps {
-  label: string;
+  label?: string;
   placeholder?: string;
   required?: boolean;
   min?: number;
@@ -24,10 +24,12 @@ export function NumberField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="block text-foreground text-sm mb-2">
-        {label}
-        {required && <span className="text-red-400">*</span>}
-      </label>
+      {label && (
+        <label className="block text-foreground text-sm mb-2">
+          {label}
+          {required && <span className="text-red-400">*</span>}
+        </label>
+      )}
 
       <input
         type="number"
