@@ -23,13 +23,12 @@ import { useRouter } from 'next/navigation';
 import SelectProject from '../auth/SelectProject';
 import { useQueryClient } from '@tanstack/react-query';
 
-
 export default function DashboardHeader() {
   const userName = 'مدیر';
 
-  const { data: meData } = useQuery(api.get('/auth/me').queryOptions);
+  const { data: me } = useQuery(api.get('/auth/me').queryOptions);
 
-  const activeProjectId = meData?.activeProjectId;
+  const activeProjectId = me?.activeProjectId;
 
   const queryClient = useQueryClient();
   const { data, isLoading, isError, error, refetch } = useQuery(
@@ -72,17 +71,15 @@ export default function DashboardHeader() {
     setIsOpen(false);
     console.log('Logout clicked');
     const result = await logoutMutation.mutateAsync();
-    if (result.success) {
-      router.replace('/login');
-      router.refresh();
-    } else {
-      // handle error
-    }
+    console.log(result);
+
+    router.replace('/login');
+    router.refresh();
   };
 
   const handleSelectProject = async (project: Project) => {
     try {
-      console.log(project)
+      console.log(project);
       const result = await activeProjectMutation.mutateAsync({
         projectId: project.id,
       });
