@@ -6,11 +6,13 @@ import { MapWorkspace } from '@/app/_components/dashboard/map/MapWorkspace';
 import { ParcelCreateForm } from '@/app/_components/dashboard/map/ParcelCreateForm';
 import SelectedParcels from '@/app/_components/dashboard/map/SelectedParcels';
 import SelectedParcelsOwnersTable from '@/app/_components/dashboard/map/SelectedParcelsOwnersTable';
+import { api } from '@/app/_lib/api.client';
 import { DraftConfigurationFlow, MapEditor } from '@/app/features/map-editor';
-import { CreateBlockDto } from '@zaminnegar/api-client';
-const result = CreateBlockDto.safeParse({});
-console.log(result.error);
+
+
+
 export default function MapPage() {
+  api.client.get('/auth/me').then(console.log)
   return (
     <MapWorkspace>
       <div className="grid grid-cols-12 h-full">
