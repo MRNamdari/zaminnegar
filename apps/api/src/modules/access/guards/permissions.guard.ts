@@ -1,115 +1,129 @@
-import {
-  BadRequestException,
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AuthedRequest } from '../access.types';
+import {
+  AccessPolicyService,
+  projectAttributes,
+} from '../abilities/access-policy.service';
+import type { AuthenticatedRequest } from '../access.types';
 import {
   AUTHENTICATED_ONLY_KEY,
   IS_PUBLIC_KEY,
   PERMISSION_KEY,
-  PermissionMeta,
+  type PermissionRequirement,
 } from '../decorators/access.decorators';
+import { InvalidProjectIdError } from '../errors/invalid-project-id.error';
+import { NotAuthenticatedError } from '../errors/not-authenticated.error';
+import { PermissionDeniedError } from '../errors/permission-denied.error';
+import { ResourceNotFoundError } from '../errors/resource-not-found.error';
 import {
-  AuthorizationService,
-  isUuid,
-} from '../services/authorization.service';
+  ResourceLocator,
+  UUID_PATTERN,
+} from '../services/resource-locator.service';
 
 /**
- * Authorization (RBAC with data-level scoping). Roles and their permissions come from the database; the
- * *project* a request touches decides which of the caller's roles applies:
- *  - a global role (e.g. admin) applies to every project;
- *  - a project membership applies to that one project only.
- * Default-deny: a route with no `@Public`, `@AuthenticatedOnly` or `@RequirePermission` is rejected.
+ * Global guard, second of two: the coarse check at the HTTP edge. It resolves the project from the database, asks
+ * the policy service, and fails closed: a route with no declared access rule is denied. Handlers re-check the same
+ * rules in the application layer, so the HTTP guard is never the only line of defence.
  */
 @Injectable()
 export class PermissionsGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly authorization: AuthorizationService,
+    private readonly policy: AccessPolicyService,
+    private readonly locator: ResourceLocator,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    if (context.getType() !== 'http') return true;
     const targets = [context.getHandler(), context.getClass()];
-    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, targets))
-      return true;
     if (
-      this.reflector.getAllAndOverride<boolean>(AUTHENTICATED_ONLY_KEY, targets)
+      this.reflector.getAllAndOverride<boolean | undefined>(
+        IS_PUBLIC_KEY,
+        targets,
+      )
     )
       return true;
 
-    const meta = this.reflector.getAllAndOverride<PermissionMeta | undefined>(
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const { principal } = request;
+    if (!principal) throw new NotAuthenticatedError();
+    if (
+      this.reflector.getAllAndOverride<boolean | undefined>(
+        AUTHENTICATED_ONLY_KEY,
+        targets,
+      )
+    )
+      return true;
+
+    const requirement = this.reflector.get<PermissionRequirement | undefined>(
       PERMISSION_KEY,
-      targets,
+      context.getHandler(),
     );
-    if (!meta) throw new ForbiddenException('This route has no access rule');
+    if (!requirement) throw new PermissionDeniedError(); // fail closed: unannotated route
 
-    const request = context.switchToHttp().getRequest<AuthedRequest>();
-    const auth = request.auth;
-    if (!auth) throw new ForbiddenException();
-    const { resource, action } = meta;
+    const { resource, action, scope } = requirement;
 
-    switch (meta.scope) {
-      case 'global':
-        return this.require(
-          this.authorization.can(auth, resource, action, null),
-        );
+    if (scope === 'system') {
+      this.policy.assertSystem(principal, action, resource);
+      return true;
+    }
 
-      case 'body': {
-        const projectId = (request.body as { projectId?: unknown } | undefined)
-          ?.projectId;
-        if (!isUuid(projectId))
-          throw new BadRequestException('projectId must be a UUID');
-        return this.require(
-          this.authorization.can(auth, resource, action, projectId),
-        );
-      }
-
-      case 'query': {
-        const projectId = (request.query as { projectId?: unknown }).projectId;
-        if (projectId !== undefined) {
-          if (!isUuid(projectId))
-            throw new BadRequestException('projectId must be a UUID');
-          request.projectScope = null; // already authorized for exactly this project
-          return this.require(
-            this.authorization.can(auth, resource, action, projectId),
-          );
-        }
-        // No project given: the list is restricted to the projects the caller may read.
-        request.projectScope = this.authorization.readableProjectIds(
-          auth,
-          resource,
+    if (scope === 'query') {
+      const raw: unknown = request.query.projectId;
+      if (raw === undefined) {
+        request.projectScope = this.policy.accessibleProjectIds(
+          principal,
           action,
+          resource,
         );
         return true;
       }
-
-      case 'param': {
-        const id = request.params[meta.param ?? 'id'];
-        const projectId = await this.authorization.projectIdOf(
-          meta.idOf ?? resource,
-          id,
-        );
-        // Unknown id: let the handler answer 404, but only for callers who could use the route at all.
-        if (projectId === null)
-          return this.require(
-            this.authorization.canAnywhere(auth, resource, action),
-          );
-        return this.require(
-          this.authorization.can(auth, resource, action, projectId),
-        );
-      }
+      const projectId = this.requireUuid(raw);
+      this.policy.assertCan(
+        principal,
+        action,
+        resource,
+        projectAttributes(resource, projectId),
+      );
+      request.projectScope = [projectId]; // narrowed to the one project that was just authorized
+      return true;
     }
+
+    const projectId =
+      scope === 'body'
+        ? this.requireUuid(
+            (request.body as { projectId?: unknown } | undefined)?.projectId,
+          )
+        : await this.resolveFromParam(request, requirement);
+
+    // A record in a project the caller has nothing to do with answers exactly like a record that does not exist.
+    if (scope === 'param' && !this.policy.isRelatedTo(principal, projectId))
+      throw new ResourceNotFoundError();
+
+    this.policy.assertCan(
+      principal,
+      action,
+      resource,
+      projectAttributes(resource, projectId),
+    );
+    return true;
   }
 
-  private require(allowed: boolean): true {
-    if (!allowed)
-      throw new ForbiddenException(
-        'You do not have permission to perform this action',
-      );
-    return true;
+  /** Record not found and "not yours" are indistinguishable: both are a 404, so ids cannot be probed. */
+  private async resolveFromParam(
+    request: AuthenticatedRequest,
+    { param, idOf }: PermissionRequirement,
+  ): Promise<string> {
+    const id = request.params[param];
+    const projectId =
+      typeof id === 'string' ? await this.locator.projectIdOf(idOf, id) : null;
+    if (!projectId) throw new ResourceNotFoundError();
+    return projectId;
+  }
+
+  private requireUuid(value: unknown): string {
+    if (typeof value !== 'string' || !UUID_PATTERN.test(value))
+      throw new InvalidProjectIdError();
+    return value;
   }
 }

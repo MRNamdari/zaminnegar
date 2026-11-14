@@ -2,7 +2,6 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPi
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
-  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
@@ -12,7 +11,7 @@ import {
 import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
 import { PaginatedResult } from '../../common/utils/paginate';
-import { ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import { ApiSessionAuth, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
 import { Action, Resource } from '../access/permissions';
 import { ParcelResponseDto } from '../parcel/dto/parcel-response.dto';
 import { ListRegionParcelsQuery } from '../parcel/queries/list-region-parcels.query';
@@ -32,7 +31,7 @@ import { GetRegionQuery } from './queries/get-region.query';
 import { ListRegionsQuery } from './queries/list-regions.query';
 
 @ApiTags('regions')
-@ApiBearerAuth()
+@ApiSessionAuth()
 @Controller('regions')
 export class RegionController {
   constructor(
