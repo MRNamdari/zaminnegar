@@ -2261,6 +2261,44 @@
         ]
       }
     },
+    "/map/features": {
+      "get": {
+        "operationId": "MapController_getFeatures",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "query",
+            "description": "Project whose features should be loaded",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapFeaturesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Get map editor features for a project",
+        "tags": [
+          "map"
+        ]
+      }
+    },
     "/regions": {
       "post": {
         "description": "Send geometry, or the boundaryId of a finished draft",
@@ -4700,6 +4738,131 @@
             }
           }
         }
+      },
+      "MapFeatureGeometryResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Polygon"
+            ]
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ]
+      },
+      "MapFeaturePropertiesResponseDto": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": [
+              "region",
+              "block",
+              "parcel"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "areaHa": {
+            "type": "number"
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "boundaryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "areaM2": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "level",
+          "name",
+          "areaHa",
+          "parentId",
+          "boundaryId",
+          "status",
+          "areaM2"
+        ]
+      },
+      "MapFeatureResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Feature"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/MapFeatureGeometryResponseDto"
+          },
+          "properties": {
+            "$ref": "#/components/schemas/MapFeaturePropertiesResponseDto"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "geometry",
+          "properties"
+        ]
+      },
+      "MapFeaturesResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "FeatureCollection"
+            ]
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MapFeatureResponseDto"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "features"
+        ]
       },
       "RegionStatus": {
         "type": "string",

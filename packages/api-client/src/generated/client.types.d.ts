@@ -269,6 +269,24 @@ export namespace Schemas {
      */
     geometry: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
   }>;
+  export type MapFeatureGeometryResponseDto = { type: "Polygon"; coordinates: Array<Array<Array<number>>> };
+  export type MapFeaturePropertiesResponseDto = {
+    level: "region" | "block" | "parcel";
+    name: string;
+    areaHa: number;
+    parentId: string | null;
+    boundaryId: string;
+    status: "active" | "inactive";
+    areaM2: number;
+    description?: string;
+  };
+  export type MapFeatureResponseDto = {
+    type: "Feature";
+    id: string;
+    geometry: MapFeatureGeometryResponseDto;
+    properties: MapFeaturePropertiesResponseDto;
+  };
+  export type MapFeaturesResponseDto = { type: "FeatureCollection"; features: Array<MapFeatureResponseDto> };
   export type RegionStatus = "active" | "inactive";
   export type CreateRegionDto = {
     name: string;
@@ -1075,6 +1093,16 @@ export namespace Endpoints {
     };
     responses: { 204: unknown };
   };
+  export type get_MapController_getFeatures = {
+    method: "GET";
+    path: "/map/features";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: {
+      query: { projectId: string };
+    };
+    responses: { 200: Schemas.MapFeaturesResponseDto };
+  };
   /**
    * Send geometry, or the boundaryId of a finished draft
    */
@@ -1457,6 +1485,7 @@ export type EndpointByMethod = {
     "/projects/{id}": Endpoints.get_ProjectController_get;
     "/boundaries": Endpoints.get_BoundaryController_list;
     "/boundaries/{id}": Endpoints.get_BoundaryController_get;
+    "/map/features": Endpoints.get_MapController_getFeatures;
     "/regions": Endpoints.get_RegionController_list;
     "/regions/{id}": Endpoints.get_RegionController_get;
     "/regions/{id}/detail": Endpoints.get_RegionController_getDetail;

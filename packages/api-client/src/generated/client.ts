@@ -395,6 +395,38 @@ export const UpdateBoundaryDto = z
   })
   .partial();
 
+export type MapFeatureGeometryResponseDto = __TypedOpenapi.Schemas.MapFeatureGeometryResponseDto;
+export const MapFeatureGeometryResponseDto = z.strictObject({
+  type: z.literal("Polygon"),
+  coordinates: z.array(z.array(z.array(z.number()))),
+});
+
+export type MapFeaturePropertiesResponseDto = __TypedOpenapi.Schemas.MapFeaturePropertiesResponseDto;
+export const MapFeaturePropertiesResponseDto = z.strictObject({
+  level: z.enum(["region", "block", "parcel"]),
+  name: z.string(),
+  areaHa: z.number(),
+  parentId: z.uuid().nullable(),
+  boundaryId: z.uuid(),
+  status: z.enum(["active", "inactive"]),
+  areaM2: z.number(),
+  description: z.string().optional(),
+});
+
+export type MapFeatureResponseDto = __TypedOpenapi.Schemas.MapFeatureResponseDto;
+export const MapFeatureResponseDto = z.strictObject({
+  type: z.literal("Feature"),
+  id: z.uuid(),
+  geometry: MapFeatureGeometryResponseDto,
+  properties: MapFeaturePropertiesResponseDto,
+});
+
+export type MapFeaturesResponseDto = __TypedOpenapi.Schemas.MapFeaturesResponseDto;
+export const MapFeaturesResponseDto = z.strictObject({
+  type: z.literal("FeatureCollection"),
+  features: z.array(MapFeatureResponseDto),
+});
+
 export type RegionStatus = __TypedOpenapi.Schemas.RegionStatus;
 export const RegionStatus = z.enum(["active", "inactive"]);
 
@@ -1398,6 +1430,16 @@ export const delete_BoundaryController_remove = {
   responses: { 204: z.unknown() },
 };
 
+export type get_MapController_getFeatures = __TypedOpenapi.Endpoints.get_MapController_getFeatures;
+export const get_MapController_getFeatures = {
+  method: z.literal("GET"),
+  path: z.literal("/map/features"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { query: z.strictObject({ projectId: z.uuid() }) },
+  responses: { 200: MapFeaturesResponseDto },
+};
+
 export type post_RegionController_create = __TypedOpenapi.Endpoints.post_RegionController_create;
 export const post_RegionController_create = {
   method: z.literal("POST"),
@@ -1779,6 +1821,7 @@ export const EndpointByMethod = {
     "/projects/{id}": get_ProjectController_get,
     "/boundaries": get_BoundaryController_list,
     "/boundaries/{id}": get_BoundaryController_get,
+    "/map/features": get_MapController_getFeatures,
     "/regions": get_RegionController_list,
     "/regions/{id}": get_RegionController_get,
     "/regions/{id}/detail": get_RegionController_getDetail,
@@ -1899,6 +1942,7 @@ export const endpointParameterStyles = {
       },
     },
     "/boundaries/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    "/map/features": { query: { projectId: { style: "form", explode: true, allowReserved: false } } },
     "/regions": {
       query: {
         page: { style: "form", explode: true, allowReserved: false },
