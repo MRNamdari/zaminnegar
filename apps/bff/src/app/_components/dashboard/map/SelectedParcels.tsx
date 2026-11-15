@@ -60,7 +60,7 @@ export default function SelectedParcels() {
               onClick={()=>{
                 actions.focusFeature(parcel.id);
               }}
-              className="parcel_item cursor-pointer transition ease-in-out duration-300 hover:bg-slate-400/2 flex flex-col justify-center items-center shrink-0 min-h-full border border-border rounded-xl w-18 relative"
+              className="parcel_item p-2.5 cursor-pointer transition ease-in-out duration-300 hover:bg-slate-400/2 flex flex-col justify-center items-center shrink-0 min-h-full border border-border rounded-xl w-18 relative"
             >
               <div className="plyg_item">
                 <SvgPolygon

@@ -86,7 +86,7 @@ export default function DetailsLevel() {
               جزئیات منطقه
             </h3>
             <div className="details_polygon relative">
-              <div className="abs-plyg flex items-center absolute top-0.5 left-0 w-30 h-30 rounded-xl bg-blue-500/10 backdrop-blur-lg border border-border">
+              <div className="abs-plyg p-2.5 flex items-center absolute top-0.5 left-0 w-30 h-30 rounded-xl bg-blue-500/10 backdrop-blur-lg border border-border">
                 <SvgPolygon
                   polygon={selectedeFeature.geometry}
                   height="70"
@@ -162,7 +162,7 @@ export default function DetailsLevel() {
               جزئیات بلوک
             </h3>
             <div className="details_polygon relative">
-              <div className="abs-plyg flex items-center absolute top-0.5 left-0 w-30 h-30 rounded-xl bg-blue-500/10 backdrop-blur-lg border border-border">
+              <div className="abs-plyg flex p-2.5 items-center absolute top-0.5 left-0 w-30 h-30 rounded-xl bg-blue-500/10 backdrop-blur-lg border border-border">
                 <SvgPolygon
                   polygon={selectedeFeature.geometry}
                   height="70"
@@ -238,7 +238,7 @@ export default function DetailsLevel() {
               جزئیات قطعه
             </h3>
             <div className="details_polygon relative">
-              <div className="abs-plyg flex items-center absolute top-0.5 left-0 w-30 h-30 rounded-xl bg-blue-500/10 backdrop-blur-lg border border-border">
+              <div className="abs-plyg flex p-2.5 items-center absolute top-0.5 left-0 w-30 h-30 rounded-xl bg-blue-500/10 backdrop-blur-lg border border-border">
                 <SvgPolygon
                   polygon={selectedeFeature.geometry}
                   height="70"
@@ -342,7 +342,7 @@ export default function DetailsLevel() {
               >
                 <div className="plyg_dsc flex items-center gap-3">
                   <div className="plyg">
-                    <div className="w-12 h-12 border border-border rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 p-1.5 border border-border rounded-lg flex items-center justify-center">
                       <SvgPolygon
                         polygon={block.geometry}
                         height="35"
