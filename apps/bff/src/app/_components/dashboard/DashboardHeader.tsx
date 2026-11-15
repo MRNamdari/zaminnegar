@@ -218,8 +218,8 @@ export default function DashboardHeader() {
               }`}
             >
               <div className="flex size-10 items-center justify-center rounded-full bg-linear-to-tl from-blue-300 to-blue-100">
-                <span className="font-black text-blue-950 -mt-1">
-                  {userName.trim().charAt(0) || '؟'}
+                <span className="contents font-black text-blue-950 -mt-1">
+                  {userName.trim().charAt(0) || ''}
                 </span>
               </div>
 
