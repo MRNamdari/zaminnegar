@@ -1,33 +1,28 @@
 'use client';
 
-import { IoChevronDown } from 'react-icons/io5';
+import { BlockDetailResponseDto, UpdateBlockDto } from '@zaminnegar/api-client';
+import type { z } from 'zod';
 import { useAppForm } from '@/app/_components/form/hooks/form';
-import { useRouter } from 'next/navigation';
-import {
-  updateFormBlock,
-  UpdateBlockFormValues,
-} from './schemas/BlockUpdate.schema';
-import { Block } from './BlocksTable';
 
 interface Props {
-  block: Block;
-  onSubmit: (values: UpdateBlockFormValues) => void;
+  block: BlockDetailResponseDto;
+  onSubmit: (values: z.input<typeof UpdateBlockDto>) => void;
   onCancel: () => void;
 }
 
 export default function UpdateBlockForm({ onSubmit, onCancel, block }: Props) {
-  const router = useRouter();
+
+  const defaultValues: z.input<typeof UpdateBlockDto> = {
+    name: block.name,
+    description: '',
+    status: block.status,
+  };
 
   const form = useAppForm({
-    defaultValues: {
-      blockCode: block.code,
-      blockAreaName: block.region,
-      blockStatus: block.status,
-    },
+    defaultValues,
     validators: {
-      onSubmit: updateFormBlock,
+      onSubmit: UpdateBlockDto,
     },
-
     onSubmit: async ({ value }) => {
       onSubmit(value);
     },
@@ -45,45 +40,52 @@ export default function UpdateBlockForm({ onSubmit, onCancel, block }: Props) {
         className="flex flex-col gap-4 mt-4"
       >
         <form.AppField
-          name="blockCode"
+          name="name"
           validators={{
-            onBlur: updateFormBlock.shape.blockCode,
+            onBlur: UpdateBlockDto.shape.name,
           }}
         >
           {(field) => (
             <field.TextField
               label="کد بلوک"
-              placeholder="نام بلوک را وارد کنید"
+              placeholder="کد بلوک را وارد کنید"
               required
             />
           )}
         </form.AppField>
-        <form.AppField name="blockAreaName">
+
+        <form.AppField
+          name="description"
+          validators={{
+            onBlur: UpdateBlockDto.shape.description,
+          }}
+        >
           {(field) => (
-            <field.SelectField
-              label="نام منطقه"
-              options={[
-                { label: 'مرکز', value: 'مرکز' },
-                { label: 'شمال', value: 'شمال' },
-                { label: 'جنوب', value: 'جنوب' },
-                { label: 'شرق', value: 'شرق' },
-                { label: 'غرب', value: 'غرب' },
-              ]}
+            <field.TextareaField
+              label="توضیحات بلوک"
+              placeholder="توضیحات بلوک را وارد کنید"
             />
           )}
         </form.AppField>
-        <form.AppField name="blockStatus">
+
+        <form.AppField
+          name="status"
+          validators={{
+            onBlur: UpdateBlockDto.shape.status,
+          }}
+        >
           {(field) => (
             <field.SelectField
               label="وضعیت بلوک"
+              required
               options={[
-                { label: 'نهایی', value: 'نهایی' },
-                { label: 'پیش‌نویس', value: 'پیش‌نویس' },
-                { label: 'پیشنهادیه', value: 'پیشنهادیه' },
+                { label: 'فعال', value: 'active' },
+                { label: 'غیرفعال', value: 'inactive' },
               ]}
             />
           )}
         </form.AppField>
+
         <div className="flex items-center gap-3 mt-2">
           <button
             type="button"
@@ -91,20 +93,12 @@ export default function UpdateBlockForm({ onSubmit, onCancel, block }: Props) {
               form.reset();
               onCancel();
             }}
-            className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
+            className="w-full py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
           >
             انصراف
           </button>
 
           <form.SubmitButton label="ثبت" />
-
-          <button
-            type="button"
-            onClick={() => router.push('/map')}
-            className="w-1/2 py-2.5 rounded-lg bg-action-primary transition duration-300 cursor-pointer"
-          >
-            برو به نقشه
-          </button>
         </div>
       </form>
     </form.AppForm>
