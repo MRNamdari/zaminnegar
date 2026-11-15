@@ -342,6 +342,10 @@ export const ProjectResponseDto = z.strictObject({
     if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
     return d;
   }),
+  ownersCount: z.number(),
+  regionsCount: z.number(),
+  blocksCount: z.number(),
+  parcelsCount: z.number(),
 });
 
 export type UpdateProjectDto = __TypedOpenapi.Schemas.UpdateProjectDto;

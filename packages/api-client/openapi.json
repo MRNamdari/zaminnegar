@@ -4532,6 +4532,18 @@
           "updatedAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "ownersCount": {
+            "type": "number"
+          },
+          "regionsCount": {
+            "type": "number"
+          },
+          "blocksCount": {
+            "type": "number"
+          },
+          "parcelsCount": {
+            "type": "number"
           }
         },
         "required": [
@@ -4539,7 +4551,11 @@
           "name",
           "description",
           "createdAt",
-          "updatedAt"
+          "updatedAt",
+          "ownersCount",
+          "regionsCount",
+          "blocksCount",
+          "parcelsCount"
         ]
       },
       "UpdateProjectDto": {

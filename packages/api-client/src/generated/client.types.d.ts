@@ -240,7 +240,17 @@ export namespace Schemas {
     roleId: string;
   };
   export type CreateProjectDto = { name: string; description?: string };
-  export type ProjectResponseDto = { id: string; name: string; description: string; createdAt: Date; updatedAt: Date };
+  export type ProjectResponseDto = {
+    id: string;
+    name: string;
+    description: string;
+    createdAt: Date;
+    updatedAt: Date;
+    ownersCount: number;
+    regionsCount: number;
+    blocksCount: number;
+    parcelsCount: number;
+  };
   export type UpdateProjectDto = Partial<{ name: string; description: string }>;
   export type CreateBoundaryDto = {
     projectId: string;

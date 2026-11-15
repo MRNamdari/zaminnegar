@@ -3,7 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { BaseRepository } from '../../../common/base/base.repository';
 import { applyProjectScope } from '../../../common/utils/project-scope';
-import { escapeLike, paginate, PaginatedResult } from '../../../common/utils/paginate';
+import {
+  escapeLike,
+  paginate,
+  PaginatedResult,
+} from '../../../common/utils/paginate';
 import { ProjectQueryDto } from '../dto/project-query.dto';
 import { Project } from '../entities/project.entity';
 
@@ -17,13 +21,34 @@ export class ProjectRepository extends BaseRepository<Project> {
     return this.repo(manager).findOne({ where: { name } });
   }
 
-  findPage(query: ProjectQueryDto, projectScope: string[] | null = null): Promise<PaginatedResult<Project>> {
-    const qb = this.repository.createQueryBuilder('project');
+  findPage(
+    query: ProjectQueryDto,
+    projectScope: string[] | null = null,
+  ): Promise<PaginatedResult<Project>> {
+    const qb = this.repository
+      .createQueryBuilder('project')
+      .leftJoin('project.regions', 'region')
+      .addSelect('region')
+      .loadRelationCountAndMap('project.regionsCount', 'project.regions')
+      .leftJoin('project.blocks', 'block')
+      .addSelect('block')
+      .loadRelationCountAndMap('project.blocksCount', 'project.blocks')
+      .leftJoin('project.parcels', 'parcel')
+      .addSelect('parcel')
+      .loadRelationCountAndMap('project.parcelsCount', 'project.parcels')
+      .leftJoin('project.owners', 'owner')
+      .addSelect('owner')
+      .loadRelationCountAndMap('project.ownersCount', 'project.owners');
     applyProjectScope(qb, 'project.id', projectScope);
     if (query.search) {
-      qb.andWhere(`project.name ILIKE :search ESCAPE '\\'`, { search: `%${escapeLike(query.search)}%` });
+      qb.andWhere(`project.name ILIKE :search ESCAPE '\\'`, {
+        search: `%${escapeLike(query.search)}%`,
+      });
     }
-    return paginate(qb.orderBy('project.createdAt', 'DESC').addOrderBy('project.id', 'ASC'), query);
+    return paginate(
+      qb.orderBy('project.createdAt', 'DESC').addOrderBy('project.id', 'ASC'),
+      query,
+    );
   }
 
   /** True when the project still owns regions, boundaries or owners (blocks and parcels hang off regions). */
