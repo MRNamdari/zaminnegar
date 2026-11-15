@@ -11,7 +11,7 @@ export const createFormProject = z.object({
     .string()
     .max(500, "توضیحات نباید بیشتر از ۵۰۰ کاراکتر باشد"),
 
-  status: z.enum(["فعال", "غیر فعال", "در انتظار"]),
+  // status: z.enum(["فعال", "غیر فعال", "در انتظار"]),
 });
 
 export type ProjectFormValue = z.infer<typeof createFormProject>;
