@@ -27,7 +27,7 @@ function errorCode(body: unknown): string | undefined {
  * Signs in. The API answers with the session cookie; the server fetcher (`api.server.ts`) copies it onto this
  * action's response, so the browser stores it. The body carries no token.
  */
-export async function login(value: LoginDto): Promise<LoginResult> {
+export async function loginAction(value: LoginDto): Promise<LoginResult> {
   try {
     const response = await getServerApi().client.post('/auth/login', {
       body: value,
