@@ -22,9 +22,21 @@ import {
 import { useRouter } from 'next/navigation';
 import SelectProject from '../auth/SelectProject';
 import { useQueryClient } from '@tanstack/react-query';
+import { Dialog } from '../Dialog';
+import ProjectsFormUpdate from './projects/ProjectsFormUpdate';
+import { toast } from 'react-toastify';
+import {
+  useCreateProjectMutation,
+  useDeleteProjectMutation,
+  useUpdateProjectMutation,
+} from '@/app/features/projects/mutation';
+import { UpdateFormProjectValues } from './projects/schema/ProjectsUpdate.schema';
+import ProjectsFormCreate from './projects/ProjectsFormCreate';
+import { ProjectFormValue } from './projects/schema/ProjectsCreate.schema';
 
 export default function DashboardHeader() {
-  const userName = 'مدیر';
+  const { data: userData } = useQuery(api.get('/auth/me').queryOptions);
+  const userName = userData?.username ?? '';
 
   const { data: me } = useQuery(api.get('/auth/me').queryOptions);
 
@@ -95,6 +107,99 @@ export default function DashboardHeader() {
       router.refresh();
     } catch (error) {
       console.error('Error selecting project:', error);
+    }
+  };
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const createProject = useCreateProjectMutation();
+  const handleCreateProject = async (values: ProjectFormValue) => {
+    try {
+      const result = await createProject.mutateAsync({
+        name: values.name,
+        description: values.description,
+      });
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      toast.success('پروژه با موفقیت ایجاد شد');
+
+      setIsCreateOpen(false);
+
+      void refetch();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'خطا در ایجاد پروژه',
+      );
+    }
+  };
+
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const updateProject = useUpdateProjectMutation();
+  const handleUpdateProject = async (value: UpdateFormProjectValues) => {
+    if (!selectedProject) return;
+
+    try {
+      const result = await updateProject.mutateAsync({
+        id: selectedProject.id,
+        value: {
+          name: value.name,
+          description: value.description,
+        },
+      });
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      toast.success('پروژه با موفقیت ویرایش شد');
+
+      setIsEditOpen(false);
+      setSelectedProject(null);
+
+      void refetch();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'خطا در ویرایش پروژه',
+      );
+    }
+  };
+  const handleEditProject = (project: Project) => {
+    setSelectedProject(project);
+    setIsEditOpen(true);
+  };
+
+  const deleteProject = useDeleteProjectMutation();
+  const [isDeleteProjectModalOpen, setIsDeleteProjectModalOpen] =
+    useState(false);
+
+  const handleDeleteProjectClick = (project: Project) => {
+    setSelectedProject(project);
+    setIsDeleteProjectModalOpen(true);
+  };
+  const handleDeleteProject = async () => {
+    if (!selectedProject) return;
+
+    try {
+      const result = await deleteProject.mutateAsync(selectedProject.id);
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      toast.success('پروژه با موفقیت حذف شد');
+
+      setIsDeleteProjectModalOpen(false);
+      setSelectedProject(null);
+
+      void refetch();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'خطا در حذف پروژه');
     }
   };
 
@@ -248,6 +353,10 @@ export default function DashboardHeader() {
 
       {/* Project Selection Dialog */}
       <SelectProject
+        addProject={true}
+        onAddProject={() => setIsCreateOpen(true)}
+        onDelete={handleDeleteProjectClick}
+        onEdit={handleEditProject}
         activeProjectId={activeProjectId}
         open={isProjectDialogOpen}
         onOpenChange={setIsProjectDialogOpen}
@@ -259,6 +368,70 @@ export default function DashboardHeader() {
         onRetry={() => void refetch()}
         onSelect={handleSelectProject}
       />
+      <Dialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        title="افزودن پروژه جدید"
+        description="اطلاعات پروژه جدید را وارد کنید."
+      >
+        <ProjectsFormCreate
+          onSubmit={handleCreateProject}
+          onCancel={() => setIsCreateOpen(false)}
+        />
+      </Dialog>
+      <Dialog
+        open={isEditOpen}
+        onOpenChange={(open) => {
+          setIsEditOpen(open);
+
+          if (!open) {
+            setSelectedProject(null);
+          }
+        }}
+        title="ویرایش پروژه"
+        description="اطلاعات پروژه را ویرایش کنید."
+      >
+        {selectedProject && (
+          <ProjectsFormUpdate
+            project={selectedProject}
+            onSubmit={handleUpdateProject}
+            onCancel={() => {
+              setIsEditOpen(false);
+              setSelectedProject(null);
+            }}
+          />
+        )}
+      </Dialog>
+      <Dialog
+        open={isDeleteProjectModalOpen}
+        onOpenChange={setIsDeleteProjectModalOpen}
+        title="حذف پروژه"
+        description={`آیا از حذف پروژه «${selectedProject?.name ?? ''}» اطمینان دارید؟`}
+        className="text-white"
+      >
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              setIsDeleteProjectModalOpen(false);
+              setSelectedProject(null);
+            }}
+            disabled={deleteProject.isPending}
+            className="w-1/2 p-3 rounded-md bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer disabled:opacity-50"
+          >
+            انصراف
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDeleteProject}
+            disabled={deleteProject.isPending}
+            className="w-1/2 p-3 rounded-md bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer disabled:opacity-50"
+          >
+            {deleteProject.isPending ? 'در حال حذف...' : 'حذف پروژه'}
+          </button>
+        </div>
+      </Dialog>
     </>
   );
 }
