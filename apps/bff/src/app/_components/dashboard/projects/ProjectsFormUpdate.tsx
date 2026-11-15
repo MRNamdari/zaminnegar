@@ -1,11 +1,10 @@
-
-"use client";
-import { useAppForm } from "../../form/hooks/form";
+'use client';
+import { useAppForm } from '../../form/hooks/form';
 import {
   updateFormProject,
   UpdateFormProjectValues,
-} from "./schema/ProjectsUpdate.schema";
-import { Project } from "./ProjectTable";
+} from './schema/ProjectsUpdate.schema';
+import { ProjectResponseDto as Project } from '@zaminnegar/api-client';
 
 interface Props {
   project: Project;
@@ -18,12 +17,10 @@ export default function ProjectsFormUpdate({
   onCancel,
   project,
 }: Props) {
-
   const form = useAppForm({
     defaultValues: {
       name: project.name,
-      description: project.description,
-      status: project.status,
+      description: project.description ?? '',
     },
 
     validators: {
@@ -71,19 +68,6 @@ export default function ProjectsFormUpdate({
             <field.TextareaField
               label="توضیحات پروژه"
               placeholder="توضیحات پروژه را وارد کنید"
-            />
-          )}
-        </form.AppField>
-
-        <form.AppField name="status">
-          {(field) => (
-            <field.SelectField
-              label="وضعیت پروژه"
-              options={[
-                { label: "فعال", value: "فعال" },
-                { label: "غیر فعال", value: "غیر فعال" },
-                { label: "در انتظار", value: "در انتظار" },
-              ]}
             />
           )}
         </form.AppField>
