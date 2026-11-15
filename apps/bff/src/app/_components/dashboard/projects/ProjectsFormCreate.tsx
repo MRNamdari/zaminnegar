@@ -1,9 +1,8 @@
-
 import {
   createFormProject,
   ProjectFormValue,
-} from "./schema/ProjectsCreate.schema";
-import { useAppForm } from "../../form/hooks/form";
+} from './schema/ProjectsCreate.schema';
+import { useAppForm } from '../../form/hooks/form';
 
 interface Props {
   onSubmit: (values: ProjectFormValue) => void;
@@ -11,15 +10,11 @@ interface Props {
 }
 
 const initialValues: ProjectFormValue = {
-  name: "",
-  description: "",
-  status: "فعال",
+  name: '',
+  description: '',
 };
 
-export default function ProjectsFormCreate({
-  onSubmit,
-  onCancel,
-}: Props) {
+export default function ProjectsFormCreate({ onSubmit, onCancel }: Props) {
   const form = useAppForm({
     defaultValues: initialValues,
     validators: {
@@ -67,19 +62,6 @@ export default function ProjectsFormCreate({
             <field.TextareaField
               label="توضیحات پروژه"
               placeholder="توضیحات پروژه را وارد کنید"
-            />
-          )}
-        </form.AppField>
-
-        <form.AppField name="status">
-          {(field) => (
-            <field.SelectField
-              label="وضعیت پروژه"
-              options={[
-                { label: "فعال", value: "فعال" },
-                { label: "غیر فعال", value: "غیر فعال" },
-                { label: "در انتظار", value: "در انتظار" },
-              ]}
             />
           )}
         </form.AppField>
