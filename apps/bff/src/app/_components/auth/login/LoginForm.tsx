@@ -22,6 +22,16 @@ import {
 } from '@/app/features/auth/mutation';
 import { api } from '@/app/_lib/api.client';
 import SelectProject from '../SelectProject';
+import ProjectsFormCreate from '../../dashboard/projects/ProjectsFormCreate';
+import ProjectsFormUpdate from '../../dashboard/projects/ProjectsFormUpdate';
+import { Dialog } from '../../Dialog';
+import { ProjectFormValue } from '../../dashboard/projects/schema/ProjectsCreate.schema';
+import {
+  useCreateProjectMutation,
+  useDeleteProjectMutation,
+  useUpdateProjectMutation,
+} from '@/app/features/projects/mutation';
+import { UpdateFormProjectValues } from '../../dashboard/projects/schema/ProjectsUpdate.schema';
 
 z.config(fa());
 
@@ -38,9 +48,10 @@ export default function LoginForm() {
   const activeProjectMutation = useActiveProjectMutation();
   const router = useRouter();
 
-  const { data, isLoading, isError, error, refetch } = useQuery(
-    api.get('/projects').queryOptions,
-  );
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    ...api.get('/projects').queryOptions,
+    enabled: false,
+  });
 
   // تبدیل خروجی API به آرایه‌ای با تایپ مشخص
   const projects: Project[] = (data?.items ?? []) as Project[];
@@ -100,6 +111,99 @@ export default function LoginForm() {
     // در مرحله بعد باید project.id در state مدیریت پروژه ذخیره شود.
     router.replace('/map');
     router.refresh();
+  };
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const createProject = useCreateProjectMutation();
+  const handleCreateProject = async (values: ProjectFormValue) => {
+    try {
+      const result = await createProject.mutateAsync({
+        name: values.name,
+        description: values.description,
+      });
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      toast.success('پروژه با موفقیت ایجاد شد');
+
+      setIsCreateOpen(false);
+
+      void refetch();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'خطا در ایجاد پروژه',
+      );
+    }
+  };
+
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const updateProject = useUpdateProjectMutation();
+
+  const handleUpdateProject = async (value: UpdateFormProjectValues) => {
+    if (!selectedProject) return;
+
+    try {
+      const result = await updateProject.mutateAsync({
+        id: selectedProject.id,
+        value: {
+          name: value.name,
+          description: value.description,
+        },
+      });
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      toast.success('پروژه با موفقیت ویرایش شد');
+
+      setIsEditOpen(false);
+      setSelectedProject(null);
+
+      void refetch();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'خطا در ویرایش پروژه',
+      );
+    }
+  };
+  const handleEditProject = (project: Project) => {
+    setSelectedProject(project);
+    setIsEditOpen(true);
+  };
+
+  const deleteProject = useDeleteProjectMutation();
+  const [isDeleteProjectModalOpen, setIsDeleteProjectModalOpen] =
+    useState(false);
+
+  const handleDeleteProjectClick = (project: Project) => {
+    setSelectedProject(project);
+    setIsDeleteProjectModalOpen(true);
+  };
+  const handleDeleteProject = async () => {
+    if (!selectedProject) return;
+
+    try {
+      const result = await deleteProject.mutateAsync(selectedProject.id);
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      toast.success('پروژه با موفقیت حذف شد');
+
+      setIsDeleteProjectModalOpen(false);
+      setSelectedProject(null);
+
+      void refetch();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'خطا در حذف پروژه');
+    }
   };
 
   return (
@@ -207,6 +311,10 @@ export default function LoginForm() {
         </div>
       </div>
       <SelectProject
+        onDelete={handleDeleteProjectClick}
+        onEdit={handleEditProject}
+        addProject={true}
+        onAddProject={() => setIsCreateOpen(true)}
         open={isOpen}
         onOpenChange={setIsOpen}
         projects={projects}
@@ -217,6 +325,70 @@ export default function LoginForm() {
         onRetry={() => void refetch()}
         onSelect={handleSelectProject}
       />
+      <Dialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        title="افزودن پروژه جدید"
+        description="اطلاعات پروژه جدید را وارد کنید."
+      >
+        <ProjectsFormCreate
+          onSubmit={handleCreateProject}
+          onCancel={() => setIsCreateOpen(false)}
+        />
+      </Dialog>
+      <Dialog
+        open={isEditOpen}
+        onOpenChange={(open) => {
+          setIsEditOpen(open);
+
+          if (!open) {
+            setSelectedProject(null);
+          }
+        }}
+        title="ویرایش پروژه"
+        description="اطلاعات پروژه را ویرایش کنید."
+      >
+        {selectedProject && (
+          <ProjectsFormUpdate
+            project={selectedProject}
+            onSubmit={handleUpdateProject}
+            onCancel={() => {
+              setIsEditOpen(false);
+              setSelectedProject(null);
+            }}
+          />
+        )}
+      </Dialog>
+      <Dialog
+        open={isDeleteProjectModalOpen}
+        onOpenChange={setIsDeleteProjectModalOpen}
+        title="حذف پروژه"
+        description={`آیا از حذف پروژه «${selectedProject?.name ?? ''}» اطمینان دارید؟`}
+        className="text-white"
+      >
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              setIsDeleteProjectModalOpen(false);
+              setSelectedProject(null);
+            }}
+            disabled={deleteProject.isPending}
+            className="w-1/2 p-3 rounded-md bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer disabled:opacity-50"
+          >
+            انصراف
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDeleteProject}
+            disabled={deleteProject.isPending}
+            className="w-1/2 p-3 rounded-md bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer disabled:opacity-50"
+          >
+            {deleteProject.isPending ? 'در حال حذف...' : 'حذف پروژه'}
+          </button>
+        </div>
+      </Dialog>
     </div>
   );
 }
