@@ -12,10 +12,12 @@ interface SvgPolygonProps {
   strokeWidth?: number;
   width?: string;
   height?: string;
+  className?: string;
 }
 
 export function SvgPolygon({
   polygon,
+  className,
   fill = 'rgba(34, 197, 94, 0.4)',
   stroke = '#16a34a',
   strokeWidth = 1,
@@ -68,6 +70,7 @@ export function SvgPolygon({
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
         fillRule="evenodd"
+        className={className}
       />
     </svg>
   );
