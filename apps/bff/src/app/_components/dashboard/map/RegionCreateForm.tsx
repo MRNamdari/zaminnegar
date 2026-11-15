@@ -17,7 +17,7 @@ export function RegionCreateForm({
     'description' in values ? (values.description ?? '') : '';
 
   const defaultValues: z.input<typeof CreateRegionDto> = {
-    name: values.name ?? draft.name,
+    name: '',
     description,
     status: values.status ?? 'active',
   };
@@ -26,15 +26,15 @@ export function RegionCreateForm({
     validators: {
       onSubmit: CreateRegionDto,
     },
-    onSubmit: async ({ value }) => {
+    onSubmit: async ({ value, formApi }) => {
       onSubmit({
         name: value.name,
         description: value.description ?? '',
         status: value.status,
       });
+      formApi.reset()
     },
   });
-
   return (
     <form.AppForm>
       <form

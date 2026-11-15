@@ -14,7 +14,7 @@ export function ParcelCreateForm({
   errorMessage,
 }: FeatureCreateFormProps) {
   const defaultValues: z.input<typeof CreateParcelDto> = {
-    name: values.name ?? draft.name,
+    name: '',
     status: values.status ?? 'active',
   };
   const form = useAppForm({
@@ -22,11 +22,12 @@ export function ParcelCreateForm({
     validators: {
       onSubmit: CreateParcelDto,
     },
-    onSubmit: async ({ value }) => {
+    onSubmit: async ({ value, formApi }) => {
       onSubmit({
         name: value.name,
         status: value.status,
       });
+      formApi.reset();
     },
   });
 

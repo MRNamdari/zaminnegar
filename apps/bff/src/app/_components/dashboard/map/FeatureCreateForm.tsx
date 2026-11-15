@@ -8,10 +8,10 @@ import { RegionCreateForm } from './RegionCreateForm';
 export function FeatureCreateForm(props: FeatureCreateFormProps) {
   switch (props.draft.level) {
     case 'region':
-      return <RegionCreateForm {...props} />;
+      return <RegionCreateForm key='region-create-form'  {...props} />;
     case 'block':
-      return <BlockCreateForm {...props} />;
+      return <BlockCreateForm  key='block-create-form' {...props} />;
     case 'parcel':
-      return <ParcelCreateForm {...props} />;
+      return <ParcelCreateForm  key='parcel-create-form' {...props} />;
   }
 }

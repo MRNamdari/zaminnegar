@@ -119,6 +119,11 @@ function DraftConfigurationSession<V extends Record<string, unknown>>({
       setSubmitting(false);
       setErrorMessage(result.error.message);
     }
+
+    if (result.isOk()){
+      submittingRef.current = false;
+      setSubmitting(false)
+    }
   };
 
   const handleCancel = () => {
