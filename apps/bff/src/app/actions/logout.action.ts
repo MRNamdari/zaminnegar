@@ -13,14 +13,14 @@ function errorCode(body: unknown): string | undefined {
  * Signs in. The API answers with the session cookie; the server fetcher (`api.server.ts`) copies it onto this
  * action's response, so the browser stores it. The body carries no token.
  */
-export async function logout() {
+export async function logoutAction() {
   try {
     const response = await getServerApi().client.post('/auth/logout', {
       withResponse: true,
     });
 
     if (!response.ok) {
-    //   const code = errorCode(response.data);
+      //   const code = errorCode(response.data);
 
       return {
         success: false,
