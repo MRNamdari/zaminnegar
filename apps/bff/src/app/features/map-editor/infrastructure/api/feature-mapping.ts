@@ -1,5 +1,6 @@
 import type {
   BlockResponseDto,
+  BoundaryResponseDto,
   ParcelResponseDto,
   RegionResponseDto,
 } from '@zaminnegar/api-client';
@@ -88,4 +89,9 @@ export function toAreaFeature(
     },
   });
   return parsed.success ? ok(parsed.data) : err(invalidResponse('feature'));
+}
+
+export function toPolygon(multiPolygon: BoundaryResponseDto['geometry']){
+  return {type: 'Polygon', coordinates: multiPolygon.coordinates.flat() }
+    
 }
