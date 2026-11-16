@@ -574,7 +574,7 @@ export const ParcelResponseDto = z.strictObject({
     .int()
     .describe("Number of owners holding a share. Only present in list responses")
     .optional(),
-  ownerships: OwnershipWithOwnerResponseDto.optional(),
+  ownerships: z.array(OwnershipWithOwnerResponseDto).describe("Only present in list responses").optional(),
   region: RegionResponseDto.optional(),
   block: BlockResponseDto.and(z.record(z.string(), z.unknown()).nullable())
     .describe("Only present in list responses; null when the parcel is in no block")

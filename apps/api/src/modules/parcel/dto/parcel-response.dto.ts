@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { Expose, plainToInstance, Type } from 'class-transformer';
 import { ParcelStatus } from '../../../common/enums/parcel-status.enum';
 import { IParcel } from '../../../common/interfaces/parcel.interface';
@@ -67,13 +67,13 @@ export class ParcelResponseDto {
   ownershipsCount?: number;
 
   @ApiProperty({
-    type: () => OwnershipWithOwnerResponseDto,
+    type: 'array',
+    items: {$ref: getSchemaPath(OwnershipWithOwnerResponseDto)},
     required: false,
     description: 'Only present in list responses',
   })
   @Expose()
-  @Type(() => OwnershipWithOwnerResponseDto)
-  ownerships?: OwnershipWithOwnerResponseDto;
+  ownerships?: OwnershipWithOwnerResponseDto[];
 
   @ApiProperty({
     type: () => RegionResponseDto,

@@ -401,7 +401,10 @@ export namespace Schemas {
      * Number of owners holding a share. Only present in list responses
      */
     ownershipsCount?: number;
-    ownerships?: OwnershipWithOwnerResponseDto;
+    /**
+     * Only present in list responses
+     */
+    ownerships?: Array<OwnershipWithOwnerResponseDto>;
     region?: RegionResponseDto;
     /**
      * Only present in list responses; null when the parcel is in no block
