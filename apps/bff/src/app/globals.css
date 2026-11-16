@@ -197,3 +197,12 @@ input[type="search"] {
 .Toastify__toast{
   font-family: "Vazirmatn" !important;
 }
+.animate-spin {
+  animation: var(--animate-spin);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
