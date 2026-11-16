@@ -1,4 +1,8 @@
-import { useMemo } from "react";
+
+'use client';
+
+import { useMemo } from 'react';
+
 import {
   useTable,
   tableFeatures,
@@ -12,7 +16,7 @@ import {
   columnVisibilityFeature,
   sortFns,
   type ColumnDef,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 
 import {
   FiEdit2,
@@ -21,11 +25,10 @@ import {
   FiChevronRight,
   FiArrowUp,
   FiArrowDown,
-} from "react-icons/fi";
+} from 'react-icons/fi';
 
-import type { Projects } from "@/app/features/projects/interface";
-import { faNum } from "@/app/util";
-import Link from "next/link";
+import type { ProjectResponseDto as Projects } from '@zaminnegar/api-client';
+import { faNum } from '@/app/util';
 
 export type Project = Projects;
 
@@ -37,8 +40,6 @@ interface ProjectTableProps {
   onDelete: (project: Project) => void;
   pageSize?: number;
 }
-
-// TanStack Table features
 
 const features = tableFeatures({
   rowSortingFeature,
@@ -60,110 +61,90 @@ export default function ProjectsTable({
   onRowClick,
   onEdit,
   onDelete,
-  pageSize = 10,
+  pageSize = 5,
 }: ProjectTableProps) {
   const columns = useMemo<ColumnDef<typeof features, Project>[]>(
     () => [
       {
-        accessorKey: "name",
-        header: "نام پروژه",
-        sortingFn: "alphanumeric",
-        filterFn: "includesString",
+        accessorKey: 'name',
+        header: 'نام پروژه',
+        sortingFn: 'alphanumeric',
+        filterFn: 'includesString',
         cell({ row }) {
           return (
-            <Link
-              className="w-full inline-block h-full text-blue-400 hover:underline underline-offset-4"
-              href={{
-                pathname: `/map`,
+            <button
+              type="button"
+              className="w-full inline-block h-full text-right text-blue-400 hover:underline underline-offset-4 cursor-pointer"
+              onClick={(event) => {
+                event.stopPropagation();
+                onRowClick(row.original);
               }}
-              onClick={(event) => event.stopPropagation()}
             >
               {row.original.name}
-            </Link>
+            </button>
           );
         },
       },
       {
-        accessorKey: "description",
-        header: "توضیحات",
+        accessorKey: 'description',
+        header: 'توضیحات',
         enableSorting: false,
         cell({ row }) {
           return (
             <span className="block text-[12px] max-w-32 text-wrap">
-              {row.original.description || "-"}
+              {row.original.description || '-'}
             </span>
           );
         },
       },
       {
-        accessorKey: "regions",
-        header: "مناطق",
+        accessorKey: 'regions',
+        header: 'مناطق',
         cell({ row }) {
-          return row.original.regions != null
-            ? faNum(row.original.regions)
-            : "-";
+          return row.original.regionsCount != null
+            ? faNum(row.original.regionsCount)
+            : '-';
         },
       },
       {
-        accessorKey: "blocks",
-        header: "بلوک ها",
+        accessorKey: 'blocks',
+        header: 'بلوک ها',
         cell({ row }) {
-          return row.original.blocks != null
-            ? faNum(row.original.blocks)
-            : "-";
+          return row.original.blocksCount != null
+            ? faNum(row.original.blocksCount)
+            : '-';
         },
       },
       {
-        accessorKey: "parcels",
-        header: "قطعات",
+        accessorKey: 'parcels',
+        header: 'قطعات',
         cell({ row }) {
-          return row.original.parcels != null
-            ? faNum(row.original.parcels)
-            : "-";
+          return row.original.parcelsCount != null
+            ? faNum(row.original.parcelsCount)
+            : '-';
         },
       },
       {
-        accessorKey: "owners",
-        header: "مالکین",
+        accessorKey: 'owners',
+        header: 'مالکین',
         cell({ row }) {
-          return row.original.owners != null
-            ? faNum(row.original.owners)
-            : "-";
+          return row.original.ownersCount != null
+            ? faNum(row.original.ownersCount)
+            : '-';
         },
       },
       {
-        accessorKey: "status",
-        header: "وضعیت",
-        cell: ({ row }) => {
-          const status = row.original.status;
-
-          const statusStyles = {
-            فعال: "bg-map-green text-surface",
-            "غیر فعال": "bg-surface-muted text-foreground",
-            "در انتظار": "bg-yellow-500/20 text-yellow-400",
-          };
-
-          return (
-            <span
-              className={`min-w-20 text-center inline-block select-none rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${statusStyles[status]}`}
-            >
-              {status}
-            </span>
-          );
-        },
-      },
-      {
-        accessorKey: "createdAt",
-        header: "تاریخ ایجاد",
+        accessorKey: 'createdAt',
+        header: 'تاریخ ایجاد',
         cell({ row }) {
-          return new Intl.DateTimeFormat("fa-IR").format(
+          return new Intl.DateTimeFormat('fa-IR').format(
             new Date(row.original.createdAt),
           );
         },
       },
       {
-        id: "actions",
-        header: "عملیات",
+        id: 'actions',
+        header: 'عملیات',
         enableSorting: false,
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
@@ -194,13 +175,13 @@ export default function ProjectsTable({
         ),
       },
     ],
-    [onEdit, onDelete],
+    [onRowClick, onEdit, onDelete],
   );
 
   const columnFilters = useMemo(
     () =>
       searchValue.trim()
-        ? [{ id: "name", value: searchValue.trim() }]
+        ? [{ id: 'name', value: searchValue.trim() }]
         : [],
     [searchValue],
   );
@@ -247,9 +228,9 @@ export default function ProjectsTable({
                         <table.FlexRender header={header} />
 
                         {header.column.getCanSort() &&
-                          (header.column.getIsSorted() === "asc" ? (
+                          (header.column.getIsSorted() === 'asc' ? (
                             <FiArrowUp />
-                          ) : header.column.getIsSorted() === "desc" ? (
+                          ) : header.column.getIsSorted() === 'desc' ? (
                             <FiArrowDown />
                           ) : null)}
                       </button>
@@ -278,7 +259,7 @@ export default function ProjectsTable({
                   onKeyDown={(event) => {
                     if (
                       event.target === event.currentTarget &&
-                      (event.key === "Enter" || event.key === " ")
+                      (event.key === 'Enter' || event.key === ' ')
                     ) {
                       event.preventDefault();
                       onRowClick(row.original);
@@ -286,7 +267,7 @@ export default function ProjectsTable({
                   }}
                   tabIndex={0}
                   aria-label={`Open project ${row.original.name}`}
-                  className="even:bg-surface transition hover:bg-surface-muted border-t border-border focus-visible:outline-2"
+                  className="even:bg-surface transition hover:bg-surface-muted border-t border-border focus-visible:outline-2 cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 text-right">
@@ -317,7 +298,7 @@ export default function ProjectsTable({
           </button>
 
           <span className="text-sm select-none">
-            صفحه {faNum(table.state.pagination.pageIndex + 1)} از{" "}
+            صفحه {faNum(table.state.pagination.pageIndex + 1)} از{' '}
             {faNum(Math.max(1, pageCount))}
           </span>
 
