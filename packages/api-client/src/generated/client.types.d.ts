@@ -129,15 +129,6 @@ export namespace Schemas {
     projectId: string;
   };
   export type ActiveProjectResponseDto = { projectId: string };
-  export type PaginatedResponseDto = {
-    items: Array<Record<string, unknown>>;
-    /**
-     * Total number of matches across all pages
-     */
-    total: number;
-    page: number;
-    limit: number;
-  };
   export type UserResponseDto = {
     id: string;
     username: string;
@@ -754,7 +745,7 @@ export namespace Endpoints {
       query?: Partial<{ page: number; limit: number; search: string }>;
     };
     responses: {
-      200: Schemas.PaginatedResponseDto & Partial<{ items: Array<Schemas.UserResponseDto> }>;
+      200: { items: Array<Schemas.UserResponseDto>; total: number; page: number; limit: number };
       400: Schemas.ValidationErrorResponseDto | Schemas.ErrorResponseDto;
       401: Schemas.ErrorResponseDto;
       403: Schemas.ErrorResponseDto;
@@ -1014,7 +1005,7 @@ export namespace Endpoints {
     parameters: {
       query?: Partial<{ page: number; limit: number; search: string }>;
     };
-    responses: { 200: Schemas.PaginatedResponseDto & Partial<{ items: Array<Schemas.ProjectResponseDto> }> };
+    responses: { 200: { items: Array<Schemas.ProjectResponseDto>; total: number; page: number; limit: number } };
   };
   export type get_ProjectController_get = {
     method: "GET";
@@ -1069,7 +1060,7 @@ export namespace Endpoints {
     parameters: {
       query?: Partial<{ page: number; limit: number; projectId: string; search: string }>;
     };
-    responses: { 200: Schemas.PaginatedResponseDto & Partial<{ items: Array<Schemas.BoundaryResponseDto> }> };
+    responses: { 200: { items: Array<Schemas.BoundaryResponseDto>; total: number; page: number; limit: number } };
   };
   export type get_BoundaryController_get = {
     method: "GET";
@@ -1137,7 +1128,7 @@ export namespace Endpoints {
     parameters: {
       query?: Partial<{ page: number; limit: number; projectId: string; status: Schemas.RegionStatus; search: string }>;
     };
-    responses: { 200: Schemas.PaginatedResponseDto & Partial<{ items: Array<Schemas.RegionResponseDto> }> };
+    responses: { 200: { items: Array<Schemas.RegionResponseDto>; total: number; page: number; limit: number } };
   };
   export type get_RegionController_get = {
     method: "GET";
@@ -1222,7 +1213,7 @@ export namespace Endpoints {
         search: string;
       }>;
     };
-    responses: { 200: Schemas.PaginatedResponseDto & Partial<{ items: Array<Schemas.BlockResponseDto> }> };
+    responses: { 200: { items: Array<Schemas.BlockResponseDto>; total: number; page: number; limit: number } };
   };
   export type get_BlockController_get = {
     method: "GET";
@@ -1308,7 +1299,7 @@ export namespace Endpoints {
         search: string;
       }>;
     };
-    responses: { 200: Schemas.PaginatedResponseDto & Partial<{ items: Array<Schemas.ParcelResponseDto> }> };
+    responses: { 200: { items: Array<Schemas.ParcelResponseDto>; total: number; page: number; limit: number } };
   };
   export type get_ParcelController_get = {
     method: "GET";
@@ -1414,7 +1405,7 @@ export namespace Endpoints {
     parameters: {
       query?: Partial<{ page: number; limit: number; projectId: string; search: string }>;
     };
-    responses: { 200: Schemas.PaginatedResponseDto & Partial<{ items: Array<Schemas.OwnerResponseDto> }> };
+    responses: { 200: { items: Array<Schemas.OwnerResponseDto>; total: number; page: number; limit: number } };
   };
   export type get_OwnerController_get = {
     method: "GET";

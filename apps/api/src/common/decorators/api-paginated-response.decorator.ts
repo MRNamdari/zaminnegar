@@ -8,10 +8,17 @@ export const ApiPaginatedResponse = (model: Type<unknown>) =>
     ApiExtraModels(PaginatedResponseDto, model),
     ApiOkResponse({
       schema: {
-        allOf: [
-          { $ref: getSchemaPath(PaginatedResponseDto) },
-          { properties: { items: { type: 'array', items: { $ref: getSchemaPath(model) } } } },
-        ],
+        type: 'object',
+        properties: {
+          items: {
+            type: 'array',
+            items: { $ref: getSchemaPath(model) },
+          },
+          total: { type: 'number' },
+          page: { type: 'number' },
+          limit: { type: 'number' },
+        },
+        required: ['items', 'total', 'page', 'limit'],
       },
     }),
   );

@@ -178,14 +178,6 @@ export const SetActiveProjectDto = z.strictObject({
 export type ActiveProjectResponseDto = __TypedOpenapi.Schemas.ActiveProjectResponseDto;
 export const ActiveProjectResponseDto = z.strictObject({ projectId: z.uuid() });
 
-export type PaginatedResponseDto = __TypedOpenapi.Schemas.PaginatedResponseDto;
-export const PaginatedResponseDto = z.strictObject({
-  items: z.array(z.record(z.string(), z.unknown())),
-  total: z.number().describe("Total number of matches across all pages"),
-  page: z.number(),
-  limit: z.number(),
-});
-
 export type UserResponseDto = __TypedOpenapi.Schemas.UserResponseDto;
 export const UserResponseDto = z.strictObject({
   id: z.uuid(),
@@ -1018,7 +1010,7 @@ export const get_UsersController_list = {
       .optional(),
   },
   responses: {
-    200: PaginatedResponseDto.and(z.strictObject({ items: z.array(UserResponseDto) }).partial()),
+    200: z.strictObject({ items: z.array(UserResponseDto), total: z.number(), page: z.number(), limit: z.number() }),
     400: z
       .union([ValidationErrorResponseDto, ErrorResponseDto])
       .refine(
@@ -1341,7 +1333,9 @@ export const get_ProjectController_list = {
       .partial()
       .optional(),
   },
-  responses: { 200: PaginatedResponseDto.and(z.strictObject({ items: z.array(ProjectResponseDto) }).partial()) },
+  responses: {
+    200: z.strictObject({ items: z.array(ProjectResponseDto), total: z.number(), page: z.number(), limit: z.number() }),
+  },
 };
 
 export type get_ProjectController_get = __TypedOpenapi.Endpoints.get_ProjectController_get;
@@ -1401,7 +1395,14 @@ export const get_BoundaryController_list = {
       .partial()
       .optional(),
   },
-  responses: { 200: PaginatedResponseDto.and(z.strictObject({ items: z.array(BoundaryResponseDto) }).partial()) },
+  responses: {
+    200: z.strictObject({
+      items: z.array(BoundaryResponseDto),
+      total: z.number(),
+      page: z.number(),
+      limit: z.number(),
+    }),
+  },
 };
 
 export type get_BoundaryController_get = __TypedOpenapi.Endpoints.get_BoundaryController_get;
@@ -1472,7 +1473,9 @@ export const get_RegionController_list = {
       .partial()
       .optional(),
   },
-  responses: { 200: PaginatedResponseDto.and(z.strictObject({ items: z.array(RegionResponseDto) }).partial()) },
+  responses: {
+    200: z.strictObject({ items: z.array(RegionResponseDto), total: z.number(), page: z.number(), limit: z.number() }),
+  },
 };
 
 export type get_RegionController_get = __TypedOpenapi.Endpoints.get_RegionController_get;
@@ -1554,7 +1557,9 @@ export const get_BlockController_list = {
       .partial()
       .optional(),
   },
-  responses: { 200: PaginatedResponseDto.and(z.strictObject({ items: z.array(BlockResponseDto) }).partial()) },
+  responses: {
+    200: z.strictObject({ items: z.array(BlockResponseDto), total: z.number(), page: z.number(), limit: z.number() }),
+  },
 };
 
 export type get_BlockController_get = __TypedOpenapi.Endpoints.get_BlockController_get;
@@ -1637,7 +1642,9 @@ export const get_ParcelController_list = {
       .partial()
       .optional(),
   },
-  responses: { 200: PaginatedResponseDto.and(z.strictObject({ items: z.array(ParcelResponseDto) }).partial()) },
+  responses: {
+    200: z.strictObject({ items: z.array(ParcelResponseDto), total: z.number(), page: z.number(), limit: z.number() }),
+  },
 };
 
 export type get_ParcelController_get = __TypedOpenapi.Endpoints.get_ParcelController_get;
@@ -1747,7 +1754,9 @@ export const get_OwnerController_list = {
       .partial()
       .optional(),
   },
-  responses: { 200: PaginatedResponseDto.and(z.strictObject({ items: z.array(OwnerResponseDto) }).partial()) },
+  responses: {
+    200: z.strictObject({ items: z.array(OwnerResponseDto), total: z.number(), page: z.number(), limit: z.number() }),
+  },
 };
 
 export type get_OwnerController_get = __TypedOpenapi.Endpoints.get_OwnerController_get;

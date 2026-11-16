@@ -575,20 +575,29 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/PaginatedResponseDto"
-                    },
-                    {
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/UserResponseDto"
-                          }
-                        }
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UserResponseDto"
                       }
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "limit": {
+                      "type": "number"
                     }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "limit"
                   ]
                 }
               }
@@ -1899,20 +1908,29 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/PaginatedResponseDto"
-                    },
-                    {
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/ProjectResponseDto"
-                          }
-                        }
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProjectResponseDto"
                       }
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "limit": {
+                      "type": "number"
                     }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "limit"
                   ]
                 }
               }
@@ -2123,20 +2141,29 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/PaginatedResponseDto"
-                    },
-                    {
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/BoundaryResponseDto"
-                          }
-                        }
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BoundaryResponseDto"
                       }
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "limit": {
+                      "type": "number"
                     }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "limit"
                   ]
                 }
               }
@@ -2404,20 +2431,29 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/PaginatedResponseDto"
-                    },
-                    {
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/RegionResponseDto"
-                          }
-                        }
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RegionResponseDto"
                       }
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "limit": {
+                      "type": "number"
                     }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "limit"
                   ]
                 }
               }
@@ -2731,20 +2767,29 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/PaginatedResponseDto"
-                    },
-                    {
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/BlockResponseDto"
-                          }
-                        }
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BlockResponseDto"
                       }
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "limit": {
+                      "type": "number"
                     }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "limit"
                   ]
                 }
               }
@@ -3067,20 +3112,29 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/PaginatedResponseDto"
-                    },
-                    {
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/ParcelResponseDto"
-                          }
-                        }
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ParcelResponseDto"
                       }
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "limit": {
+                      "type": "number"
                     }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "limit"
                   ]
                 }
               }
@@ -3508,20 +3562,29 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/PaginatedResponseDto"
-                    },
-                    {
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/OwnerResponseDto"
-                          }
-                        }
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OwnerResponseDto"
                       }
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "limit": {
+                      "type": "number"
                     }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "limit"
                   ]
                 }
               }
