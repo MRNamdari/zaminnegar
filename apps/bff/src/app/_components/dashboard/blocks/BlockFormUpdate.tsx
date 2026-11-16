@@ -1,11 +1,11 @@
 'use client';
 
-import { BlockDetailResponseDto, UpdateBlockDto } from '@zaminnegar/api-client';
+import { BlockResponseDto, UpdateBlockDto } from '@zaminnegar/api-client';
 import type { z } from 'zod';
 import { useAppForm } from '@/app/_components/form/hooks/form';
 
 interface Props {
-  block: BlockDetailResponseDto;
+  block: BlockResponseDto;
   onSubmit: (values: z.input<typeof UpdateBlockDto>) => void;
   onCancel: () => void;
 }
