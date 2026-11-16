@@ -5,73 +5,122 @@ import BlocksTable from '@/app/_components/dashboard/blocks/BlocksTable';
 import { useState } from 'react';
 import { Dialog } from '@/app/_components/Dialog';
 import { useRouter } from 'next/navigation';
-import { mockBlocks } from '@/app/(dashboard)/mockData';
 import { CgSearch } from 'react-icons/cg';
-import CreateBlockForm from '@/app/_components/dashboard/blocks/BlockFormCreate';
-import { BlockFormValue } from '@/app/_components/dashboard/blocks/schemas/BlockCreate.schema';
-import UpdateBlockForm from '@/app/_components/dashboard/blocks/BlockFormUpdate';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/app/_lib/api.client';
+import Link from 'next/link';
+import { toast } from 'react-toastify';
+import { toPersianNumber } from '@/app/util';
+import UpdateBlockForm from '@/app/_components/dashboard/blocks/BlockFormUpdate';
+import { UpdateBlockDto } from '@zaminnegar/api-client';
+import { z } from 'zod';
+
 
 export default function BlockPage() {
-  const [blocks, setBlocks] = useState<Block[]>(mockBlocks);
+  const [searchValue, setSearchValue] = useState('');
+  const router = useRouter();
+  const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
+  const queryClient = useQueryClient();
+
+  // get list blocks
   const { data, error, isLoading } = useQuery(api.get('/blocks').queryOptions);
 
-  const [searchValue, setSearchValue] = useState('');
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const router = useRouter();
-
-  const handleAddBlock = (values: BlockFormValue) => {
-    const newBlockData: any = {
-      id: String(blocks.length + 1),
-      ...values,
-    };
-    setBlocks((prevOwners) => [...prevOwners, newBlockData]);
-    setIsAddModalOpen(false);
-  };
-
-  const handleEditBlock = (block: Block) => {
+  // handle delete block
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const handleDeleteModal = (block: Block) => {
     setSelectedBlock(block);
-    setIsUpdateModalOpen(true);
+    setIsDeleteOpen(true);
   };
 
-  const handleUpdateBlock = (values: BlockFormValue) => {
+  const deleteBlockMutation = useMutation({
+    ...api.mutation('delete', '/blocks/{id}').mutationOptions,
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: api.get('/blocks').queryOptions.queryKey,
+      });
+
+      toast.success('بلوک با موفقیت حذف شد.');
+      setIsDeleteOpen(false);
+      setSelectedBlock(null);
+    },
+    onError(error, variables) {
+      const toDeleteId = variables.path.id;
+      const toDeleteBlock = data?.items.find((b) => b.id === toDeleteId);
+      if (!toDeleteBlock) return;
+      toast.error(
+        `بلوک دارای ${toPersianNumber(toDeleteBlock.parcelsCount ?? 0)} قطعه است و قابل حذف نمی‌باشد.`,
+      );
+      console.log(selectedBlock);
+    },
+  });
+
+  // handle update block
+  const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+  const handleUpdateModal = (block: Block) => {
+    setSelectedBlock(block);
+    setIsUpdateOpen(true);
+  }
+  const updateBlockMutation = useMutation({
+    mutationFn: ({
+      id,
+      value,
+    }: {
+      id: string;
+      value: z.input<typeof UpdateBlockDto>;
+    }) =>
+      api.client.patch('/blocks/{id}', {
+        path: { id },
+        body: value,
+      }),
+
+    onSuccess: async (_, variables) => {
+      queryClient.setQueryData(
+        api.get('/blocks').queryOptions.queryKey,
+        (oldData) => {
+          if (!oldData) return oldData;
+
+          return {
+            ...oldData,
+            items: oldData.items.map((block) =>
+              block.id === variables.id
+                ? {
+                    ...block,
+                    name: variables.value.name ?? block.name,
+                    description:
+                      variables.value.description ?? block.description,
+                    status: variables.value.status ?? block.status,
+                  }
+                : block,
+            ),
+          };
+        },
+      );
+
+      await queryClient.invalidateQueries({
+        queryKey: api.get('/blocks').queryOptions.queryKey,
+      });
+
+      setIsUpdateOpen(false);
+      setSelectedBlock(null);
+
+      toast.success('اطلاعات بلوک با موفقیت ویرایش شد.');
+    },
+
+    onError: () => {
+      toast.error('ویرایش اطلاعات بلوک با خطا مواجه شد.');
+    },
+  });
+
+  const handleUpdateBlock = async (value: z.input<typeof UpdateBlockDto>) => {
     if (!selectedBlock) return;
 
-    const updatedBlock: Block = {
-      ...selectedBlock,
-      code: values.blockCode,
-      region: values.blockAreaName,
-      status: values.blockStatus,
-    };
-
-    setBlocks((prevBlocks) =>
-      prevBlocks.map((block) =>
-        block.id === selectedBlock.id ? updatedBlock : block,
-      ),
-    );
-
-    setIsUpdateModalOpen(false);
-    setSelectedBlock(null);
+    await updateBlockMutation.mutateAsync({
+      id: selectedBlock.id,
+      value,
+    });
   };
 
-  const handleDelete = (block: Block) => {
-    setSelectedBlock(block);
-    setIsDeleteModalOpen(true);
-  };
-  const confirmDelete = () => {
-    if (!selectedBlock) return;
-
-    setBlocks((prevBlocks) =>
-      prevBlocks.filter((item) => item.id !== selectedBlock.id),
-    );
-
-    setIsDeleteModalOpen(false);
-    setSelectedBlock(null);
-  };
   return (
     <div className="w-full h-full overflow-y-auto">
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-4 items-center pb-4 pt-6 pr-4">
@@ -105,16 +154,13 @@ export default function BlockPage() {
               </button>
             </search>
           </form>
-          <button
-            onClick={() => {
-              setSelectedBlock(null);
-              setIsAddModalOpen(true);
-            }}
+          <Link
+            href={'/map'}
             className="min-w-fit flex gap-2 items-center bg-action-primary transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
           >
             <AiOutlinePlus className="text-white" />
             <span className="text-sm text-white">افزودن بلوک</span>
-          </button>
+          </Link>
         </div>
         {isLoading ? (
           <p>{'در حال بارگذاری...'}</p>
@@ -123,8 +169,8 @@ export default function BlockPage() {
         ) : (
           <BlocksTable
             data={data?.items ?? []}
-            onDelete={handleDelete}
-            onEdit={handleEditBlock}
+            onDelete={handleDeleteModal}
+            onEdit={handleUpdateModal}
             searchValue={searchValue}
             onRowClick={(block) => {
               router.push(`/blocks/${encodeURIComponent(block.id)}`);
@@ -134,20 +180,14 @@ export default function BlockPage() {
       </div>
 
       <Dialog
-        open={isAddModalOpen}
-        onOpenChange={setIsAddModalOpen}
-        title="افزودن بلوک"
-        description="اطلاعات بلوک جدید را وارد کنید"
-        className="text-white"
-      >
-        <CreateBlockForm
-          onSubmit={handleAddBlock}
-          onCancel={() => setIsAddModalOpen(false)}
-        />
-      </Dialog>
-      <Dialog
-        open={isUpdateModalOpen}
-        onOpenChange={setIsUpdateModalOpen}
+        open={isUpdateOpen}
+        onOpenChange={(open) => {
+          setIsUpdateOpen(open);
+
+          if (!open) {
+            setSelectedBlock(null);
+          }
+        }}
         title="ویرایش بلوک"
         description="اطلاعات بلوک را ویرایش کنید"
         className="text-white"
@@ -157,16 +197,16 @@ export default function BlockPage() {
             block={selectedBlock}
             onSubmit={handleUpdateBlock}
             onCancel={() => {
-              setIsUpdateModalOpen(false);
+              setIsUpdateOpen(false);
               setSelectedBlock(null);
             }}
           />
         )}
       </Dialog>
       <Dialog
-        open={isDeleteModalOpen}
+        open={isDeleteOpen}
         onOpenChange={(open) => {
-          setIsDeleteModalOpen(open);
+          setIsDeleteOpen(open);
 
           if (!open) {
             setSelectedBlock(null);
@@ -181,7 +221,8 @@ export default function BlockPage() {
             <p className="text-sm text-slate-300">
               آیا مطمئن هستید که می‌خواهید بلوک
               <span className="text-white font-semibold mx-1">
-                {selectedBlock.id}
+                {' '}
+                {selectedBlock.name}
               </span>
               را حذف کنید؟
             </p>
@@ -190,7 +231,7 @@ export default function BlockPage() {
               <button
                 type="button"
                 onClick={() => {
-                  setIsDeleteModalOpen(false);
+                  setIsDeleteOpen(false);
                   setSelectedBlock(null);
                 }}
                 className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
@@ -200,7 +241,13 @@ export default function BlockPage() {
 
               <button
                 type="button"
-                onClick={confirmDelete}
+                onClick={async () => {
+                  setIsDeleteOpen(false);
+                  await deleteBlockMutation.mutate({
+                    path: { id: selectedBlock.id },
+                  });
+                  console.log(selectedBlock);
+                }}
                 className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
               >
                 حذف بلوک
