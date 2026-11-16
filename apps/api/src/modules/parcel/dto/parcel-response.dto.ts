@@ -73,6 +73,7 @@ export class ParcelResponseDto {
     description: 'Only present in list responses',
   })
   @Expose()
+  @Type(() => OwnershipWithOwnerResponseDto)
   ownerships?: OwnershipWithOwnerResponseDto[];
 
   @ApiProperty({
