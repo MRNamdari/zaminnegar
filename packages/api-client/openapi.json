@@ -5183,6 +5183,94 @@
           "inactive"
         ]
       },
+      "OwnerResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "nationalId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "name",
+          "nationalId",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "OwnershipWithOwnerResponseDto": {
+        "type": "object",
+        "properties": {
+          "parcelId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sharePct": {
+            "type": "number",
+            "minimum": 0.0001,
+            "maximum": 100
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/OwnerResponseDto"
+          }
+        },
+        "required": [
+          "parcelId",
+          "ownerId",
+          "sharePct",
+          "createdAt",
+          "updatedAt",
+          "owner"
+        ]
+      },
       "ParcelResponseDto": {
         "type": "object",
         "properties": {
@@ -5247,6 +5335,14 @@
           "ownershipsCount": {
             "type": "integer",
             "description": "Number of owners holding a share. Only present in list responses"
+          },
+          "ownerships": {
+            "description": "Only present in list responses",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OwnershipWithOwnerResponseDto"
+              }
+            ]
           },
           "region": {
             "description": "Only present in list responses",
@@ -5772,94 +5868,6 @@
         },
         "required": [
           "name"
-        ]
-      },
-      "OwnerResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "projectId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "phone": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          },
-          "nationalId": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "projectId",
-          "name",
-          "nationalId",
-          "status",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "OwnershipWithOwnerResponseDto": {
-        "type": "object",
-        "properties": {
-          "parcelId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "ownerId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "sharePct": {
-            "type": "number",
-            "minimum": 0.0001,
-            "maximum": 100
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "owner": {
-            "$ref": "#/components/schemas/OwnerResponseDto"
-          }
-        },
-        "required": [
-          "parcelId",
-          "ownerId",
-          "sharePct",
-          "createdAt",
-          "updatedAt",
-          "owner"
         ]
       },
       "ParcelDetailResponseDto": {

@@ -49,7 +49,10 @@ export class ParcelRepository extends BaseRepository<Parcel> {
       .createQueryBuilder('parcel')
       .leftJoinAndSelect('parcel.region', 'region')
       .leftJoinAndSelect('parcel.block', 'block')
-      .loadRelationCountAndMap('parcel.ownershipsCount', 'parcel.ownerships');
+      .leftJoinAndSelect('parcel.ownerships', 'ownership')
+      .leftJoinAndSelect('ownership.owner', 'owner')
+      .loadRelationCountAndMap('parcel.ownershipsCount', 'parcel.ownerships')
+
     applyProjectScope(qb, 'parcel.projectId', projectScope);
     if (query.projectId) qb.andWhere('parcel.projectId = :projectId', { projectId: query.projectId });
     if (query.regionId) qb.andWhere('parcel.regionId = :regionId', { regionId: query.regionId });

@@ -9,7 +9,7 @@ import { OwnershipWithOwnerResponseDto } from './ownership-with-owner-response.d
 import { ParcelResponseDto } from './parcel-response.dto';
 
 /** A parcel with every relation loaded: project, region, block, boundary and ownerships (each with its owner). */
-export class ParcelDetailResponseDto extends OmitType(ParcelResponseDto, ['region', 'block'] as const) {
+export class ParcelDetailResponseDto extends OmitType(ParcelResponseDto, ['region', 'block', 'ownerships'] as const) {
   @ApiProperty({ type: () => ProjectResponseDto })
   @Expose()
   @Type(() => ProjectResponseDto)

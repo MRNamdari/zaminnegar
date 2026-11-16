@@ -495,6 +495,46 @@ export const BlockResponseDto = z.strictObject({
 export type ParcelStatus = __TypedOpenapi.Schemas.ParcelStatus;
 export const ParcelStatus = z.enum(["active", "inactive"]);
 
+export type OwnerResponseDto = __TypedOpenapi.Schemas.OwnerResponseDto;
+export const OwnerResponseDto = z.strictObject({
+  id: z.uuid(),
+  projectId: z.uuid(),
+  name: z.string(),
+  phone: z.string().nullable().optional(),
+  email: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  nationalId: z.string(),
+  status: z.string(),
+  createdAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  updatedAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+});
+
+export type OwnershipWithOwnerResponseDto = __TypedOpenapi.Schemas.OwnershipWithOwnerResponseDto;
+export const OwnershipWithOwnerResponseDto = z.strictObject({
+  parcelId: z.uuid(),
+  ownerId: z.uuid(),
+  sharePct: z.number().min(0.0001).max(100),
+  createdAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  updatedAt: z.iso.datetime().transform((s) => {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
+    return d;
+  }),
+  owner: OwnerResponseDto,
+});
+
 export type ParcelResponseDto = __TypedOpenapi.Schemas.ParcelResponseDto;
 export const ParcelResponseDto = z.strictObject({
   id: z.uuid(),
@@ -534,6 +574,7 @@ export const ParcelResponseDto = z.strictObject({
     .int()
     .describe("Number of owners holding a share. Only present in list responses")
     .optional(),
+  ownerships: OwnershipWithOwnerResponseDto.optional(),
   region: RegionResponseDto.optional(),
   block: BlockResponseDto.and(z.record(z.string(), z.unknown()).nullable())
     .describe("Only present in list responses; null when the parcel is in no block")
@@ -657,46 +698,6 @@ export const CreateParcelDto = z.strictObject({
     .partial()
     .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]")
     .optional(),
-});
-
-export type OwnerResponseDto = __TypedOpenapi.Schemas.OwnerResponseDto;
-export const OwnerResponseDto = z.strictObject({
-  id: z.uuid(),
-  projectId: z.uuid(),
-  name: z.string(),
-  phone: z.string().nullable().optional(),
-  email: z.string().nullable().optional(),
-  notes: z.string().nullable().optional(),
-  nationalId: z.string(),
-  status: z.string(),
-  createdAt: z.iso.datetime().transform((s) => {
-    const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
-    return d;
-  }),
-  updatedAt: z.iso.datetime().transform((s) => {
-    const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
-    return d;
-  }),
-});
-
-export type OwnershipWithOwnerResponseDto = __TypedOpenapi.Schemas.OwnershipWithOwnerResponseDto;
-export const OwnershipWithOwnerResponseDto = z.strictObject({
-  parcelId: z.uuid(),
-  ownerId: z.uuid(),
-  sharePct: z.number().min(0.0001).max(100),
-  createdAt: z.iso.datetime().transform((s) => {
-    const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
-    return d;
-  }),
-  updatedAt: z.iso.datetime().transform((s) => {
-    const d = new Date(s);
-    if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
-    return d;
-  }),
-  owner: OwnerResponseDto,
 });
 
 export type ParcelDetailResponseDto = __TypedOpenapi.Schemas.ParcelDetailResponseDto;

@@ -349,6 +349,26 @@ export namespace Schemas {
     region?: RegionResponseDto;
   };
   export type ParcelStatus = "active" | "inactive";
+  export type OwnerResponseDto = {
+    id: string;
+    projectId: string;
+    name: string;
+    phone?: string | null;
+    email?: string | null;
+    notes?: string | null;
+    nationalId: string;
+    status: string;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  export type OwnershipWithOwnerResponseDto = {
+    parcelId: string;
+    ownerId: string;
+    sharePct: number;
+    createdAt: Date;
+    updatedAt: Date;
+    owner: OwnerResponseDto;
+  };
   export type ParcelResponseDto = {
     id: string;
     projectId: string;
@@ -381,6 +401,7 @@ export namespace Schemas {
      * Number of owners holding a share. Only present in list responses
      */
     ownershipsCount?: number;
+    ownerships?: OwnershipWithOwnerResponseDto;
     region?: RegionResponseDto;
     /**
      * Only present in list responses; null when the parcel is in no block
@@ -481,26 +502,6 @@ export namespace Schemas {
      * GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
      */
     geometry?: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
-  };
-  export type OwnerResponseDto = {
-    id: string;
-    projectId: string;
-    name: string;
-    phone?: string | null;
-    email?: string | null;
-    notes?: string | null;
-    nationalId: string;
-    status: string;
-    createdAt: Date;
-    updatedAt: Date;
-  };
-  export type OwnershipWithOwnerResponseDto = {
-    parcelId: string;
-    ownerId: string;
-    sharePct: number;
-    createdAt: Date;
-    updatedAt: Date;
-    owner: OwnerResponseDto;
   };
   export type ParcelDetailResponseDto = {
     id: string;
