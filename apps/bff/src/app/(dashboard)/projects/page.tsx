@@ -1,100 +1,181 @@
 'use client';
 
-import ProjectTable, {
-  Project,
-} from '@/app/_components/dashboard/projects/ProjectTable';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
+
+import ProjectTable, {
+  type Project,
+} from '@/app/_components/dashboard/projects/ProjectTable';
+
 import { AiOutlinePlus } from 'react-icons/ai';
 import { CgSearch } from 'react-icons/cg';
-import { projectMockData } from './ProjectMockData';
+
 import { Dialog } from '@/app/_components/Dialog';
+
 import ProjectFormCreate from '@/app/_components/dashboard/projects/ProjectsFormCreate';
 import ProjectsFormUpdate from '@/app/_components/dashboard/projects/ProjectsFormUpdate';
-import { UpdateFormProjectValues } from '@/app/_components/dashboard/projects/schema/ProjectsUpdate.schema';
+
 import { ProjectFormValue } from '@/app/_components/dashboard/projects/schema/ProjectsCreate.schema';
+import { UpdateFormProjectValues } from '@/app/_components/dashboard/projects/schema/ProjectsUpdate.schema';
+
+import { api } from '@/app/_lib/api.client';
+
+import {
+  useCreateProjectMutation,
+  useDeleteProjectMutation,
+  useUpdateProjectMutation,
+} from '@/app/features/projects/mutation';
+
+import { useActiveProjectMutation } from '@/app/features/auth/mutation';
 
 export default function Page() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  // دریافت پروژه‌ها
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    ...api.get('/projects').queryOptions,
+  });
+
+  const projects: Project[] = data?.items ?? [];
+
+  // States
   const [searchValue, setSearchValue] = useState('');
-  const [projects, setProjects] = useState(projectMockData);
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const handleCreateProject = (values: ProjectFormValue) => {
-    const newProject: Project = {
-      ...values,
-      id: crypto.randomUUID(),
-      geometry: {
-        type: 'MultiPolygon',
-        coordinates: [],
-      },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      regions: '0',
-      blocks: '0',
-      parcels: '0',
-      owners: '0',
-    };
 
-    setProjects((prev) => [...prev, newProject]);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-    setIsAddModalOpen(false);
-  };
+  // Mutations
+  const createProject = useCreateProjectMutation();
+  const updateProject = useUpdateProjectMutation();
+  const deleteProject = useDeleteProjectMutation();
+  const activeProjectMutation = useActiveProjectMutation();
 
+  // جستجوی پروژه‌ها
   const filteredProjects = projects.filter((project) =>
     project.name.toLowerCase().includes(searchValue.trim().toLowerCase()),
   );
 
-  const handleAddProject = () => {
-    setIsAddModalOpen(true);
+  // انتخاب و فعال‌سازی پروژه
+  const handleSelectProject = async (project: Project) => {
+    try {
+      await activeProjectMutation.mutateAsync({
+        projectId: project.id,
+      });
+      // clear catch for update project map
+      queryClient.invalidateQueries()
+      router.push('/map');
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'خطا در انتخاب پروژه',
+      );
+    }
   };
 
+  // ایجاد پروژه
+  const handleCreateProject = async (values: ProjectFormValue) => {
+    try {
+      const result = await createProject.mutateAsync({
+        name: values.name,
+        description: values.description,
+      });
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      toast.success('پروژه با موفقیت ایجاد شد');
+
+      setIsAddModalOpen(false);
+
+      void refetch();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'خطا در ایجاد پروژه',
+      );
+    }
+  };
+
+  // باز کردن فرم ویرایش
   const handleOpenUpdateModal = (project: Project) => {
     setSelectedProject(project);
     setIsUpdateModalOpen(true);
   };
 
-  const handleUpdateProject = (values: UpdateFormProjectValues) => {
+  // ویرایش پروژه
+  const handleUpdateProject = async (values: UpdateFormProjectValues) => {
     if (!selectedProject) return;
 
-    setProjects((prev) =>
-      prev.map((project) =>
-        project.id === selectedProject.id
-          ? {
-              ...project,
-              ...values,
-            }
-          : project,
-      ),
-    );
+    try {
+      const result = await updateProject.mutateAsync({
+        id: selectedProject.id,
+        value: {
+          name: values.name,
+          description: values.description,
+        },
+      });
 
-    setIsUpdateModalOpen(false);
-    setSelectedProject(null);
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      toast.success('پروژه با موفقیت ویرایش شد');
+
+      setIsUpdateModalOpen(false);
+      setSelectedProject(null);
+
+      void refetch();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'خطا در ویرایش پروژه',
+      );
+    }
   };
 
+  // باز کردن دیالوگ حذف
   const handleDelete = (project: Project) => {
     setSelectedProject(project);
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  // حذف پروژه
+  const confirmDelete = async () => {
     if (!selectedProject) return;
 
-    setProjects((prev) =>
-      prev.filter((project) => project.id !== selectedProject.id),
-    );
+    try {
+      const result = await deleteProject.mutateAsync(selectedProject.id);
 
-    setIsDeleteModalOpen(false);
-    setSelectedProject(null);
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      toast.success('پروژه با موفقیت حذف شد');
+
+      setIsDeleteModalOpen(false);
+      setSelectedProject(null);
+
+      void refetch();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'خطا در حذف پروژه');
+    }
   };
 
   return (
     <div className="w-full px-4 h-full overflow-y-auto">
       <div className="w-full mx-auto flex flex-col gap-4 items-center pb-4 pt-6">
-        <h2 className="w-full text-right text   -3xl leading-loose font-normal">
+        {/* عنوان صفحه */}
+        <h2 className="w-full text-right text-3xl leading-loose font-normal">
           پروژه ها
         </h2>
 
+        {/* Header */}
         <div className="block-header w-full flex gap-4 justify-between items-center">
           <form
             onSubmit={(e) => e.preventDefault()}
@@ -125,7 +206,8 @@ export default function Page() {
           </form>
 
           <button
-            onClick={handleAddProject}
+            type="button"
+            onClick={() => setIsAddModalOpen(true)}
             className="min-w-fit flex gap-2 items-center bg-action-primary transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
           >
             <AiOutlinePlus className="text-white" />
@@ -133,14 +215,48 @@ export default function Page() {
           </button>
         </div>
 
-        <ProjectTable
-          data={filteredProjects}
-          onDelete={handleDelete}
-          onEdit={handleOpenUpdateModal}
-          onRowClick={console.log}
-          searchValue={searchValue}
-        />
+        {/* Loading / Error / Empty / Table */}
+        {isLoading ? (
+          <div className="w-full flex justify-center py-12">
+            <p className="text-sm text-foreground-muted">
+              در حال دریافت اطلاعات پروژه‌ها...
+            </p>
+          </div>
+        ) : isError ? (
+          <div className="w-full flex flex-col items-center justify-center gap-4 py-12">
+            <p className="text-sm text-red-500">
+              {error instanceof Error
+                ? error.message
+                : 'خطا در دریافت اطلاعات پروژه‌ها'}
+            </p>
 
+            <button
+              type="button"
+              onClick={() => void refetch()}
+              className="px-5 py-2 rounded-lg bg-action-primary text-white text-sm cursor-pointer"
+            >
+              تلاش مجدد
+            </button>
+          </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="w-full flex justify-center py-12">
+            <p className="text-sm text-foreground-muted">
+              {searchValue
+                ? 'پروژه‌ای با این مشخصات پیدا نشد.'
+                : 'هنوز پروژه‌ای ثبت نشده است.'}
+            </p>
+          </div>
+        ) : (
+          <ProjectTable
+            data={filteredProjects}
+            onDelete={handleDelete}
+            onEdit={handleOpenUpdateModal}
+            onRowClick={handleSelectProject}
+            searchValue={searchValue}
+          />
+        )}
+
+        {/* Create Project Dialog */}
         <Dialog
           open={isAddModalOpen}
           onOpenChange={setIsAddModalOpen}
@@ -154,9 +270,16 @@ export default function Page() {
           />
         </Dialog>
 
+        {/* Update Project Dialog */}
         <Dialog
           open={isUpdateModalOpen}
-          onOpenChange={setIsUpdateModalOpen}
+          onOpenChange={(open) => {
+            setIsUpdateModalOpen(open);
+
+            if (!open) {
+              setSelectedProject(null);
+            }
+          }}
           title="ویرایش پروژه"
           description="اطلاعات پروژه را ویرایش کنید"
           className="text-white"
@@ -173,6 +296,7 @@ export default function Page() {
           )}
         </Dialog>
 
+        {/* Delete Project Dialog */}
         <Dialog
           open={isDeleteModalOpen}
           onOpenChange={(open) => {
@@ -183,7 +307,7 @@ export default function Page() {
             }
           }}
           title="حذف پروژه"
-          description="آیا از حذف این پروژه اطمینان دارید؟"
+          description={`آیا از حذف پروژه «${selectedProject?.name ?? ''}» اطمینان دارید؟`}
           className="text-white"
         >
           {selectedProject && (
@@ -203,7 +327,8 @@ export default function Page() {
                     setIsDeleteModalOpen(false);
                     setSelectedProject(null);
                   }}
-                  className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
+                  disabled={deleteProject.isPending}
+                  className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer disabled:opacity-50"
                 >
                   انصراف
                 </button>
@@ -211,9 +336,10 @@ export default function Page() {
                 <button
                   type="button"
                   onClick={confirmDelete}
-                  className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
+                  disabled={deleteProject.isPending}
+                  className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer disabled:opacity-50"
                 >
-                  حذف پروژه
+                  {deleteProject.isPending ? 'در حال حذف...' : 'حذف پروژه'}
                 </button>
               </div>
             </div>
