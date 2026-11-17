@@ -12,12 +12,14 @@ import { toPersianNumber } from '@/app/util';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { Dialog } from '../../Dialog';
 import { useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/app/_lib/api.client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import UpdateBlockForm from './BlockFormUpdate';
 import z from 'zod';
+import ParcelsTable from '../parcels/ParcelsTable';
+import ParcelsFormUpdate from '../parcels/ParcelsFormUpdate';
 
 interface BlockDetailsProps {
   block: BlockDetails;
@@ -30,6 +32,7 @@ const blockStatusMap = new Map<BlockStatus, string>([
 
 export default function BlockDetailsClient({ block }: BlockDetailsProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [detailsBlock, setDetailsBlock] = useState<BlockDetails>(block);
 
   // handle delete modal
@@ -110,7 +113,39 @@ export default function BlockDetailsClient({ block }: BlockDetailsProps) {
   const filterParcels = data?.items.filter((item: ParcelResponseDto) => {
     return item.blockId === detailsBlock.id
   })
-  console.log(filterParcels);
+
+  // handle delete parcels
+    const [isDeleteOpenParcel, setIsDeleteOpenParcel] = useState(false);
+    const [selectedParcel, setSelectedParcel] =useState<ParcelResponseDto | null>(null);
+    const handleDeleteModalParcel = (parcel: ParcelResponseDto) => {
+      setSelectedParcel(parcel);
+      setIsDeleteOpenParcel(true);
+    };
+    const deleteParcelMutation = useMutation({
+      ...api.mutation('delete', '/parcels/{id}').mutationOptions,
+  
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: api.get('/parcels').queryOptions.queryKey,
+        });
+  
+        toast.success('قطعه با موفقیت حذف شد.')
+        setIsDeleteOpenParcel(false);
+        setSelectedParcel(null);
+      },
+      onError: () => {
+        toast.error('در هنگام حذف قطعه خطایی رخ داده است.')
+        setIsDeleteOpenParcel(false);
+        setSelectedParcel(null);
+      }
+    })
+    
+    // handle update parcels
+    const [isUpdateOpenParcel, setIsUpdateOpenParcel] = useState(false);
+      const handleUpdateModalParcel = (parcel: ParcelResponseDto) => {
+        setSelectedParcel(parcel);
+        setIsUpdateOpenParcel(true);
+      }
 
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col gap-4 items-center p-4 border border-slate-200/10 rounded-xl">
@@ -173,14 +208,16 @@ export default function BlockDetailsClient({ block }: BlockDetailsProps) {
               </div>
             </div>
           }
-          tableComponent={"test"
-            // <ParcelsTable
-            //   data={parcels}
-            //   onDelete={handleDelete}
-            //   onEdit={handleOpenUpdateModal}
-            //   onRowClick={(parcel) => console.log(parcel)}
-            //   searchValue={searchValue}
-            // />
+          tableComponent={
+            <ParcelsTable
+              data={filterParcels ?? []}
+              onDelete={handleDeleteModalParcel}
+              onEdit={handleUpdateModalParcel}
+              onRowClick={(parcel) => {
+                router.push(`/parcels/${encodeURIComponent(parcel.id)}`);
+              }}
+              searchValue={''}
+            />
           }
         />
       </div>
@@ -226,6 +263,86 @@ export default function BlockDetailsClient({ block }: BlockDetailsProps) {
           onSubmit={handleUpdateBlock}
           onCancel={() => setIsUpdateOpen(false)}
         />
+      </Dialog>
+
+      {/* Update parcel dialog */}
+      <Dialog
+        open={isUpdateOpenParcel}
+        onOpenChange={(open) => {
+          setIsUpdateOpenParcel(open);
+
+          if (!open) {
+            setSelectedParcel(null);
+          }
+        }}
+        title="ویرایش قطعه"
+        description="اطلاعات قطعه را ویرایش کنید"
+        className="text-white"
+      >
+        {selectedParcel && (
+          <ParcelsFormUpdate
+            key={selectedParcel.id}
+            parcel={selectedParcel}
+            onCancel={() => {
+              setIsUpdateOpenParcel(false);
+              setSelectedParcel(null);
+            }}
+          />
+        )}
+      </Dialog>
+
+      {/* delete parcel dialog */}
+      <Dialog
+        open={isDeleteOpenParcel}
+        onOpenChange={(open) => {
+          setIsDeleteOpenParcel(open);
+
+          if (!open) {
+            setSelectedParcel(null);
+          }
+        }}
+        title="حذف قطعه"
+        description="آیا از حذف این قطعه اطمینان دارید؟"
+        className="text-white"
+      >
+        {selectedParcel && (
+          <div className="flex flex-col gap-5 mt-4">
+            <p className="text-sm text-slate-300">
+              آیا مطمئن هستید که می‌خواهید قطعه
+              <span className="text-white font-semibold mx-1">
+                {' '}
+                {selectedParcel.name}
+              </span>
+              را حذف کنید؟
+            </p>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDeleteOpenParcel(false);
+                  setSelectedParcel(null);
+                }}
+                className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
+              >
+                انصراف
+              </button>
+
+              <button
+                type="button"
+                onClick={async () => {
+                  setIsDeleteOpenParcel(false);
+                  await deleteParcelMutation.mutate({
+                    path: { id: selectedParcel.id },
+                  });
+                }}
+                className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
+              >
+                حذف قطعه
+              </button>
+            </div>
+          </div>
+        )}
       </Dialog>
     </div>
   );
