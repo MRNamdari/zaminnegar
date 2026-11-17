@@ -25,7 +25,7 @@ import {
   FiArrowUp,
   FiArrowDown,
 } from 'react-icons/fi';
-import { toPersianNumber } from '@/app/util';
+import { faNum, toPersianNumber } from '@/app/util';
 import Link from 'next/link';
 
 const blockStatusMap = new Map<BlockStatus, string>([["active", "فعال"], ["inactive", "غیر فعال"]])
@@ -66,8 +66,8 @@ export default function BlocksTable({
   const columns = useMemo<ColumnDef<typeof features, Block>[]>(
     () => [
       {
-        accessorKey: 'code',
-        header: 'کد بلوک',
+        accessorKey: 'name',
+        header: 'نام بلوک',
         sortingFn: 'alphanumeric',
         filterFn: 'includesString',
         cell({ row }) {
@@ -76,7 +76,7 @@ export default function BlocksTable({
               className="w-full inline-block h-full text-blue-400 hover:underline underline-offset-4"
               href={{ pathname: '/blocks/' + row.original.id }}
             >
-              {row.original.name}
+              {faNum(row.original.name)}
             </Link>
           );
         },
@@ -166,7 +166,7 @@ export default function BlocksTable({
 
   const columnFilters = useMemo(
     () =>
-      searchValue.trim() ? [{ id: 'code', value: searchValue.trim() }] : [],
+      searchValue.trim() ? [{ id: 'name', value: searchValue.trim() }] : [],
     [searchValue],
   );
 
@@ -241,7 +241,14 @@ export default function BlocksTable({
                   key={row.id}
                   tabIndex={0}
                   aria-label={`Open block ${row.original.name}`}
-                  className="even:bg-surface transition hover:bg-surface-muted border-t border-border focus-visible:outline-2 "
+                  onClick={() => onRowClick(row.original)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      onRowClick(row.original);
+                    }
+                  }}
+                  className="even:bg-surface transition hover:bg-surface-muted border-t border-border focus-visible:outline-2 cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 text-right">
