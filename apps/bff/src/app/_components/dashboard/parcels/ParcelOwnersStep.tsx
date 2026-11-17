@@ -200,7 +200,7 @@ export default function ParcelOwnersStep({
             return (
               <div
                 key={`${item.ownerId || 'new-owner'}-${index}`}
-                className="rounded-xl border border-white/10 bg-white/[0.03] p-3 flex flex-col gap-3"
+                className="rounded-xl border border-white/10 p-3 flex flex-col gap-3"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-foreground">
