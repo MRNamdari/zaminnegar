@@ -3,160 +3,57 @@
 import { useState } from 'react';
 import { AiOutlinePlus } from 'react-icons/ai';
 import { CgSearch } from 'react-icons/cg';
-
-import ParcelsTable, {
-  Parcel,
-} from '@/app/_components/dashboard/parcels/ParcelsTable';
-
-import ParcelsFormCreate, {
-  ParcelCreatePayload,
-} from '@/app/_components/dashboard/parcels/ParcelsFormCreate';
-
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/app/_lib/api.client';
+import { ParcelResponseDto as Parcel } from '@zaminnegar/api-client';
+import ParcelsTable from '@/app/_components/dashboard/parcels/ParcelsTable';
+import { useRouter } from 'next/navigation';
+import Link from 'next/dist/client/link';
+import { toast } from 'react-toastify';
+import { Dialog } from '@/app/_components/Dialog';
 import ParcelsFormUpdate from '@/app/_components/dashboard/parcels/ParcelsFormUpdate';
 
-import { UpdateParcelFormValues } from '@/app/_components/dashboard/parcels/schema/ParcelsUpdate.schema';
-
-import { Dialog } from '@/app/_components/Dialog';
-
-import { parcelMockData } from './ParcelMockData';
-import { initialOwners } from '../mockData';
 
 export default function Page() {
   const [searchValue, setSearchValue] = useState('');
-
-  const [parcels, setParcels] = useState<Parcel[]>(parcelMockData);
-
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
   const [selectedParcel, setSelectedParcel] = useState<Parcel | null>(null);
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
-  // باز کردن فرم افزودن قطعه
-  const handleAddParcel = () => {
-    setIsAddModalOpen(true);
-  };
+  // get list parcels
+  const { data, error, isLoading } = useQuery(api.get('/parcels').queryOptions);
 
-  // ثبت قطعه جدید
-  const handleCreateParcel = (values: ParcelCreatePayload) => {
-    const template = parcels[0];
+  // handle delete parcels
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const handleDeleteModal = (parcel: Parcel) => {
+    setSelectedParcel(parcel);
+    setIsDeleteOpen(true);
+  }
+  const deleteParcelMutation = useMutation({
+    ...api.mutation('delete', '/parcels/{id}').mutationOptions,
 
-    // برای ساخت قطعه آزمایشی به اطلاعات هندسی نیاز داریم.
-    if (!template) {
-      console.error('اطلاعات اولیه قطعات برای ساخت قطعه آزمایشی موجود نیست.');
-      return;
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: api.get('/parcels').queryOptions.queryKey,
+      });
+
+      toast.success('قطعه با موفقیت حذف شد.')
+      setIsDeleteOpen(false);
+      setSelectedParcel(null);
+    },
+    onError: () => {
+      toast.error('در هنگام حذف قطعه خطایی رخ داده است.')
+      setIsDeleteOpen(false);
+      setSelectedParcel(null);
     }
-
-    const newId = crypto.randomUUID();
-    const now = new Date();
-
-    const newParcel: Parcel = {
-      ...template,
-      id: newId,
-      name: values.nameParcel,
-      block: template.block,
-      status: values.parcelStatus,
-
-      owners: values.owners.map((item) => {
-        const owner = initialOwners.find((owner) => owner.id === item.ownerId);
-
-        return {
-          parcelId: newId,
-          ownerId: item.ownerId,
-          share: item.share,
-          createdAt: now,
-          updatedAt: now,
-          owner: owner
-            ? {
-                id: owner.id,
-                name: owner.name,
-                phone: owner.phoneNumber,
-                createdAt: now,
-                updatedAt: now,
-              }
-            : undefined,
-        };
-      }),
-    };
-
-    setParcels((previous) => [...previous, newParcel]);
-
-    setIsAddModalOpen(false);
-  };
-
-  // باز کردن فرم ویرایش
-  const handleOpenUpdateModal = (parcel: Parcel) => {
-    setSelectedParcel(parcel);
-    setIsUpdateModalOpen(true);
-  };
-
-  // ویرایش قطعه
-  const handleUpdateParcel = (values: UpdateParcelFormValues) => {
-    if (!selectedParcel) return;
-
-    const now = new Date();
-
-    setParcels((previous) =>
-      previous.map((parcel) => {
-        if (parcel.id !== selectedParcel.id) return parcel;
-
-        return {
-          ...parcel,
-          name: values.nameParcel,
-          status: values.parcelStatus,
-
-          owners: values.owners.map((item) => {
-            const owner = initialOwners.find(
-              (owner) => owner.id === item.ownerId,
-            );
-
-            const existingOwner = parcel.owners?.find(
-              (relation) => relation.ownerId === item.ownerId,
-            );
-
-            return {
-              parcelId: parcel.id,
-              ownerId: item.ownerId,
-              share: Number(item.share),
-              createdAt: existingOwner?.createdAt ?? now,
-              updatedAt: now,
-              owner: owner
-                ? {
-                    id: owner.id,
-                    name: owner.name,
-                    phone: owner.phoneNumber,
-                    createdAt: existingOwner?.owner?.createdAt ?? now,
-                    updatedAt: now,
-                  }
-                : undefined,
-            };
-          }),
-        };
-      }),
-    );
-
-    setIsUpdateModalOpen(false);
-    setSelectedParcel(null);
-  };
-
-  // باز کردن پنجره حذف
-  const handleDelete = (parcel: Parcel) => {
-    setSelectedParcel(parcel);
-    setIsDeleteModalOpen(true);
-  };
-
-  // تأیید حذف قطعه
-  const confirmDelete = () => {
-    if (!selectedParcel) return;
-
-    setParcels((previous) =>
-      previous.filter((parcel) => parcel.id !== selectedParcel.id),
-    );
-
-    setIsDeleteModalOpen(false);
-    setSelectedParcel(null);
-  };
-
+  })
+  
+  // handle update parcels
+  const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+    const handleUpdateModal = (parcel: Parcel) => {
+      setSelectedParcel(parcel);
+      setIsUpdateOpen(true);
+    }
   return (
     <div className="w-full h-full overflow-y-auto">
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-4 items-center pb-4 pt-6 pr-4">
@@ -164,7 +61,6 @@ export default function Page() {
           قطعه ها
         </h2>
 
-        {/* جستجو و افزودن قطعه */}
         <div className="block-header w-full flex gap-4 justify-between items-center">
           <form
             onSubmit={(e) => e.preventDefault()}
@@ -194,45 +90,34 @@ export default function Page() {
             </search>
           </form>
 
-          <button
-            type="button"
-            onClick={handleAddParcel}
+          <Link
+            href={'/map'}
             className="min-w-fit flex gap-2 items-center bg-action-primary transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
           >
             <AiOutlinePlus className="text-white" />
             <span className="text-sm text-white">افزودن قطعه</span>
-          </button>
+          </Link>
         </div>
-
-        {/* جدول قطعات */}
-        <ParcelsTable
-          data={parcels}
-          onDelete={handleDelete}
-          onEdit={handleOpenUpdateModal}
-          onRowClick={(parcel) => console.log(parcel)}
-          searchValue={searchValue}
-        />
-
-        {/* فرم افزودن قطعه */}
-        <Dialog
-          open={isAddModalOpen}
-          onOpenChange={setIsAddModalOpen}
-          title="افزودن قطعه"
-          description="اطلاعات قطعه جدید را وارد کنید"
-          className="text-white"
-        >
-          <ParcelsFormCreate
-            owners={initialOwners}
-            onSubmit={handleCreateParcel}
-            onCancel={() => setIsAddModalOpen(false)}
+        {isLoading ? (
+          <p>{'در حال بارگذاری...'}</p>
+        ) : error ? (
+          <p>{'خطا در بارگذاری!'}</p>
+        ) : (
+          <ParcelsTable
+            data={data?.items ?? []}
+            onDelete={handleDeleteModal}
+            onEdit={handleUpdateModal}
+            onRowClick={(block) => {
+              router.push(`/parcels/${encodeURIComponent(block.id)}`);
+            }}
+            searchValue={searchValue}
           />
-        </Dialog>
+        )}
 
-        {/* فرم ویرایش قطعه */}
         <Dialog
-          open={isUpdateModalOpen}
+          open={isUpdateOpen}
           onOpenChange={(open) => {
-            setIsUpdateModalOpen(open);
+            setIsUpdateOpen(open);
 
             if (!open) {
               setSelectedParcel(null);
@@ -244,22 +129,20 @@ export default function Page() {
         >
           {selectedParcel && (
             <ParcelsFormUpdate
+              key={selectedParcel.id}
               parcel={selectedParcel}
-              owners={initialOwners}
-              onSubmit={handleUpdateParcel}
               onCancel={() => {
-                setIsUpdateModalOpen(false);
+                setIsUpdateOpen(false);
                 setSelectedParcel(null);
               }}
             />
           )}
         </Dialog>
 
-        {/* پنجره حذف قطعه */}
         <Dialog
-          open={isDeleteModalOpen}
+          open={isDeleteOpen}
           onOpenChange={(open) => {
-            setIsDeleteModalOpen(open);
+            setIsDeleteOpen(open);
 
             if (!open) {
               setSelectedParcel(null);
@@ -274,6 +157,7 @@ export default function Page() {
               <p className="text-sm text-slate-300">
                 آیا مطمئن هستید که می‌خواهید قطعه
                 <span className="text-white font-semibold mx-1">
+                  {' '}
                   {selectedParcel.name}
                 </span>
                 را حذف کنید؟
@@ -283,7 +167,7 @@ export default function Page() {
                 <button
                   type="button"
                   onClick={() => {
-                    setIsDeleteModalOpen(false);
+                    setIsDeleteOpen(false);
                     setSelectedParcel(null);
                   }}
                   className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
@@ -293,7 +177,12 @@ export default function Page() {
 
                 <button
                   type="button"
-                  onClick={confirmDelete}
+                  onClick={async () => {
+                    setIsDeleteOpen(false);
+                    await deleteParcelMutation.mutate({
+                      path: { id: selectedParcel.id },
+                    });
+                  }}
                   className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
                 >
                   حذف قطعه

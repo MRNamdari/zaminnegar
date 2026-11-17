@@ -1,4 +1,8 @@
-import { useMemo } from "react";
+import type {
+  ParcelResponseDto as Parcel,
+  ParcelStatus,
+} from '@zaminnegar/api-client';
+import { useMemo } from 'react';
 import {
   useTable,
   tableFeatures,
@@ -12,7 +16,7 @@ import {
   columnVisibilityFeature,
   sortFns,
   type ColumnDef,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 import {
   FiEdit2,
   FiTrash2,
@@ -20,14 +24,14 @@ import {
   FiChevronRight,
   FiArrowUp,
   FiArrowDown,
-} from "react-icons/fi";
-import type { IParcel } from "@/app/features/parcels/interface";
-import { toPersianNumber } from "@/app/util";
-import { SvgPolygon } from "../SvgPolygon";
-import Link from "next/link";
+} from 'react-icons/fi';
+import { faNum, toPersianNumber } from '@/app/util';
+import Link from 'next/link';
 
-export type Parcel = IParcel;
-
+const parcelStatusMap = new Map<ParcelStatus, string>([
+  ['active', 'فعال'],
+  ['inactive', 'غیر فعال'],
+]);
 interface ParcelTableProps {
   data: Parcel[];
   searchValue: string;
@@ -62,43 +66,32 @@ export default function ParcelsTable({
   const columns = useMemo<ColumnDef<typeof features, Parcel>[]>(
     () => [
       {
-        accessorKey: "id",
-        header: "نام قطعه",
-        cell({ row }) {
-          return (
-            <SvgPolygon height="3rem" polygon={row.original.geometry} />
-          );
-        },
-      },
-      {
         accessorKey: 'name',
-        header: '',
+        header: 'نام قطعه',
         sortingFn: 'alphanumeric',
         filterFn: 'includesString',
         cell({ row }) {
           return (
             <Link
               className="w-full inline-block h-full text-blue-400 hover:underline underline-offset-4"
-              href={`/parcels/${row.original.id}`}
+              href={{ pathname: '/parcels/' + row.original.id }}
               onClick={(event) => event.stopPropagation()}
             >
-              {row.original.name}
+              {faNum(row.original.name)}
             </Link>
           );
         },
       },
       {
-        accessorKey: "areaM2",
-        header: "مساحت",
+        accessorKey: 'areaM2',
+        header: 'مساحت',
         cell({ row }) {
-          const area = Number(row.original.areaM2) || 0;
-
           return (
             <div>
               <div>
                 {toPersianNumber(
-                  Math.floor(parseFloat(row.original.areaM2) / 10_000),
-                )}{" "}
+                  row.original.areaM2 ? row.original.areaM2 / 10000 : 0,
+                )}{' '}
                 <span>هکتار</span>
               </div>
             </div>
@@ -106,56 +99,53 @@ export default function ParcelsTable({
         },
       },
       {
-        accessorKey: "block",
-        header: "بلوک ها",
+        accessorKey: 'block',
+        header: 'بلوک ها',
         cell({ row }) {
-          return row.original.block ?? "-";
+          return row.original.block?.name ?? '-';
         },
       },
       {
-        accessorKey: "owners",
-        header: "مالکین",
-        sortingFn: "basic",
+        accessorKey: 'owners',
+        header: 'مالکین',
+        sortingFn: 'basic',
         cell({ row }) {
-          const owners = row.original.owners ?? [];
-
-          if (owners.length === 0) {
-            return '-';
-          }
-
+          const { ownerships } = row.original;
+          if (!ownerships || (ownerships && !ownerships.length)) return 'ندارد';
+          console.log(ownerships)
           return (
-            <div className="flex flex-wrap gap-2">
-              {owners.map((parcelOwner) => {
-                const owner = parcelOwner.owner;
-
-                if (!owner) return null;
-
-                return (
-                  <Link
-                    key={owner.id}
-                    className="text-blue-400 hover:underline underline-offset-4"
-                    href={`/owners/${owner.id}`}
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    {owner.name}
-                  </Link>
-                );
-              })}
+            <div className="flex gap-3">
+              {ownerships.map(({ owner }) => (
+                <Link
+                  key={owner.id}
+                  className="inline-block h-full text-blue-400 hover:underline underline-offset-4"
+                  href={{ pathname: '/owners/' + owner.id }}
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  {owner.name}
+                </Link>
+              ))}
             </div>
           );
         },
       },
       {
-        accessorKey: "status",
-        header: "وضعیت",
+        accessorKey: 'status',
+        header: 'وضعیت',
         cell: ({ row }) => {
           const status = row.original.status;
 
           return (
             <span
-              className={`min-w-18 text-center select-none rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${status === "فعال" ? "bg-map-green text-surface" : "bg-surface-muted text-foreground"}`}
+              className={`min-w-18 text-center rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${
+                status === 'active'
+                  ? 'bg-map-green text-surface'
+                  : status === 'inactive'
+                    ? 'bg-action-warning/90 text-surface'
+                    : 'bg-surface-muted text-foreground'
+              }`}
             >
-              {status}
+              {parcelStatusMap.get(status)}
             </span>
           );
         },
@@ -198,7 +188,7 @@ export default function ParcelsTable({
 
   const columnFilters = useMemo(
     () =>
-      searchValue.trim() ? [{ id: "code", value: searchValue.trim() }] : [],
+      searchValue.trim() ? [{ id: 'code', value: searchValue.trim() }] : [],
     [searchValue],
   );
 
@@ -271,7 +261,6 @@ export default function ParcelsTable({
               rows.map((row) => (
                 <tr
                   key={row.id}
-                  onClick={() => onRowClick(row.original)}
                   onKeyDown={(event) => {
                     if (
                       event.target === event.currentTarget &&
@@ -314,7 +303,7 @@ export default function ParcelsTable({
           </button>
 
           <span className="text-sm select-none">
-            صفحه {toPersianNumber(table.state.pagination.pageIndex + 1)} از{" "}
+            صفحه {toPersianNumber(table.state.pagination.pageIndex + 1)} از{' '}
             {toPersianNumber(Math.max(1, pageCount))}
           </span>
 
