@@ -1,367 +1,322 @@
-
 'use client';
 
-import { useState } from 'react';
-import { useSelector } from '@tanstack/react-form';
-import { useAppForm } from '../../form/hooks/form';
+import { useRef, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
+import z from 'zod';
 
 import {
-  updateFormParcel,
-  UpdateParcelFormValues,
-} from './schema/ParcelsUpdate.schema';
-
-import { Parcel } from './ParcelsTable';
-import { Owner } from '../owners/OwnersTable';
-import { faNum } from '@/app/util';
-import { FiTrash2 } from 'react-icons/fi';
+  AssignOwnerDto,
+  OwnerResponseDto,
+  ParcelResponseDto as Parcel,
+  UpdateOwnershipDto,
+  UpdateParcelDto,
+  queryKeyFactory,
+} from '@zaminnegar/api-client';
+import { api } from '@/app/_lib/api.client';
+import ParcelInformationStep, {
+  parcelInformationSchema,
+  type ParcelInformationValues,
+} from './ParcelInformationStep';
+import ParcelOwnersStep, {
+  parcelOwnersSchema,
+  type ParcelOwnersValues,
+  type OwnerShareRow,
+} from './ParcelOwnersStep';
+import type { UpdateParcelFormValues } from './schema/ParcelsUpdate.schema';
 
 interface Props {
   parcel: Parcel;
-  owners: Owner[];
-  onSubmit: (values: UpdateParcelFormValues) => void;
+  onSubmit?: (values: UpdateParcelFormValues) => void;
   onCancel: () => void;
 }
 
-const getInitialValues = (
-  parcel: Parcel,
-): UpdateParcelFormValues => ({
-  nameParcel: parcel.name,
-  parcelStatus: parcel.status,
-  owners:
-    parcel.owners?.map((item) => ({
-      ownerId: item.ownerId,
-      share: item.share,
-    })) ?? [{ ownerId: '', share: 0 }],
-});
+const toOwnerRows = (parcel: Parcel): OwnerShareRow[] =>
+  (parcel.ownerships ?? []).map((ownership) => ({
+    ownerId: ownership.ownerId,
+    sharePct: ownership.sharePct,
+  }));
+
+const normalizePct = (value: number) =>
+  Math.round((Number(value) || 0) * 100) / 100;
+
+const OWNERS_PAGE_SIZE = 100;
+
+const fetchAllRegisteredOwners = async (): Promise<OwnerResponseDto[]> => {
+  const firstPage = await api.client.get('/owners', {
+    query: { page: 1, limit: OWNERS_PAGE_SIZE },
+  });
+  const pageCount = Math.ceil(firstPage.total / OWNERS_PAGE_SIZE);
+  const remainingPages = await Promise.all(
+    Array.from({ length: Math.max(0, pageCount - 1) }, (_, index) =>
+      api.client.get('/owners', {
+        query: { page: index + 2, limit: OWNERS_PAGE_SIZE },
+      }),
+    ),
+  );
+
+  return [firstPage, ...remainingPages].flatMap((page) => page.items);
+};
 
 export default function ParcelsFormUpdate({
   onSubmit,
   onCancel,
   parcel,
-  owners,
 }: Props) {
+  const queryClient = useQueryClient();
+  const ownersQuery = api.get('/owners', {
+    query: { page: 1, limit: OWNERS_PAGE_SIZE },
+  });
+  const { data: owners = [] } = useQuery({
+    queryKey: ownersQuery.queryKey,
+    queryFn: fetchAllRegisteredOwners,
+  });
+  const savingRef = useRef(false);
+  const savedOwnershipsRef = useRef(toOwnerRows(parcel));
   const [step, setStep] = useState<1 | 2>(1);
-  const [ownerError, setOwnerError] = useState('');
+  const [parcelValues, setParcelValues] = useState<ParcelInformationValues>({
+    name: parcel.name,
+    status: parcel.status,
+  });
+  const [ownersValues, setOwnersValues] = useState<ParcelOwnersValues>({
+    owners: toOwnerRows(parcel),
+  });
+  const [isSaving, setIsSaving] = useState(false);
 
-  const form = useAppForm({
-    defaultValues: getInitialValues(parcel),
-
-    validators: {
-      onSubmit: updateFormParcel,
-    },
-
-    onSubmit: async ({ value }) => {
-      const totalShare = value.owners.reduce(
-        (total, item) => total + Number(item.share),
-        0,
-      );
-
-      const normalizedTotal = Math.round(totalShare * 100) / 100;
-
-      if (normalizedTotal !== 100) {
-        setOwnerError('مجموع سهم مالکین باید دقیقاً ۱۰۰ درصد باشد.');
-        return;
-      }
-
-      setOwnerError('');
-
-      const payload: UpdateParcelFormValues = {
-        nameParcel: value.nameParcel,
-        parcelStatus: value.parcelStatus,
-        owners: value.owners.map((item) => ({
-          ownerId: item.ownerId,
-          share: Number(item.share),
-        })),
-      };
-
-      onSubmit(payload);
-    },
+  const updateParcelMutation = useMutation({
+    mutationFn: ({
+      id,
+      value,
+    }: {
+      id: string;
+      value: z.input<typeof UpdateParcelDto>;
+    }) =>
+      api.client.patch('/parcels/{id}', {
+        path: { id },
+        body: value,
+      }),
+  });
+  const updateOwnershipMutation = useMutation({
+    mutationFn: ({
+      id,
+      ownerId,
+      sharePct,
+    }: {
+      id: string;
+      ownerId: string;
+      sharePct: number;
+    }) =>
+      api.client.patch('/parcels/{id}/owners/{ownerId}', {
+        path: { id, ownerId },
+        body: UpdateOwnershipDto.parse({ sharePct }),
+      }),
+  });
+  const removeOwnershipMutation = useMutation({
+    mutationFn: ({ id, ownerId }: { id: string; ownerId: string }) =>
+      api.client.delete('/parcels/{id}/owners/{ownerId}', {
+        path: { id, ownerId },
+      }),
+  });
+  const assignOwnerMutation = useMutation({
+    mutationFn: ({
+      id,
+      owner,
+    }: {
+      id: string;
+      owner: z.input<typeof AssignOwnerDto>;
+    }) =>
+      api.client.post('/parcels/{id}/owners', {
+        path: { id },
+        body: AssignOwnerDto.parse(owner),
+      }),
   });
 
-  // دریافت مستقیم مقادیر مالکین از TanStack Form
-  const ownerShares = useSelector(
-    form.store,
-    (state) => state.values.owners,
-  );
-
-  // محاسبه مجموع سهم مالکین
-  const totalShare = ownerShares.reduce(
-    (total, item) => total + (Number(item.share) || 0),
-    0,
-  );
-
-  const normalizedTotal = Math.round(totalShare * 100) / 100;
-
-  // افزودن مالک جدید
-  const addOwner = () => {
-    form.setFieldValue('owners', (previous) => [
-      ...previous,
-      { ownerId: '', share: 0 },
+  const invalidateRelatedQueries = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: queryKeyFactory.endpoint('/parcels'),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: queryKeyFactory.endpoint('/parcels/{id}', {
+          path: { id: parcel.id },
+        }),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: queryKeyFactory.endpoint('/parcels/{id}/detail', {
+          path: { id: parcel.id },
+        }),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: queryKeyFactory.endpoint('/parcels/{id}/owners', {
+          path: { id: parcel.id },
+        }),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: queryKeyFactory.endpoint('/owners'),
+      }),
     ]);
-
-    setOwnerError('');
   };
 
-  // حذف مالک
-  const removeOwner = (index: number) => {
-    form.setFieldValue('owners', (previous) =>
-      previous.filter((_, i) => i !== index),
-    );
+  const submitChanges = async (
+    nextParcelValues: ParcelInformationValues,
+    nextOwnersValues: ParcelOwnersValues,
+  ) => {
+    if (savingRef.current) return;
 
-    setOwnerError('');
+    const parcelResult = parcelInformationSchema.safeParse(nextParcelValues);
+    const ownersResult = parcelOwnersSchema.safeParse(nextOwnersValues);
+    if (!parcelResult.success || !ownersResult.success) {
+      toast.error('لطفاً اطلاعات قطعه و مالکین را بررسی کنید.');
+      setStep(parcelResult.success ? 2 : 1);
+      return;
+    }
+
+    savingRef.current = true;
+    setIsSaving(true);
+    let succeeded = false;
+
+    try {
+      const validatedParcel = parcelResult.data;
+      const validatedOwners = ownersResult.data.owners;
+
+      await updateParcelMutation.mutateAsync({
+        id: parcel.id,
+        value: validatedParcel,
+      });
+
+      const currentOwners = savedOwnershipsRef.current;
+      const currentById = new Map(
+        currentOwners.map((owner) => [owner.ownerId, owner]),
+      );
+      const desiredById = new Map(
+        validatedOwners.map((owner) => [owner.ownerId, owner]),
+      );
+      const removedOwnershipOwnerIds = currentOwners
+        .filter((owner) => !desiredById.has(owner.ownerId))
+        .map((owner) => owner.ownerId);
+      const changedShares = validatedOwners.flatMap((owner) => {
+        const current = currentById.get(owner.ownerId);
+        return current &&
+          normalizePct(current.sharePct) !== normalizePct(owner.sharePct)
+          ? [{ owner, current }]
+          : [];
+      });
+      const addedOwners = validatedOwners.filter(
+        (owner) => !currentById.has(owner.ownerId),
+      );
+      const decreasedShares = changedShares.filter(
+        ({ owner, current }) => owner.sharePct < current.sharePct,
+      );
+      const increasedShares = changedShares.filter(
+        ({ owner, current }) => owner.sharePct >= current.sharePct,
+      );
+
+      for (const { owner } of decreasedShares) {
+        await updateOwnershipMutation.mutateAsync({
+          id: parcel.id,
+          ownerId: owner.ownerId,
+          sharePct: owner.sharePct,
+        });
+        savedOwnershipsRef.current = savedOwnershipsRef.current.map((saved) =>
+          saved.ownerId === owner.ownerId
+            ? { ...saved, sharePct: owner.sharePct }
+            : saved,
+        );
+      }
+
+      for (const ownerId of removedOwnershipOwnerIds) {
+        await removeOwnershipMutation.mutateAsync({
+          id: parcel.id,
+          ownerId,
+        });
+        savedOwnershipsRef.current = savedOwnershipsRef.current.filter(
+          (saved) => saved.ownerId !== ownerId,
+        );
+      }
+
+      for (const { owner } of increasedShares) {
+        await updateOwnershipMutation.mutateAsync({
+          id: parcel.id,
+          ownerId: owner.ownerId,
+          sharePct: owner.sharePct,
+        });
+        savedOwnershipsRef.current = savedOwnershipsRef.current.map((saved) =>
+          saved.ownerId === owner.ownerId
+            ? { ...saved, sharePct: owner.sharePct }
+            : saved,
+        );
+      }
+
+      for (const owner of addedOwners) {
+        const requestBody = AssignOwnerDto.parse(owner);
+        await assignOwnerMutation.mutateAsync({
+          id: parcel.id,
+          owner: requestBody,
+        });
+        savedOwnershipsRef.current = [
+          ...savedOwnershipsRef.current,
+          { ...requestBody },
+        ];
+      }
+
+      await invalidateRelatedQueries();
+      onSubmit?.({
+        nameParcel: validatedParcel.name,
+        parcelStatus: validatedParcel.status === 'active' ? 'فعال' : 'غیر فعال',
+        owners: validatedOwners.map((owner) => ({
+          ownerId: owner.ownerId,
+          share: owner.sharePct,
+        })),
+      });
+      toast.success('قطعه و مالکین با موفقیت به‌روزرسانی شدند.');
+      succeeded = true;
+    } catch (error) {
+      try {
+        await invalidateRelatedQueries();
+      } catch (refreshError) {
+        toast.error(
+          refreshError instanceof Error
+            ? `به‌روزرسانی فهرست‌ها با خطا مواجه شد: ${refreshError.message}`
+            : 'به‌روزرسانی فهرست‌ها با خطا مواجه شد.',
+        );
+      }
+      toast.error(
+        error instanceof Error
+          ? `ذخیره تغییرات با خطا مواجه شد: ${error.message}`
+          : 'ذخیره تغییرات با خطا مواجه شد.',
+      );
+    } finally {
+      savingRef.current = false;
+      setIsSaving(false);
+      if (succeeded) onCancel();
+    }
   };
 
-  // رفتن به مرحله دوم
-  const goToNextStep = async () => {
-    const errors = await form.validateField('nameParcel', 'submit');
-
-    if (errors.length > 0) return;
-
-    setStep(2);
-  };
-
-  // بازگشت به مرحله اول
-  const goToPreviousStep = () => {
-    setOwnerError('');
-    setStep(1);
-  };
-
-  // ثبت فرم
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    void form.handleSubmit();
-  };
-
-  // انصراف و بازنشانی فرم
-  const handleCancel = () => {
-    form.reset();
-    setOwnerError('');
-    setStep(1);
-    onCancel();
-  };
-
-  return (
-    <form.AppForm>
-      <form
-        noValidate
-        onSubmit={handleFormSubmit}
-        className="flex flex-col gap-4 mt-4"
-      >
-        {/* مرحله اول: مشخصات قطعه */}
-        {step === 1 && (
-          <>
-            <div>
-              <h3 className="text-base font-semibold mb-1">
-                مشخصات قطعه
-              </h3>
-
-              <p className="text-sm text-gray-400">
-                اطلاعات قطعه را ویرایش کنید.
-              </p>
-            </div>
-
-            <form.AppField
-              name="nameParcel"
-              validators={{
-                onBlur: updateFormParcel.shape.nameParcel,
-              }}
-            >
-              {(field) => (
-                <field.TextField
-                  label="کد قطعه"
-                  placeholder="کد قطعه را وارد کنید"
-                  required
-                />
-              )}
-            </form.AppField>
-
-            <div>
-              <label className="block text-sm mb-2">
-                وضعیت قطعه
-              </label>
-
-              <div className="w-full rounded-lg border border-border bg-white/5 px-3 py-3 text-sm text-gray-400 cursor-not-allowed">
-                در انتظار تکمیل
-              </div>
-
-              <p className="text-xs text-gray-500 mt-2">
-                وضعیت قطعه پس از ثبت و طی مراحل بررسی تغییر می‌کند.
-              </p>
-            </div>
-          </>
-        )}
-
-        {/* مرحله دوم: اطلاعات مالکین */}
-        {step === 2 && (
-          <>
-            <div>
-              <h3 className="mt-1 text-base font-medium leading-6 text-foreground-secondary">
-                اطلاعات مالکین قطعه
-              </h3>
-
-              <p className="text-sm text-foreground">
-                مالکین قطعه و درصد سهم هرکدام را مشخص کنید.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              {ownerShares.map((item, index) => {
-                const selectedOwner = owners.find(
-                  (owner) => owner.id === item.ownerId,
-                );
-
-                const availableOwners = owners
-                  .filter((owner) => {
-                    const alreadySelected = ownerShares.some(
-                      (share, i) => i !== index && share.ownerId === owner.id,
-                    );
-
-                    return (
-                      owner.id === item.ownerId ||
-                      (owner.status === 'فعال' && !alreadySelected)
-                    );
-                  })
-                  .map((owner) => ({
-                    label:
-                      owner.status === 'فعال'
-                        ? owner.name
-                        : `${owner.name} (غیرفعال)`,
-                    value: owner.id,
-                  }));
-
-                return (
-                  <div
-                    key={index}
-                    className="rounded-xl border border-white/10 bg-white/[0.03] p-3 flex flex-col gap-3"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">
-                        مالک {index + 1}
-                      </span>
-
-                      {ownerShares.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeOwner(index)}
-                          title="حذف مالک"
-                          aria-label={`حذف مالک ${index + 1}`}
-                          className="text-action-error hover:opacity-70 transition cursor-pointer"
-                        >
-                          <FiTrash2 size={18} />
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 items-end text-foreground">
-                      {/* انتخاب مالک */}
-                      <form.AppField name={`owners[${index}].ownerId` as any}>
-                        {(field) => (
-                          <field.SelectField
-                            label="انتخاب مالک"
-                            placeholder="انتخاب مالک"
-                            options={availableOwners}
-                            required
-                          />
-                        )}
-                      </form.AppField>
-
-                      {/* درصد سهم */}
-                      <form.AppField name={`owners[${index}].share` as any}>
-                        {(field) => (
-                          <field.NumberField
-                            label="درصد سهم مالک"
-                            placeholder="مثلاً ۵۰"
-                            min={0}
-                            max={100}
-                            step={0.01}
-                            required
-                          />
-                        )}
-                      </form.AppField>
-                    </div>
-
-                    {selectedOwner && (
-                      <p className="text-xs text-foreground-muted">
-                        کد ملی: {selectedOwner.nationalCode}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-
-              {/* افزودن مالک */}
-              <button
-                type="button"
-                onClick={addOwner}
-                className="w-full border border-dashed border-border rounded-lg py-3 text-sm text-foreground hover:opacity-80 transition cursor-pointer flex items-center justify-center gap-2"
-              >
-                <span>+</span>
-                افزودن مالک دیگر
-              </button>
-            </div>
-
-            {/* مجموع سهم مالکین */}
-            <div className="rounded-lg bg-white/5 border border-white/10 p-3 flex items-center justify-between">
-              <span className="text-sm text-foreground-hover">
-                مجموع سهم مالکین
-              </span>
-
-              <span
-                className={`font-semibold ${
-                  normalizedTotal === 100
-                    ? 'text-green-400'
-                    : normalizedTotal > 100
-                      ? 'text-red-400'
-                      : 'text-yellow-400'
-                }`}
-              >
-                {faNum(totalShare)}٪ از ۱۰۰٪
-              </span>
-            </div>
-
-            {ownerError && normalizedTotal !== 100 && (
-              <p className="text-sm text-red-400">{ownerError}</p>
-            )}
-          </>
-        )}
-
-        {/* دکمه‌ها */}
-        <div className="flex items-center gap-3 mt-2">
-          {step === 1 ? (
-            <>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
-              >
-                انصراف
-              </button>
-
-              <button
-                type="button"
-                onClick={goToNextStep}
-                className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
-              >
-                مرحله بعد
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={goToPreviousStep}
-                className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
-              >
-                مرحله قبل
-              </button>
-
-              <form.SubmitButton label="ذخیره تغییرات" />
-            </>
-          )}
-        </div>
-      </form>
-    </form.AppForm>
+  return step === 1 ? (
+    <ParcelInformationStep
+      initialValues={parcelValues}
+      onValuesChange={setParcelValues}
+      onNext={(values) => {
+        setParcelValues(values);
+        setStep(2);
+      }}
+      onCancel={onCancel}
+    />
+  ) : (
+    <ParcelOwnersStep
+      parcel={parcel}
+      owners={owners}
+      initialValues={ownersValues}
+      isSaving={isSaving}
+      onValuesChange={setOwnersValues}
+      onBack={(values) => {
+        setOwnersValues(values);
+        setStep(1);
+      }}
+      onSave={(values) => {
+        setOwnersValues(values);
+        void submitChanges(parcelValues, values);
+      }}
+    />
   );
 }
