@@ -27,7 +27,7 @@ import type { UpdateParcelFormValues } from './schema/ParcelsUpdate.schema';
 
 interface Props {
   parcel: Parcel;
-  onSubmit?: (values: UpdateParcelFormValues) => void;
+  onSubmit?: (values: z.input<typeof UpdateParcelDto>) => void;
   onCancel: () => void;
 }
 
@@ -261,9 +261,9 @@ export default function ParcelsFormUpdate({
 
       await invalidateRelatedQueries();
       onSubmit?.({
-        nameParcel: validatedParcel.name,
-        parcelStatus: validatedParcel.status === 'active' ? 'فعال' : 'غیر فعال',
-        owners: validatedOwners.map((owner) => ({
+        name: validatedParcel.name,
+        status: validatedParcel.status,
+        ownersShip: validatedOwners.map((owner) => ({
           ownerId: owner.ownerId,
           share: owner.sharePct,
         })),
