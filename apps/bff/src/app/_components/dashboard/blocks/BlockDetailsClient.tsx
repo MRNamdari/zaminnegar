@@ -153,6 +153,7 @@ export default function BlockDetailsClient({ block }: BlockDetailsProps) {
         titleHead={`جزئیات بلوک ${detailsBlock.name}`}
         unTitleHead={blockStatusMap.get(detailsBlock.status)}
         geometry={toPolygon(detailsBlock.boundary.geometry)}
+        colorGeometry='--map-blue'
       />
 
       <div className="flex flex-col gap-4 w-full">
