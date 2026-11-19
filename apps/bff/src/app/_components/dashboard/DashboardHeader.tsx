@@ -205,31 +205,31 @@ export default function DashboardHeader() {
 
   return (
     <>
-      <header className="grid grid-cols-3 items-center border-b border-border p-4">
+      <header className="grid grid-cols-2 items-center gap-2 border-b border-border p-3 sm:gap-0 sm:p-4">
         {/* Right Navigation */}
-        <nav className="right_nav flex items-start">
+        <nav className="right_nav flex min-w-0 items-center justify-start">
           <div ref={menuRef} className="relative">
             {/* Profile Trigger */}
             <button
               type="button"
               onClick={() => setIsOpen((prev) => !prev)}
-              className={`flex items-center gap-2.5 rounded-2xl px-2.5 py-2 transition-all duration-200 cursor-pointer ${
+              className={`flex cursor-pointer items-center gap-2 rounded-xl px-1.5 py-2 transition-all duration-200 sm:gap-2.5 sm:rounded-2xl sm:px-2.5 ${
                 isOpen ? 'bg-surface-muted' : 'hover:bg-surface-muted'
               }`}
             >
-              <div className="flex size-10 items-center justify-center rounded-full bg-linear-to-tl from-blue-300 to-blue-100">
-                <span className="contents font-black text-blue-950 -mt-1">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-linear-to-tl from-blue-300 to-blue-100 sm:size-10">
+                <span className="contents -mt-1 font-black text-blue-950">
                   {userName.trim().charAt(0) || ''}
                 </span>
               </div>
 
-              <span className="font-medium text-sm text-foreground">
+              <span className="max-w-20 truncate text-xs font-medium text-foreground sm:max-w-none sm:text-sm">
                 {userName}
               </span>
 
               <BsChevronDown
-                size={12}
-                className={`text-muted-foreground transition-transform duration-200 ${
+                size={11}
+                className={`shrink-0 text-muted-foreground transition-transform duration-200 sm:size-3 ${
                   isOpen ? 'rotate-180' : ''
                 }`}
               />
@@ -237,7 +237,7 @@ export default function DashboardHeader() {
 
             {/* Profile Dropdown */}
             {isOpen && (
-              <div className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-border bg-surface p-2 shadow-xl shadow-black/10 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute right-0 top-full z-50 mt-2 w-64 max-w-[calc(100vw-24px)] overflow-hidden rounded-2xl border border-border bg-surface p-2 shadow-xl shadow-black/10 animate-in fade-in slide-in-from-top-2 duration-200">
                 {/* User Information */}
                 <div className="flex items-center gap-3 rounded-xl bg-surface-muted/70 p-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-linear-to-tl from-blue-300 to-blue-100">
@@ -263,9 +263,9 @@ export default function DashboardHeader() {
                 <button
                   type="button"
                   onClick={handleSwitchProject}
-                  className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-right transition-colors hover:bg-primary/10 cursor-pointer"
+                  className="group flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-right transition-colors hover:bg-primary/10"
                 >
-                  <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
                     <BsArrowLeftRight size={17} />
                   </div>
 
@@ -288,9 +288,9 @@ export default function DashboardHeader() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-right transition-colors duration-300 hover:bg-red-500/10 cursor-pointer"
+                  className="group flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-right transition-colors duration-300 hover:bg-red-500/10"
                 >
-                  <div className="flex size-9 items-center justify-center rounded-lg bg-red-500/10 text-red-500 transition duration-300 group-hover:bg-red-500 group-hover:text-white">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-500 transition duration-300 group-hover:bg-red-500 group-hover:text-white">
                     <BsBoxArrowRight size={17} />
                   </div>
 
@@ -309,44 +309,18 @@ export default function DashboardHeader() {
           </div>
         </nav>
 
-        {/* Middle Navigation - Search */}
-        <nav className="middle_nav flex items-center justify-center">
-          <form
-            onSubmit={(event) => event.preventDefault()}
-            className="flex w-full max-w-sm items-center gap-2"
-          >
-            <label htmlFor="simple-search" className="sr-only">
-              جستجو
-            </label>
-
-            <div className="min-w-0 flex-1">
-              <input
-                type="search"
-                id="simple-search"
-                placeholder="جستجوی منطقه یا بلوک..."
-                className="block w-full rounded-lg border border-border bg-surface py-2.5 px-3 text-sm text-foreground outline-none transition placeholder:text-foreground-muted focus:ring-2 focus:ring-action-primary-hover/20"
-              />
-            </div>
-
-            <button
-              type="submit"
-              aria-label="جستجو"
-              className="flex shrink-0 items-center justify-center rounded-lg bg-action-primary p-2 text-white transition duration-300 hover:bg-action-primary-hover focus:outline-none focus:ring-2 focus:ring-action-primary-hover/20"
-            >
-              <CgSearch fontSize={24} />
-            </button>
-          </form>
-        </nav>
-
         {/* Left Navigation - Logo */}
-        <nav className="left_nav flex items-center justify-end gap-3">
-          <strong className="text-foreground">سامانه زمین نگار</strong>
+        <nav className="left_nav flex min-w-0 items-center justify-end gap-2 sm:gap-3">
+          <strong className="truncate text-sm text-foreground sm:text-base">
+            سامانه زمین نگار
+          </strong>
 
           <Image
             src="/zaminnegar-logo-2.png"
             alt="Zaminnegar"
             width={40}
             height={40}
+            className="size-8 shrink-0 sm:size-10"
           />
         </nav>
       </header>
