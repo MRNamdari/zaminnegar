@@ -1,4 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import type {
+  RegionResponseDto as Region,
+  RegionStatus,
+} from '@zaminnegar/api-client';
 import {
   useTable,
   tableFeatures,
@@ -22,23 +26,14 @@ import {
   FiArrowUp,
   FiArrowDown,
 } from 'react-icons/fi';
-
-import type { IRegion } from '@/app/features/regions/interface';
 import { toPersianNumber } from '@/app/util';
-import { SvgPolygon } from '../SvgPolygon';
 import Link from 'next/link';
 
-export enum RegionStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-}
 
 const RegionStatusMap = new Map<RegionStatus, string>([
-  [RegionStatus.ACTIVE, 'فعال'],
-  [RegionStatus.INACTIVE, 'غیرفعال'],
+  ['active', 'فعال'],
+  ['inactive', 'غیر فعال'],
 ]);
-
-type Region = IRegion & { status: RegionStatus };
 
 interface RegionsTableProps {
   data: Region[];
@@ -65,11 +60,6 @@ const features = tableFeatures({
   paginatedRowModel: createPaginatedRowModel(),
 });
 
-const statusStyles: Record<RegionStatus, string> = {
-  [RegionStatus.INACTIVE]: 'bg-surface-muted text-foreground',
-  [RegionStatus.ACTIVE]: 'bg-map-green text-surface',
-};
-
 export default function RegionsTable({
   data,
   searchValue,
@@ -81,15 +71,8 @@ export default function RegionsTable({
   const columns = useMemo<ColumnDef<typeof features, Region>[]>(
     () => [
       {
-        accessorKey: 'id',
-        header: 'نام منطقه',
-        cell({ row }) {
-          return <SvgPolygon height="3rem" polygon={row.original.territory} />;
-        },
-      },
-      {
         accessorKey: 'name',
-        header: '',
+        header: 'نام قطعه',
         sortingFn: 'alphanumeric',
         filterFn: 'includesString',
         cell({ row }) {
@@ -97,6 +80,7 @@ export default function RegionsTable({
             <Link
               className="w-full inline-block h-full text-blue-400 hover:underline underline-offset-4"
               href={{ pathname: `/regions/${row.original.id}` }}
+              onClick={(event) => event.stopPropagation()}
             >
               {row.original.name}
             </Link>
@@ -110,12 +94,8 @@ export default function RegionsTable({
           return (
             <div>
               <div>
-                {toPersianNumber(parseFloat(row.original.areaM2))}{' '}
-                <span>مترمربع</span>
-              </div>
-              <div>
                 {toPersianNumber(
-                  Math.floor(parseFloat(row.original.areaM2) / 10_000),
+                  row.original.areaM2 ? row.original.areaM2 / 10000 : 0,
                 )}{' '}
                 <span>هکتار</span>
               </div>
@@ -127,6 +107,25 @@ export default function RegionsTable({
         accessorKey: 'blocks',
         header: 'بلوک ها',
         sortingFn: 'basic',
+        cell({row}) {
+          return(
+            <span>
+              {row.original.blocksCount}
+            </span>
+          )
+        }
+      },
+      {
+        accessorKey: 'blocks',
+        header: 'قطعه ها',
+        sortingFn: 'basic',
+        cell({row}) {
+          return(
+            <span>
+              {row.original.parcelsCount}
+            </span>
+          )
+        }
       },
       {
         accessorKey: 'status',
@@ -136,7 +135,13 @@ export default function RegionsTable({
 
           return (
             <span
-              className={`min-w-18 text-center select-none rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${statusStyles[status]}`}
+              className={`min-w-18 text-center rounded-full px-3 pt-1 pb-0.5 text-xs font-medium ${
+                status === 'active'
+                  ? 'bg-map-green text-surface'
+                  : status === 'inactive'
+                    ? 'bg-action-warning/90 text-surface'
+                    : 'bg-surface-muted text-foreground'
+              }`}
             >
               {RegionStatusMap.get(status)}
             </span>

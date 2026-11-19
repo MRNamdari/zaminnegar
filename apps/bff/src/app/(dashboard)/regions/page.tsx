@@ -1,69 +1,134 @@
 'use client';
 
+import {
+  RegionResponseDto as Region,
+  UpdateRegionDto,
+} from '@zaminnegar/api-client';
 import { useState } from 'react';
 import { AiOutlinePlus } from 'react-icons/ai';
 import { CgSearch } from 'react-icons/cg';
 
-import { AddRegionDialog } from '@/app/_components/dashboard/regions/AddRegionDialog';
-import { RegionFormUpdate } from '@/app/_components/dashboard/regions/updateRegionDialog';
-import { DeleteRegionDialog } from '@/app/_components/dashboard/regions/DeleteRegionDialog';
-
 import RegionsTable from '@/app/_components/dashboard/regions/RegionsTable';
-
-import { IRegion } from '@/app/features/regions/interface';
-import { UpdateRegionFormValues1 } from '@/app/_components/dashboard/regions/schema/RegionUpdate.schema';
-
-import { regionMockData } from './mockData';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/app/_lib/api.client';
+import Link from 'next/link';
+import { toast } from 'react-toastify';
+import { Dialog } from '@/app/_components/Dialog';
+import { toPersianNumber } from '@/app/util';
+import z from 'zod';
+import RegionFormUpdate from '@/app/_components/dashboard/regions/RegionFormUpdate';
 
 export default function RegionsPage() {
-  const [regions, setRegions] = useState<IRegion[]>(regionMockData);
-
   const [searchValue, setSearchValue] = useState('');
 
-  const [isAddingRegion, setIsAddingRegion] = useState(false);
-  const [isEditingRegion, setIsEditingRegion] = useState(false);
-  const [isDeletingRegion, setIsDeletingRegion] = useState(false);
+  // get liset region
+  const { data, error, isLoading } = useQuery(api.get('/regions').queryOptions);
+  const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
+  const queryClient = useQueryClient();
 
-  const [selectedRegion, setSelectedRegion] = useState<IRegion | null>(null);
-
-  const filteredRegions = regions.filter((region) =>
-    region.name.toLowerCase().includes(searchValue.trim().toLowerCase()),
-  );
-
-  // Edit Region
-  const handleEditRegion = (region: IRegion) => {
+  // handle delete region
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const handleDeleteModal = (region: Region) => {
     setSelectedRegion(region);
-    setIsEditingRegion(true);
+    setIsDeleteOpen(true);
+  };
+  const deleteRegionMutation = useMutation({
+    ...api.mutation('delete', '/regions/{id}').mutationOptions,
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: api.get('/regions').queryOptions.queryKey,
+      });
+
+      toast.success('منطقه با موفقیت حذف شد.');
+      setIsDeleteOpen(false);
+      setSelectedRegion(null);
+    },
+
+    onError(error, variable) {
+      const toDeleteId = variable.path.id;
+      const toDeleteRegion = data?.items.find((r) => r.id === toDeleteId);
+      if (!toDeleteRegion) return;
+      if (toDeleteRegion.blocksCount ?? 0 > 0) {
+        toast.error(
+          `منطقه دارای ${toPersianNumber(toDeleteRegion.blocksCount ?? 0)} بلوک است و قابل حذف نمیباشد.`,
+        );
+      }
+      if (
+        (toDeleteRegion.blocksCount ?? 0) < 1 &&
+        (toDeleteRegion.parcelsCount ?? 0) > 0
+      ) {
+        toast.error(
+          `منطقه دارای ${toPersianNumber(toDeleteRegion.parcelsCount ?? 0)} قطعه است و قابل حذف نمیباشد.`,
+        );
+      }
+    },
+  });
+
+  // handle update region
+  const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+  const handleUpdateModal = (region: Region) => {
+    setIsUpdateOpen(true);
+    setSelectedRegion(region);
   };
 
-  const handleUpdateRegion = (values: UpdateRegionFormValues1) => {
+  const updateRegionMutation = useMutation({
+    mutationFn: ({
+      id,
+      value,
+    }: {
+      id: string;
+      value: z.input<typeof UpdateRegionDto>;
+    }) =>
+      api.client.patch('/regions/{id}', {
+        path: { id },
+        body: value,
+      }),
+
+    onSuccess: async (_, variables) => {
+      queryClient.setQueryData(
+        api.get('/regions').queryOptions.queryKey,
+        (oldData) => {
+          if (!oldData) return oldData;
+
+          return {
+            ...oldData,
+            items: oldData.items.map((region) =>
+              region.id === variables.id
+                ? {
+                    ...region,
+                    name: variables.value.name ?? region.name,
+                    description:
+                      variables.value.description ?? region.description,
+                  }
+                : region,
+            ),
+          };
+        },
+      );
+
+      await queryClient.invalidateQueries({
+        queryKey: api.get('/regions').queryOptions.queryKey,
+      });
+
+      setIsUpdateOpen(false);
+      setSelectedRegion(null);
+
+      toast.success('اطلاعات منطقه با موفقیت ویرایش شد.');
+    },
+
+    onError: () => {
+      toast.error('ویرایش اطلاعات قطعه با خطا مواجه شد.');
+    },
+  });
+
+  const handleUpdateRegion = async (value: z.input<typeof UpdateRegionDto>) => {
     if (!selectedRegion) return;
 
-    setRegions((prev) =>
-      prev.map((region) =>
-        region.id === selectedRegion.id ? { ...region, ...values } : region,
-      ),
-    );
-
-    setIsEditingRegion(false);
-    setSelectedRegion(null);
-  };
-
-  // Delete Region
-  const handleDeleteRegion = (region: IRegion) => {
-    setSelectedRegion(region);
-    setIsDeletingRegion(true);
-  };
-
-  const confirmDeleteRegion = () => {
-    if (!selectedRegion) return;
-
-    setRegions((prev) =>
-      prev.filter((region) => region.id !== selectedRegion.id),
-    );
-
-    setIsDeletingRegion(false);
-    setSelectedRegion(null);
+    await updateRegionMutation.mutateAsync({
+      id: selectedRegion.id,
+      value,
+    });
   };
 
   return (
@@ -72,8 +137,6 @@ export default function RegionsPage() {
         <h2 className="w-full text-right text-3xl leading-loose font-normal">
           منطقه ها
         </h2>
-
-        {/* Search & Add */}
         <div className="block-header w-full flex gap-4 justify-between items-center">
           <form
             onSubmit={(e) => e.preventDefault()}
@@ -103,70 +166,107 @@ export default function RegionsPage() {
             </search>
           </form>
 
-          <button
-            onClick={() => setIsAddingRegion(true)}
+          <Link
+            href={'/map'}
             className="min-w-fit flex gap-2 items-center bg-action-primary transition duration-300 py-2.5 px-4 rounded-lg cursor-pointer"
           >
             <AiOutlinePlus className="text-white" />
             <span className="text-sm text-white">افزودن منطقه</span>
-          </button>
+          </Link>
         </div>
-
         {/* Regions Table */}
-        <RegionsTable
-          data={filteredRegions as any}
-          onDelete={handleDeleteRegion}
-          onEdit={handleEditRegion}
-          onRowClick={console.log}
-          searchValue={searchValue}
-        />
-
-        {/* Add Region Dialog */}
-        <AddRegionDialog
-          open={isAddingRegion}
-          onOpenChange={setIsAddingRegion}
-          title="افزودن منطقه"
-          description="اطلاعات منطقه جدید را وارد کنید"
-          className="text-white"
-        />
+        {isLoading ? (
+          <p>{'در حال بارگذاری...'}</p>
+        ) : error ? (
+          <p>{'خطا در بارگذاری!'}</p>
+        ) : (
+          <RegionsTable
+            data={data?.items ?? []}
+            onDelete={handleDeleteModal}
+            onEdit={handleUpdateModal}
+            onRowClick={console.log}
+            searchValue={searchValue}
+          />
+        )}
 
         {/* Update Region Dialog */}
-        {selectedRegion && (
-          <RegionFormUpdate
-            open={isEditingRegion}
-            onOpenChange={(open) => {
-              setIsEditingRegion(open);
-
-              if (!open) {
+        <Dialog
+          open={isUpdateOpen}
+          onOpenChange={(open) => {
+            setIsUpdateOpen(open);
+            if (!open) {
+              setSelectedRegion(null);
+            }
+          }}
+          title="ویرایش منطقه"
+          description="اطلاعات منطقه را ویرایش کنید"
+          className="text-white"
+        >
+          {selectedRegion && (
+            <RegionFormUpdate
+              region={selectedRegion}
+              onSubmit={handleUpdateRegion}
+              onCancel={() => {
+                setIsUpdateOpen(false);
                 setSelectedRegion(null);
-              }
-            }}
-            region={selectedRegion}
-            onSubmit={handleUpdateRegion}
-            title="ویرایش منطقه"
-            description="اطلاعات منطقه را ویرایش کنید"
-            className="text-white"
-          />
-        )}
+              }}
+            />
+          )}
+        </Dialog>
 
         {/* Delete Region Dialog */}
-        {selectedRegion && (
-          <DeleteRegionDialog
-            open={isDeletingRegion}
-            onOpenChange={(open) => {
-              setIsDeletingRegion(open);
+        <Dialog
+          open={isDeleteOpen}
+          onOpenChange={(open) => {
+            setIsDeleteOpen(open);
 
-              if (!open) {
-                setSelectedRegion(null);
-              }
-            }}
-            region={selectedRegion}
-            onConfirm={confirmDeleteRegion}
-            title="حذف منطقه"
-            description="آیا از حذف این منطقه اطمینان دارید؟"
-            className="text-white"
-          />
-        )}
+            if (!open) {
+              setSelectedRegion(null);
+            }
+          }}
+          title="حذف منطقه"
+          description="آیا از حذف این منطقه اطمینان دارید؟"
+          className="text-white"
+        >
+          {selectedRegion && (
+            <div className="flex flex-col gap-5 mt-4">
+              <p className="text-sm text-slate-300">
+                آیا مطمئن هستید که می‌خواهید منطقه
+                <span className="text-white font-semibold mx-1">
+                  {' '}
+                  {selectedRegion.name}
+                </span>
+                را حذف کنید؟
+              </p>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDeleteOpen(false);
+                    setSelectedRegion(null);
+                  }}
+                  className="w-1/2 py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer"
+                >
+                  انصراف
+                </button>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setIsDeleteOpen(false);
+                    await deleteRegionMutation.mutate({
+                      path: { id: selectedRegion.id },
+                    });
+                  }}
+                  className="w-1/2 py-2.5 rounded-lg bg-action-error hover:bg-action-error-hover transition duration-300 cursor-pointer"
+                >
+                  حذف منطقه
+                </button>
+              </div>
+            </div>
+          )}
+        </Dialog>
       </div>
     </div>
   );
