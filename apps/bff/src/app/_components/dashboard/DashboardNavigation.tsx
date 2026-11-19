@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IconType } from "react-icons";
 import { CiMap, CiUser, CiGrid42, CiGrid32, CiGrid41 } from "react-icons/ci";
+import { IoDocumentTextOutline } from "react-icons/io5";
 import { PiPolygonLight } from "react-icons/pi";
 
 export type NavigationItem = {
@@ -18,6 +19,7 @@ const navigationItems: NavigationItem[] = [
   { label: "مناطق", href: "/regions", icon: PiPolygonLight },
   { label: "بلوک‌ها", href: "/blocks", icon: CiGrid42 },
   { label: "قطعات", href: "/parcels", icon: CiGrid32 },
+  { label: "آپلود مدارک", href: "/documents", icon: IoDocumentTextOutline },
 ];
 
 export default function DashboardNavigation() {
