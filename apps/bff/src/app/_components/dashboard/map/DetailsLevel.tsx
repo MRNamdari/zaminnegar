@@ -377,8 +377,8 @@ export default function DetailsLevel() {
           ) : (
             <div className="flex items-center justify-center w-full text-xs text-slate-400">
               {selectedFeatureId
-                ? 'هیچ قطعه‌ای برای این بخش پیدا نشد'
-                : 'برای مشاهده قطعات، ابتدا یک بلوک یا منطقه انتخاب کنید'}
+                ? 'هیچ بلوکی برای این منطقه پیدا نشد'
+                : 'برای مشاهده بلوک ها ابتدا یک منطقه انتخاب کنید'}
             </div>
           )}
         </div>
