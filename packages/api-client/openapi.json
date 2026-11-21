@@ -2324,6 +2324,187 @@
         "tags": [
           "map"
         ]
+      },
+      "post": {
+        "description": "Created in the active project (`PUT /auth/session/project`). Returns the feature as the list does, including what the database derived: area and parent.",
+        "operationId": "MapController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMapFeatureDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapFeatureResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No active project (`NO_ACTIVE_PROJECT`), name taken, or the outline overlaps a sibling",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The outline breaks a containment rule (`GEOMETRY_OUTSIDE_CONTAINER`, `NO_CONTAINING_REGION`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create a region, block or parcel from a drawn polygon",
+        "tags": [
+          "map"
+        ]
+      }
+    },
+    "/map/features/{id}": {
+      "patch": {
+        "description": "Only the fields that are sent change. The level is found from the id. The response carries the derived values after the change: area and parent. Other features may change too (a parent's area, children).",
+        "operationId": "MapController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMapFeatureDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapFeatureResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such feature (`MAP_FEATURE_NOT_FOUND`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Name taken, or the outline overlaps a sibling",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The outline breaks a containment rule (`GEOMETRY_OUTSIDE_CONTAINER`, `CHILD_OUTSIDE_GEOMETRY`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Change a map feature",
+        "tags": [
+          "map"
+        ]
+      },
+      "delete": {
+        "description": "Refused while a region or block still contains features.",
+        "operationId": "MapController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "404": {
+            "description": "No such feature (`MAP_FEATURE_NOT_FOUND`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Still contains features (`REGION_NOT_EMPTY`, `BLOCK_NOT_EMPTY`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Delete a map feature",
+        "tags": [
+          "map"
+        ]
       }
     },
     "/regions": {
@@ -4943,6 +5124,117 @@
           "features"
         ]
       },
+      "MapPolygon": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Polygon"
+            ]
+          },
+          "coordinates": {
+            "type": "array",
+            "description": "Rings of [longitude, latitude]. The first ring is the outline, later rings are holes. Rings are closed.",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            },
+            "example": [
+              [
+                [
+                  8.68,
+                  50.11
+                ],
+                [
+                  8.69,
+                  50.11
+                ],
+                [
+                  8.69,
+                  50.12
+                ],
+                [
+                  8.68,
+                  50.12
+                ],
+                [
+                  8.68,
+                  50.11
+                ]
+              ]
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ]
+      },
+      "CreateMapFeatureDto": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": [
+              "region",
+              "block",
+              "parcel"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "description": "Ignored for parcels, which have no description"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/MapPolygon"
+          }
+        },
+        "required": [
+          "level",
+          "name",
+          "geometry"
+        ]
+      },
+      "UpdateMapFeatureDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "description": "Ignored for parcels, which have no description"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/MapPolygon"
+          }
+        }
+      },
       "RegionStatus": {
         "type": "string",
         "enum": [
@@ -5811,7 +6103,18 @@
             "type": "string"
           },
           "status": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive",
+              "pending"
+            ]
+          },
+          "parcelsCount": {
+            "type": "number"
+          },
+          "totalArea": {
+            "type": "number"
           },
           "createdAt": {
             "format": "date-time",

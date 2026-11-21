@@ -423,6 +423,35 @@ export const MapFeaturesResponseDto = z.strictObject({
   features: z.array(MapFeatureResponseDto),
 });
 
+export type MapPolygon = __TypedOpenapi.Schemas.MapPolygon;
+export const MapPolygon = z.strictObject({
+  type: z.literal("Polygon"),
+  coordinates: z
+    .array(z.array(z.array(z.number())))
+    .describe(
+      "Rings of [longitude, latitude]. The first ring is the outline, later rings are holes. Rings are closed.",
+    ),
+});
+
+export type CreateMapFeatureDto = __TypedOpenapi.Schemas.CreateMapFeatureDto;
+export const CreateMapFeatureDto = z.strictObject({
+  level: z.enum(["region", "block", "parcel"]),
+  name: z.string().max(200),
+  description: z.string().describe("Ignored for parcels, which have no description").optional(),
+  status: z.enum(["active", "inactive"]).optional(),
+  geometry: MapPolygon,
+});
+
+export type UpdateMapFeatureDto = __TypedOpenapi.Schemas.UpdateMapFeatureDto;
+export const UpdateMapFeatureDto = z
+  .strictObject({
+    name: z.string().max(200),
+    description: z.string().describe("Ignored for parcels, which have no description"),
+    status: z.enum(["active", "inactive"]),
+    geometry: MapPolygon,
+  })
+  .partial();
+
 export type RegionStatus = __TypedOpenapi.Schemas.RegionStatus;
 export const RegionStatus = z.enum(["active", "inactive"]);
 
@@ -504,7 +533,9 @@ export const OwnerResponseDto = z.strictObject({
   email: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   nationalId: z.string(),
-  status: z.string(),
+  status: z.enum(["active", "inactive", "pending"]),
+  parcelsCount: z.number().optional(),
+  totalArea: z.number().optional(),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
     if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
@@ -1446,6 +1477,36 @@ export const get_MapController_getFeatures = {
   responses: { 200: MapFeaturesResponseDto },
 };
 
+export type post_MapController_create = __TypedOpenapi.Endpoints.post_MapController_create;
+export const post_MapController_create = {
+  method: z.literal("POST"),
+  path: z.literal("/map/features"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { body: CreateMapFeatureDto },
+  responses: { 201: MapFeatureResponseDto, 409: ErrorResponseDto, 422: ErrorResponseDto },
+};
+
+export type patch_MapController_update = __TypedOpenapi.Endpoints.patch_MapController_update;
+export const patch_MapController_update = {
+  method: z.literal("PATCH"),
+  path: z.literal("/map/features/{id}"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ id: z.string() }), body: UpdateMapFeatureDto },
+  responses: { 200: MapFeatureResponseDto, 404: ErrorResponseDto, 409: ErrorResponseDto, 422: ErrorResponseDto },
+};
+
+export type delete_MapController_remove = __TypedOpenapi.Endpoints.delete_MapController_remove;
+export const delete_MapController_remove = {
+  method: z.literal("DELETE"),
+  path: z.literal("/map/features/{id}"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ id: z.string() }) },
+  responses: { 204: z.unknown(), 404: ErrorResponseDto, 409: ErrorResponseDto },
+};
+
 export type post_RegionController_create = __TypedOpenapi.Endpoints.post_RegionController_create;
 export const post_RegionController_create = {
   method: z.literal("POST"),
@@ -1816,6 +1877,7 @@ export const EndpointByMethod = {
     "/projects/{projectId}/members": post_ProjectMembersController_add,
     "/projects": post_ProjectController_create,
     "/boundaries": post_BoundaryController_create,
+    "/map/features": post_MapController_create,
     "/regions": post_RegionController_create,
     "/blocks": post_BlockController_create,
     "/parcels": post_ParcelController_create,
@@ -1861,6 +1923,7 @@ export const EndpointByMethod = {
     "/projects/{projectId}/members/{userId}": patch_ProjectMembersController_changeRole,
     "/projects/{id}": patch_ProjectController_update,
     "/boundaries/{id}": patch_BoundaryController_update,
+    "/map/features/{id}": patch_MapController_update,
     "/regions/{id}": patch_RegionController_update,
     "/blocks/{id}": patch_BlockController_update,
     "/parcels/{id}": patch_ParcelController_update,
@@ -1872,6 +1935,7 @@ export const EndpointByMethod = {
     "/projects/{projectId}/members/{userId}": delete_ProjectMembersController_remove,
     "/projects/{id}": delete_ProjectController_remove,
     "/boundaries/{id}": delete_BoundaryController_remove,
+    "/map/features/{id}": delete_MapController_remove,
     "/regions/{id}": delete_RegionController_remove,
     "/blocks/{id}": delete_BlockController_remove,
     "/parcels/{id}": delete_ParcelController_remove,
@@ -2023,6 +2087,7 @@ export const endpointParameterStyles = {
     },
     "/projects/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/boundaries/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    "/map/features/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/regions/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/blocks/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/parcels/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
@@ -2054,6 +2119,7 @@ export const endpointParameterStyles = {
     },
     "/projects/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/boundaries/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    "/map/features/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/regions/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/blocks/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/parcels/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },

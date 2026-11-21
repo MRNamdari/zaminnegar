@@ -288,6 +288,32 @@ export namespace Schemas {
     properties: MapFeaturePropertiesResponseDto;
   };
   export type MapFeaturesResponseDto = { type: "FeatureCollection"; features: Array<MapFeatureResponseDto> };
+  export type MapPolygon = {
+    type: "Polygon";
+    /**
+     * Rings of [longitude, latitude]. The first ring is the outline, later rings are holes. Rings are closed.
+     */
+    coordinates: Array<Array<Array<number>>>;
+  };
+  export type CreateMapFeatureDto = {
+    level: "region" | "block" | "parcel";
+    name: string;
+    /**
+     * Ignored for parcels, which have no description
+     */
+    description?: string;
+    status?: "active" | "inactive";
+    geometry: MapPolygon;
+  };
+  export type UpdateMapFeatureDto = Partial<{
+    name: string;
+    /**
+     * Ignored for parcels, which have no description
+     */
+    description: string;
+    status: "active" | "inactive";
+    geometry: MapPolygon;
+  }>;
   export type RegionStatus = "active" | "inactive";
   export type CreateRegionDto = {
     name: string;
@@ -357,7 +383,9 @@ export namespace Schemas {
     email?: string | null;
     notes?: string | null;
     nationalId: string;
-    status: string;
+    status: "active" | "inactive" | "pending";
+    parcelsCount?: number;
+    totalArea?: number;
     createdAt: Date;
     updatedAt: Date;
   };
@@ -1109,6 +1137,52 @@ export namespace Endpoints {
     responses: { 200: Schemas.MapFeaturesResponseDto };
   };
   /**
+   * Created in the active project (`PUT /auth/session/project`). Returns the feature as the list does, including what the database derived: area and parent.
+   */
+  export type post_MapController_create = {
+    method: "POST";
+    path: "/map/features";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: {
+      body: Schemas.CreateMapFeatureDto;
+    };
+    responses: { 201: Schemas.MapFeatureResponseDto; 409: Schemas.ErrorResponseDto; 422: Schemas.ErrorResponseDto };
+  };
+  /**
+   * Only the fields that are sent change. The level is found from the id. The response carries the derived values after the change: area and parent. Other features may change too (a parent's area, children).
+   */
+  export type patch_MapController_update = {
+    method: "PATCH";
+    path: "/map/features/{id}";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: {
+      path: { id: string };
+
+      body: Schemas.UpdateMapFeatureDto;
+    };
+    responses: {
+      200: Schemas.MapFeatureResponseDto;
+      404: Schemas.ErrorResponseDto;
+      409: Schemas.ErrorResponseDto;
+      422: Schemas.ErrorResponseDto;
+    };
+  };
+  /**
+   * Refused while a region or block still contains features.
+   */
+  export type delete_MapController_remove = {
+    method: "DELETE";
+    path: "/map/features/{id}";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: {
+      path: { id: string };
+    };
+    responses: { 204: unknown; 404: Schemas.ErrorResponseDto; 409: Schemas.ErrorResponseDto };
+  };
+  /**
    * Send geometry, or the boundaryId of a finished draft
    */
   export type post_RegionController_create = {
@@ -1471,6 +1545,7 @@ export type EndpointByMethod = {
     "/projects/{projectId}/members": Endpoints.post_ProjectMembersController_add;
     "/projects": Endpoints.post_ProjectController_create;
     "/boundaries": Endpoints.post_BoundaryController_create;
+    "/map/features": Endpoints.post_MapController_create;
     "/regions": Endpoints.post_RegionController_create;
     "/blocks": Endpoints.post_BlockController_create;
     "/parcels": Endpoints.post_ParcelController_create;
@@ -1516,6 +1591,7 @@ export type EndpointByMethod = {
     "/projects/{projectId}/members/{userId}": Endpoints.patch_ProjectMembersController_changeRole;
     "/projects/{id}": Endpoints.patch_ProjectController_update;
     "/boundaries/{id}": Endpoints.patch_BoundaryController_update;
+    "/map/features/{id}": Endpoints.patch_MapController_update;
     "/regions/{id}": Endpoints.patch_RegionController_update;
     "/blocks/{id}": Endpoints.patch_BlockController_update;
     "/parcels/{id}": Endpoints.patch_ParcelController_update;
@@ -1527,6 +1603,7 @@ export type EndpointByMethod = {
     "/projects/{projectId}/members/{userId}": Endpoints.delete_ProjectMembersController_remove;
     "/projects/{id}": Endpoints.delete_ProjectController_remove;
     "/boundaries/{id}": Endpoints.delete_BoundaryController_remove;
+    "/map/features/{id}": Endpoints.delete_MapController_remove;
     "/regions/{id}": Endpoints.delete_RegionController_remove;
     "/blocks/{id}": Endpoints.delete_BlockController_remove;
     "/parcels/{id}": Endpoints.delete_ParcelController_remove;

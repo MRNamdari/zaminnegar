@@ -60,4 +60,8 @@ export class Owner extends TimestampedEntity implements IOwner {
 
   @OneToMany(() => ParcelOwnership, (ownership) => ownership.owner)
   ownerships?: Relation<ParcelOwnership>[];
+
+  /** Only set by OwnerRepository.findPage. */
+  parcelsCount?: number;
+  totalArea?: number;
 }
