@@ -17,7 +17,7 @@
     "@zaminnegar/api-client": "workspace:^",
     "maplibre-gl": "6.16.0",
     "neverthrow": "^8.2.0",
-    "next": "16.4.3",
+    "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-dropzone": "^20.2.0",
