@@ -272,6 +272,9 @@ importers:
 
   apps/bff:
     dependencies:
+      '@neshan-maps-platform/maplibre-sdk':
+        specifier: ^6.16.0
+        version: 6.16.0
       '@tanstack/react-form':
         specifier: ^1.33.5
         version: 1.33.5(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -1102,6 +1105,9 @@ packages:
 
   '@microsoft/tsdoc@0.17.1':
     resolution: {integrity: sha512-VHyYyyoH63jFoO3shpw9Zfijk5v/9p/VrClW35z0/q6ooK7sSmxpzOkS4iZPxs3vO4XtBW4H38HRAKkAMIK7DA==}
+
+  '@neshan-maps-platform/maplibre-sdk@6.16.0':
+    resolution: {integrity: sha512-wgXSmyTVIJGTb2RrGJFhKkdkHo5xbFD5mO8udC9omxq/WZbcQskZNunrpQ4tMFHwIqjibhSZp6Dzm0LLEI2WRA==}
 
   '@nestjs/cli@11.0.24':
     resolution: {integrity: sha512-aIHxQLSYtXShifA3zwWIeznEsZnNa3Iz2QRykFj+sl9IcbERBHr5nH87FRgywM+He3NxoF5WazHfR8FsmVeWxw==}
@@ -5523,6 +5529,10 @@ snapshots:
       pbf: 5.1.2
 
   '@microsoft/tsdoc@0.17.1': {}
+
+  '@neshan-maps-platform/maplibre-sdk@6.16.0':
+    dependencies:
+      maplibre-gl: 6.16.0
 
   '@nestjs/cli@11.0.24(@types/node@22.20.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(prettier@3.9.10)':
     dependencies:
