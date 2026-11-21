@@ -12,9 +12,10 @@ export async function paginate<E extends ObjectLiteral>(
   { page, limit }: { page: number; limit: number },
 ): Promise<PaginatedResult<E>> {
   const [items, total] = await qb
-    .skip((page - 1) * limit)
-    .take(limit)
-    .getManyAndCount();
+  .skip((page - 1) * limit)
+  .take(limit)
+  .getManyAndCount();
+  console.log(items)
   return { items, total, page, limit };
 }
 
