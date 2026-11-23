@@ -1,4 +1,5 @@
 import { err, ok, type Result } from "neverthrow";
+import { errorMessages } from "../core/error-messages";
 import { validationError, type ValidationError } from "../core/errors";
 import type { AreaFeature, PolygonGeometry, Position } from "../core/schemas";
 
@@ -39,6 +40,13 @@ export function pointInRing([x, y]: Position, ring: readonly Position[]): boolea
     if (a[1] > y !== b[1] > y && x < ((b[0] - a[0]) * (y - a[1])) / (b[1] - a[1]) + a[0]) inside = !inside;
   }
   return inside;
+}
+
+/** Inside the outer ring and outside every hole. */
+export function pointInPolygon(point: Position, geometry: PolygonGeometry): boolean {
+  const [outer, ...holes] = geometry.coordinates;
+  if (!outer || !pointInRing(point, outer)) return false;
+  return !holes.some((hole) => pointInRing(point, hole));
 }
 
 const cross = (o: Position, a: Position, b: Position) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
@@ -93,17 +101,17 @@ export function validatePolygon(
     const first = ring[0];
     const last = ring[ring.length - 1];
     if (!first || !last || first[0] !== last[0] || first[1] !== last[1]) {
-      return err(validationError("unclosed_ring", `Ring ${index} is not closed`, [{ path: `coordinates.${index}`, message: "first and last positions differ" }]));
+      return err(validationError("unclosed_ring", { issues: [{ path: `coordinates.${index}`, message: errorMessages.validation.unclosed_ring }] }));
     }
     if (ring.some(([lng, lat]) => lng < -180 || lng > 180 || lat < -90 || lat > 90)) {
-      return err(validationError("invalid_geometry", "Coordinates are outside valid longitude/latitude ranges"));
+      return err(validationError("invalid_geometry"));
     }
     if (hasSelfIntersection(ring)) {
-      return err(validationError("self_intersection", "Polygon edges must not cross each other"));
+      return err(validationError("self_intersection"));
     }
   }
   if (ringAreaM2(geometry.coordinates[0] ?? []) < rules.minAreaM2) {
-    return err(validationError("area_too_small", `Polygon area is below ${rules.minAreaM2} m²`));
+    return err(validationError("area_too_small", { minAreaM2: rules.minAreaM2 }));
   }
   return ok(geometry);
 }

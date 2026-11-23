@@ -38,7 +38,21 @@ export function StatusBar() {
       );
       break;
     case 'configuring':
-      message = 'Complete the feature information';
+      if (lifecycle.dialogOpen) {
+        message = 'Complete the feature information';
+      } else {
+        // The dialog was closed without submitting. The drawing is kept; offer the way back in.
+        message = 'اطلاعات ویژگی هنوز تکمیل نشده است';
+        controls.push(
+          <button
+            key="r"
+            className={button}
+            onClick={() => void actions.reopenDraftConfiguration()}
+          >
+            {texts.resume}
+          </button>,
+        );
+      }
       controls.push(
         <button
           key="c"

@@ -41,7 +41,11 @@ export interface Failure {
 export type LifecycleState =
   | { status: "idle" }
   | { status: "drawing"; tool: DrawTool }
-  | { status: "configuring"; draft: Draft }
+  /**
+   * The drawn geometry awaits its forms. `dialogOpen` is false after the user closed the dialog without submitting:
+   * the draft is kept (and shown), and the dialog can be opened again.
+   */
+  | { status: "configuring"; draft: Draft; dialogOpen: boolean }
   | { status: "draft"; draft: Draft }
   | { status: "saving"; draft: Draft }
   | { status: "persisted"; featureId: string }
@@ -54,6 +58,8 @@ export type LifecycleEvent =
   | { type: "drawing-started"; tool: DrawTool }
   | { type: "drawing-cancelled" }
   | { type: "draw-completed"; draft: Draft }
+  | { type: "configuration-dismissed" }
+  | { type: "configuration-reopened" }
   | { type: "configuration-completed"; draft: Draft }
   | { type: "edit-changed"; base: AreaFeature; geometry: PolygonGeometry }
   | { type: "save-started" }
@@ -96,8 +102,14 @@ export function lifecycleReducer(
 
     case "draw-completed":
       return state.status === "drawing" || isResting(state)
-        ? { status: "configuring", draft: event.draft }
+        ? { status: "configuring", draft: event.draft, dialogOpen: true }
         : state;
+
+    case "configuration-dismissed":
+      return state.status === "configuring" && state.dialogOpen ? { ...state, dialogOpen: false } : state;
+
+    case "configuration-reopened":
+      return state.status === "configuring" && !state.dialogOpen ? { ...state, dialogOpen: true } : state;
 
     case "configuration-completed":
       return state.status === "configuring"

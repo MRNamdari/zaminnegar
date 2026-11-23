@@ -1,6 +1,6 @@
 import { err, ok, type Result } from 'neverthrow';
 import { z } from 'zod';
-import { validationError, type ValidationError } from './errors';
+import { issuesFromZod, validationError, type ValidationError } from './errors';
 import { LEVELS, levelSchema, toolSchema, type Level } from './schemas';
 
 const lngLat = z.tuple([
@@ -24,6 +24,7 @@ const levelStyle = z.object({ label: z.string(), color: z.string().min(1) });
 export const editorConfigSchema = z.object({
   map: z
     .object({
+      useNeshan: z.boolean().default(false),
       center: lngLat.default([59.679098, 36.211555]),
       zoom: z.number().min(0).max(24).default(13.5),
       minZoom: z.number().min(0).max(24).default(0),
@@ -34,6 +35,7 @@ export const editorConfigSchema = z.object({
       basemap: z.enum(['satellite', 'streets']).default('satellite'),
       /** Overrides `basemap` with a remote MapLibre style document. */
       styleUrl: z.url().optional(),
+      // .default('https://static.neshan.org/sdk/maplibre/styles/light.json'),
       projection: z.enum(['mercator', 'globe']).default('mercator'),
       terrain: z
         .object({
@@ -121,6 +123,7 @@ export const editorConfigSchema = z.object({
           save: z.string().default('ذخیره تغییرات'),
           cancel: z.string().default('لغو'),
           retry: z.string().default('تلاش مجدد'),
+          resume: z.string().default('ادامهٔ تکمیل اطلاعات'),
         })
         .prefault({}),
     })
@@ -154,14 +157,7 @@ export function resolveEditorConfig(
   const parsed = editorConfigSchema.safeParse(input);
   if (parsed.success) return ok(parsed.data);
   return err(
-    validationError(
-      'invalid_config',
-      'Editor configuration is invalid',
-      parsed.error.issues.map((issue) => ({
-        path: issue.path.join('.'),
-        message: issue.message,
-      })),
-    ),
+    validationError('invalid_config', { issues: issuesFromZod(parsed.error) }),
   );
 }
 

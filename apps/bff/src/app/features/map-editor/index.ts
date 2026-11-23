@@ -1,6 +1,7 @@
 // Public API of the map editor. Everything else is internal.
 export { FeatureWorkspaceProvider } from "./react/FeatureWorkspaceProvider";
 export { DraftConfigurationFlow } from "./react/DraftConfigurationFlow";
+export { notifyError, notifyUnknownError, toastErrorReporter, useErrorToast } from "./react/notifications";
 export type {
   DraftConfigurationFlowProps,
   DraftConfigurationStep,

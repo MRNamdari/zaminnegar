@@ -7,14 +7,14 @@ type PermissionConfig = EditorConfig["permissions"];
 
 export function checkTool(config: PermissionConfig, enabledTools: readonly Tool[], tool: Tool): Result<Tool, PermissionError> {
   if (tool === "select") return ok(tool);
-  if (!config.draw) return err(permissionError("draw_denied", "Drawing is disabled"));
-  if (!enabledTools.includes(tool)) return err(permissionError("tool_unavailable", `Tool "${tool}" is not enabled`));
+  if (!config.draw) return err(permissionError("draw_denied"));
+  if (!enabledTools.includes(tool)) return err(permissionError("tool_unavailable", { tool }));
   return ok(tool);
 }
 
 export function checkCreate(config: PermissionConfig, level: Level): Result<Level, PermissionError> {
-  if (!config.draw) return err(permissionError("draw_denied", "Drawing is disabled"));
-  if (!config.create.includes(level)) return err(permissionError("create_denied", `Creating "${level}" features is not allowed`));
+  if (!config.draw) return err(permissionError("draw_denied"));
+  if (!config.create.includes(level)) return err(permissionError("create_denied", { level }));
   return ok(level);
 }
 
@@ -27,10 +27,10 @@ export function isFeatureEditable(config: PermissionConfig, editableIds: Readonl
 }
 
 export function checkEdit(config: PermissionConfig, editableIds: ReadonlySet<string>, id: string): Result<string, PermissionError> {
-  return isFeatureEditable(config, editableIds, id) ? ok(id) : err(permissionError("edit_denied", `Feature ${id} is not editable`));
+  return isFeatureEditable(config, editableIds, id) ? ok(id) : err(permissionError("edit_denied", { featureId: id }));
 }
 
 export function checkDelete(config: PermissionConfig, editableIds: ReadonlySet<string>, id: string): Result<string, PermissionError> {
-  if (!config.delete || !editableIds.has(id)) return err(permissionError("delete_denied", `Feature ${id} cannot be deleted`));
+  if (!config.delete || !editableIds.has(id)) return err(permissionError("delete_denied", { featureId: id }));
   return ok(id);
 }

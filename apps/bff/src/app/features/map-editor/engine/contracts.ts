@@ -18,7 +18,10 @@ export interface RenderModel {
   readonly lockedFeatureIds: ReadonlySet<string>;
   /** Unsaved drawn geometry that must stay on the map (draft, saving or failed). */
   readonly retainedDraftIds: ReadonlySet<string>;
-  /** Level used to colour geometry that is being drawn. */
+  /**
+   * The active layer. New geometry is drawn into it, and only its features can be selected or
+   * edited: the engine ignores selection requests and edit permissions for every other level.
+   */
   readonly drawLevel: Level;
 }
 

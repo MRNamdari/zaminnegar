@@ -44,7 +44,7 @@ export function LevelSelector() {
               key={level}
               type="button"
               aria-disabled={activeLevel === level}
-              onClick={() => actions.setActiveLevel(level)}
+              onClick={() => void actions.setActiveLevel(level)}
               popoverTarget={popoverId}
               popoverTargetAction="hide"
               className="flex w-full items-center justify-between gap-6 not-aria-disabled:cursor-pointer transition-colors rounded-lg px-2.5 py-2 font-bold hover:bg-surface-hover aria-disabled:bg-surface-muted-hover"

@@ -1,12 +1,12 @@
 'use client';
 
 import { skipToken, useQuery, type QueryKey } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 import {
   FeatureWorkspaceProvider,
-  describeError,
-  toEditorError,
   useApiFeatureGateway,
+  useErrorToast,
   useFeatureOperations,
   type AreaCollection,
   areaCollectionSchema,
@@ -50,10 +50,12 @@ export function MapWorkspace({ children }: { children: React.ReactNode }) {
       : skipToken,
   });
 
-  const gateway = useApiFeatureGateway(api, featuresKey, {
-    onDiagnostic: logDiagnostic,
-  });
+  // One request per create/update/delete, against /map/features.
+  const gateway = useApiFeatureGateway(api, { onDiagnostic: logDiagnostic });
 
+  // After every successful create/update/delete the query cache is invalidated and the
+  // features are fetched again (the backend derives area, statistics and parent-child
+  // relations). Pass `{ invalidate: [featuresKey] }` to narrow that to some queries.
   const operations = useFeatureOperations(gateway, featuresKey);
 
   // The application owns selection, visibility and edit-ability and could drive them from anywhere (URL, store, ...).
@@ -70,14 +72,18 @@ export function MapWorkspace({ children }: { children: React.ReactNode }) {
     [features.data, selected, visible, editable],
   );
 
-  const problem = project.isError
-    ? describeError(toEditorError(project.error)).message
-    : features.isError
-      ? describeError(toEditorError(features.error)).message
-      : project.isSuccess && !projectId
-        ? 'پروژه‌ای وجود ندارد؛ ابتدا یک پروژه بسازید.'
-        : null;
+  // Failed queries are shown as toasts, translated like any editor error (status and backend code -> Persian).
+  useErrorToast(project.error);
+  useErrorToast(features.error);
+  const noProject = project.isSuccess && !projectId;
+  useEffect(() => {
+    if (noProject)
+      toast.warn('پروژه‌ای وجود ندارد؛ ابتدا یک پروژه بسازید.', {
+        toastId: 'map-workspace:no-project',
+      });
+  }, [noProject]);
 
+  // Requires one <ToastContainer rtl /> in the app (e.g. in the root layout's client providers).
   return (
     <FeatureWorkspaceProvider
       value={value}
@@ -85,15 +91,8 @@ export function MapWorkspace({ children }: { children: React.ReactNode }) {
       onVisibleFeatureIdsChange={setVisible}
       onEditableFeatureIdsChange={setEditable}
       operations={operations}
+      
     >
-      {problem && (
-        <div
-          role="alert"
-          className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-action-error px-4 py-2 text-sm text-white shadow-lg"
-        >
-          {problem}
-        </div>
-      )}
       {children}
     </FeatureWorkspaceProvider>
   );

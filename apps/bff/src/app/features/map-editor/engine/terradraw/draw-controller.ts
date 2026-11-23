@@ -26,12 +26,17 @@ import {
 } from "../../core/schemas";
 import { roundGeometry } from "../../domain/geometry";
 import { createDraftId, isDraftId } from "../../domain/identity";
+import type { HitCandidate } from "../../domain/selection";
 import {
   diffRenderModel,
   nextRendered,
 } from "../../infrastructure/synchronization/diff";
 import type { EngineEvent, RenderModel } from "../contracts";
 import { resolveColor } from "./colors";
+import {
+  createLayerSelection,
+  SELECT_POINTER_DISTANCE_PX,
+} from "./layer-selection";
 
 type Emit = (event: EngineEvent) => void;
 
@@ -139,6 +144,13 @@ export function createDrawController(
           modeName: "select",
           ...editFlags(false),
           styles: selectStyles(),
+          // Selection is application-controlled (see `layer-selection.ts`): TerraDraw must
+          // neither select on click nor deselect on an empty click. Programmatic
+          // `selectFeature`/`deselectFeature`, dragging, vertex and midpoint editing, and the
+          // Escape key are unaffected by these flags.
+          allowManualSelection: false,
+          allowManualDeselection: false,
+          pointerDistance: SELECT_POINTER_DISTANCE_PX,
         }),
         new TerraDrawPolygonMode({
           styles: polygonStyles(),
@@ -161,11 +173,7 @@ export function createDrawController(
     });
   } catch (cause) {
     return err(
-      drawEngineError(
-        "init_failed",
-        "Failed to create the drawing engine",
-        cause,
-      ),
+      drawEngineError("init_failed", { detail: "create", cause }),
     );
   }
 
@@ -175,9 +183,20 @@ export function createDrawController(
     return parsed.success ? parsed.data : null;
   };
 
+  /** The application layer that owns a feature the engine holds (`null` for drafts and unknown ids). */
+  const ownerLevel = (id: string): Level | null =>
+    rendered.get(id)?.properties.level ?? null;
+
+  /**
+   * Second line of defence behind the application's own editable set: TerraDraw only gets
+   * edit flags for features of the active layer, even if the model lists others as editable.
+   */
   const applyEditFlags = (id: string | null) => {
     const editable =
-      id !== null && (model?.editableFeatureIds.has(id) ?? false);
+      id !== null &&
+      model !== null &&
+      model.editableFeatureIds.has(id) &&
+      ownerLevel(id) === model.drawLevel;
     draw.updateModeOptions<typeof TerraDrawSelectMode>(
       "select",
       editFlags(editable),
@@ -205,10 +224,9 @@ export function createDrawController(
       if (!geometry) {
         emit({
           type: "error",
-          error: drawEngineError(
-            "feature_rejected",
-            "Drawn geometry is not a valid polygon",
-          ),
+          error: drawEngineError("feature_rejected", {
+            reason: "invalid_polygon",
+          }),
         });
         return;
       }
@@ -247,11 +265,19 @@ export function createDrawController(
   };
 
   const syncSelection = (next: RenderModel) => {
-    const wanted = next.selectedFeatureId;
+    const requested = next.selectedFeatureId;
+    // Only features of the active layer can be selected. A request for anything else is
+    // refused here and the application is asked to drop it, so the two sides cannot drift
+    // (e.g. a controlled `selectedFeatureId`, or a feature whose level changed on the server).
+    const wanted =
+      requested !== null && ownerLevel(requested) === next.drawLevel
+        ? requested
+        : null;
+    if (requested !== null && wanted === null && rendered.has(requested))
+      emit({ type: "selection-requested", featureId: null });
     const present =
-      wanted !== null &&
-      rendered.has(wanted) &&
-      draw.getSnapshotFeature(wanted) !== undefined;
+      wanted !== null && draw.getSnapshotFeature(wanted) !== undefined;
+    // `selectedId` follows the "deselect" listener, so this also covers a layer switch.
     if (selectedId !== null && selectedId !== wanted && !isDraftId(selectedId))
       draw.deselectFeature(selectedId);
     if (present && selectedId !== wanted && wanted !== null) {
@@ -262,6 +288,49 @@ export function createDrawController(
     if (selectedId !== null) applyEditFlags(selectedId);
   };
 
+  /** Click-driven selection: one engine transition, one `selection-requested` event. */
+  const selectFromMap = (id: string | null) => {
+    const target = id !== null && draw.hasFeature(id) ? id : null;
+    try {
+      // Suppressed so the intermediate "deselect" of the previous feature is not reported on its own.
+      withSelectionSuppressed(() => {
+        if (selectedId !== null) draw.deselectFeature(selectedId);
+        if (target !== null) draw.selectFeature(target);
+      });
+    } catch (cause) {
+      emit({
+        type: "error",
+        error: drawEngineError("command_failed", {
+          action: "selection",
+          cause,
+        }),
+      });
+      return;
+    }
+    emit({ type: "selection-requested", featureId: target });
+  };
+
+  function* hitCandidates(): Generator<HitCandidate> {
+    for (const [id, feature] of rendered) {
+      // Geometry under a local edit (or being dragged) is newer than the canonical copy.
+      const geometry =
+        locked.has(id) || id === selectedId ? polygonOf(id) : feature.geometry;
+      if (geometry) yield { id, level: feature.properties.level, geometry };
+    }
+  }
+
+  const layerSelection = createLayerSelection(map, {
+    isSelectMode: () => draw.getMode() === "select",
+    activeLevel: () => model?.drawLevel ?? null,
+    candidates: hitCandidates,
+    selectedRing: () => {
+      if (selectedId === null) return null;
+      const ring = polygonOf(selectedId)?.coordinates[0];
+      return ring ? { id: selectedId, ring } : null;
+    },
+    select: selectFromMap,
+  });
+
   return ok({
     draw,
 
@@ -269,15 +338,12 @@ export function createDrawController(
       try {
         draw.start();
         draw.setMode(config.drawing.defaultTool);
+        layerSelection.start();
         started = true;
         return ok(undefined);
       } catch (cause) {
         return err(
-          drawEngineError(
-            "init_failed",
-            "Failed to start the drawing engine",
-            cause,
-          ),
+          drawEngineError("init_failed", { detail: "start", cause }),
         );
       }
     },
@@ -285,6 +351,7 @@ export function createDrawController(
     stop() {
       if (!started) return;
       started = false;
+      layerSelection.stop();
       try {
         draw.stop();
       } catch {
@@ -300,11 +367,7 @@ export function createDrawController(
         return ok(undefined);
       } catch (cause) {
         return err(
-          drawEngineError(
-            "mode_failed",
-            `Failed to activate tool "${tool}"`,
-            cause,
-          ),
+          drawEngineError("mode_failed", { tool, cause }),
         );
       }
     },
@@ -365,19 +428,15 @@ export function createDrawController(
         });
       } catch (cause) {
         return err(
-          syncError(
-            "apply_failed",
-            "Failed to synchronise features with the drawing engine",
-            cause,
-          ),
+          syncError("apply_failed", { cause }),
         );
       }
       return rejected.length
         ? err(
-            drawEngineError(
-              "feature_rejected",
-              `Drawing engine rejected features: ${rejected.join(", ")}`,
-            ),
+            drawEngineError("feature_rejected", {
+              reason: "sync",
+              detail: rejected.join(", "),
+            }),
           )
         : ok(undefined);
     },
@@ -386,7 +445,7 @@ export function createDrawController(
       try {
         return ok(draw.undo());
       } catch (cause) {
-        return err(drawEngineError("command_failed", "Undo failed", cause));
+        return err(drawEngineError("command_failed", { action: "undo", cause }));
       }
     },
 
@@ -394,7 +453,7 @@ export function createDrawController(
       try {
         return ok(draw.redo());
       } catch (cause) {
-        return err(drawEngineError("command_failed", "Redo failed", cause));
+        return err(drawEngineError("command_failed", { action: "redo", cause }));
       }
     },
   });

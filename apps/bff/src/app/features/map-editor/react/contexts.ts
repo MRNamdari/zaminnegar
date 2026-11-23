@@ -25,6 +25,7 @@ export interface WorkspaceState {
   readonly selectedFeatureId: string | null;
   /** `null` means every feature is visible. */
   readonly visibleFeatureIds: ReadonlySet<string>;
+  /** Editable features of the active layer only: ids the application listed for other layers are excluded. */
   readonly editableFeatureIds: ReadonlySet<string>;
   readonly activeTool: Tool;
   readonly activeLevel: Level;
@@ -47,7 +48,11 @@ export interface WorkspaceActions {
   clearSelection(): Cmd;
   setActiveTool(tool: Tool): Cmd;
   cancelDrawing(): Cmd;
-  setActiveLevel(level: Level): void;
+  /**
+   * Switches the active layer. Only its features can be selected or edited afterwards, and a
+   * selection that belongs to the previous layer is cleared. Fails while an edit is unsaved.
+   */
+  setActiveLevel(level: Level): Cmd;
   /** Request a visibility change (`null` = show all). Applied directly when uncontrolled. */
   setVisibleFeatureIds(ids: ReadonlySet<string> | null): void;
   setEditableFeatureIds(ids: ReadonlySet<string>): void;
@@ -56,6 +61,13 @@ export interface WorkspaceActions {
   completeDraftConfiguration(
     properties: Readonly<Record<string, unknown>>,
   ): Cmd;
+  /**
+   * Closes the draft's forms without discarding anything: the drawn geometry stays on the map and the values already
+   * entered are kept. Fails when no draft is awaiting its forms.
+   */
+  dismissDraftConfiguration(): Cmd;
+  /** Opens the forms again where they were left, with the values entered so far. */
+  reopenDraftConfiguration(): Cmd;
   /** Discards the current draft, local edit, or failure (not allowed while a request is in flight). */
   cancelSession(): Cmd;
   resolveConflict(resolution: ConflictResolution): Cmd;

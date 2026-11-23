@@ -1,5 +1,6 @@
 import { TypedStatusError } from "@zaminnegar/api-client";
 import { z } from "zod";
+import { backendMessage, GEOMETRY_RULE_CODES } from "../../core/error-messages";
 import {
   applicationError,
   domainError,
@@ -9,7 +10,6 @@ import {
   type EditorError,
   type NetworkError,
   type PermissionError,
-  type ValidationIssue,
 } from "../../core/errors";
 
 /**
@@ -17,18 +17,16 @@ import {
  * beneath it) can throw is translated here into an `EditorError`; nothing from the
  * transport (HTTP exceptions, Zod errors, backend envelopes) crosses into the editor.
  *
- * User-facing messages are fixed strings. Backend detail (status, machine code, raw
- * message, the original exception) goes to the diagnostics channel instead, so it
- * can be logged without being shown.
+ * User-facing text comes from the central catalog (`core/error-messages.ts`), chosen by status and
+ * backend `code`. Backend detail (status, machine code, raw message, the original exception) goes to
+ * the diagnostics channel instead, so it can be logged without being shown.
  */
 
-export type GatewayOperation = "create" | "update" | "delete";
-export type GatewayStep = "write" | "load-boundary" | "rollback";
+export type GatewayOperation = "create" | "update" | "delete" | "read";
 
 export type ErrorContext = {
   operation: GatewayOperation;
-  step: GatewayStep;
-  /** Known once the feature exists on, or was addressed to, the backend. */
+  /** Known once the request is addressed to an existing feature. */
   featureId?: string | undefined;
 };
 
@@ -70,53 +68,64 @@ const DENIED_CODE = {
   create: "create_denied",
   update: "edit_denied",
   delete: "delete_denied",
+  read: "read_denied",
 } as const satisfies Record<GatewayOperation, PermissionError["code"]>;
 
-const VERB = { create: "create", update: "edit", delete: "delete" } as const satisfies Record<GatewayOperation, string>;
-
 /** The backend answered, but with a payload this gateway cannot trust or use. Not retryable. */
-export function invalidResponse(what: string): NetworkError {
-  return networkError("invalid_response", `The backend returned an invalid ${what}`, { retryable: false });
+export function invalidResponse(): NetworkError {
+  return networkError("invalid_response", { retryable: false });
 }
 
+/**
+ * Chooses the editor error for an HTTP failure. The status picks the kind of error; the backend's `code`, when the
+ * catalog knows it, picks the text (a taken name, an overlap, a region that is not empty...). The wording itself is
+ * never here: it lives in `core/error-messages.ts`.
+ */
 function fromStatus(status: number, body: BackendErrorBody, ctx: ErrorContext): EditorError {
   const { operation, featureId } = ctx;
+  const backendCode = body.code;
+  const known = backendMessage(backendCode) !== undefined;
 
   switch (status) {
     case 400:
-    case 422: {
-      // Validation messages are authored for display and carry no internals.
-      const issues: ValidationIssue[] = body.messages.map((message) => ({ path: "", message }));
-      return validationError("invalid_schema", "The backend rejected the data as invalid", issues);
-    }
+    case 422:
+      // A named geometry rule is invalid geometry; another named refusal is a rejection; the rest is malformed data.
+      if (backendCode !== undefined && GEOMETRY_RULE_CODES.has(backendCode)) {
+        return validationError("invalid_geometry", { backendCode });
+      }
+      if (known) return applicationError("rejected", { backendCode, featureId });
+      // The backend's validation messages are English detail for logs, not shown.
+      return validationError("invalid_schema", {
+        subject: "backend_rejected",
+        issues: body.messages.map((message) => ({ path: "", message })),
+      });
     case 401:
-      return permissionError(DENIED_CODE[operation], "Your session is missing or has expired. Sign in again.");
+      return permissionError(DENIED_CODE[operation], { session: "expired", featureId });
     case 403:
-      return permissionError(DENIED_CODE[operation], `You do not have permission to ${VERB[operation]} this feature`);
+      return permissionError(DENIED_CODE[operation], { backendCode, featureId });
     case 404:
       return featureId !== undefined
-        ? domainError("feature_not_found", `Feature ${featureId} was not found on the server`)
-        : applicationError("rejected", "The requested resource was not found");
+        ? domainError("feature_not_found", { featureId })
+        : applicationError("rejected", { reason: "not_found", backendCode });
     case 409:
-      // 409 is also used for "no active project", which is not an edit conflict and must not
-      // open the editor's conflict-resolution flow.
-      return body.code === "NO_ACTIVE_PROJECT"
-        ? applicationError("rejected", "No active project is selected", featureId)
-        : applicationError("conflict", "The change conflicts with the current state on the server", featureId);
+      // 409 carries many named refusals (no active project, name taken, overlap, not empty). They are rejections,
+      // not edit conflicts, and must not open the editor's conflict-resolution flow; only an unnamed 409 is a conflict.
+      return known
+        ? applicationError("rejected", { backendCode, featureId })
+        : applicationError("conflict", { featureId });
     case 408:
-      return networkError("timeout", "The request timed out", { status, retryable: true });
+      return networkError("timeout", { status, retryable: true });
     case 429:
-      return networkError(
-        "http",
-        body.retryAfterSeconds !== undefined
-          ? `Too many requests. Try again in ${Math.ceil(body.retryAfterSeconds)} seconds`
-          : "Too many requests. Try again shortly",
-        { status, retryable: true },
-      );
+      return networkError("http", {
+        reason: "rate_limited",
+        status,
+        retryable: true,
+        ...(body.retryAfterSeconds !== undefined ? { retryAfterSeconds: body.retryAfterSeconds } : {}),
+      });
     default:
       return status >= 500
-        ? networkError("http", "The server failed to process the request", { status, retryable: true })
-        : applicationError("rejected", `The backend rejected the request (HTTP ${status})`, featureId);
+        ? networkError("http", { reason: "server_error", status, retryable: true })
+        : applicationError("rejected", { status, backendCode, featureId });
   }
 }
 
@@ -140,14 +149,14 @@ export function translateApiError(cause: unknown, ctx: ErrorContext): Translated
   }
   // The generated client validates both what it sends and what it receives.
   if (cause instanceof z.ZodError) {
-    return { error: invalidResponse("response"), diagnostic: diagnostic({ backendMessage: cause.message }) };
+    return { error: invalidResponse(), diagnostic: diagnostic({ backendMessage: cause.message }) };
   }
   if (isAbort(cause)) {
-    return { error: networkError("timeout", "The request was cancelled", { retryable: true }), diagnostic: diagnostic() };
+    return { error: networkError("timeout", { reason: "cancelled", retryable: true }), diagnostic: diagnostic() };
   }
   // `fetch` rejects with a TypeError when the network is unreachable.
   if (cause instanceof TypeError) {
-    return { error: networkError("offline", "The backend could not be reached", { retryable: true }), diagnostic: diagnostic() };
+    return { error: networkError("offline", { retryable: true }), diagnostic: diagnostic() };
   }
-  return { error: applicationError("operation_failed", "The operation failed unexpectedly", ctx.featureId), diagnostic: diagnostic() };
+  return { error: applicationError("operation_failed", { featureId: ctx.featureId }), diagnostic: diagnostic() };
 }

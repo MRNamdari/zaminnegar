@@ -18,8 +18,8 @@ import {
 } from '../core/config';
 import {
   applicationError,
-  consoleErrorReporter,
   domainError,
+  issuesFromZod,
   mapEngineError,
   validationError,
   type EditorError,
@@ -71,6 +71,7 @@ import {
   type WorkspaceOperations,
   type WorkspaceState,
 } from './contexts';
+import { toastErrorReporter } from './notifications';
 import { useControllable } from './use-controllable';
 
 type IdSet = ReadonlySet<string>;
@@ -98,7 +99,10 @@ export interface FeatureWorkspaceProviderProps {
   onEditableFeatureIdsChange?: (ids: IdSet) => void;
   operations: FeatureOperations;
   config?: EditorConfigInput;
-  /** Called for every error the editor produces; defaults to console logging. */
+  /**
+   * Called for every error the editor produces. Defaults to `toastErrorReporter`: logged to the console and shown
+   * as a toast (the app needs a react-toastify `<ToastContainer />`).
+   */
   onError?: ErrorReporter;
   children: ReactNode;
 }
@@ -110,7 +114,7 @@ export function FeatureWorkspaceProvider({
   onEditableFeatureIdsChange,
   operations,
   config: configInput,
-  onError = consoleErrorReporter,
+  onError = toastErrorReporter,
   children,
 }: FeatureWorkspaceProviderProps) {
   /* ------------------------------ configuration ------------------------------ */
@@ -173,12 +177,25 @@ export function FeatureWorkspaceProvider({
     is3D: config.map.terrain.enabled,
   });
 
+  /**
+   * Editing is confined to the active layer: only features it owns can be edited or deleted,
+   * whatever the application listed as editable. The render model, every permission check and
+   * the exposed state read this set; the raw `editableFeatureIds` is only its input.
+   */
+  const layerEditableIds = useMemo<IdSet>(() => {
+    if (editableFeatureIds.size === 0) return editableFeatureIds;
+    const ids = new Set<string>();
+    for (const id of editableFeatureIds)
+      if (featuresById.get(id)?.properties.level === activeLevel) ids.add(id);
+    return ids;
+  }, [editableFeatureIds, featuresById, activeLevel]);
+
   /* ------------------------ latest values for stable callbacks ---------------- */
   const latest = useRef({
     featuresById,
     features,
     config,
-    editableFeatureIds,
+    editableFeatureIds: layerEditableIds,
     lifecycle,
     activeTool,
     activeLevel,
@@ -191,7 +208,7 @@ export function FeatureWorkspaceProvider({
       featuresById,
       features,
       config,
-      editableFeatureIds,
+      editableFeatureIds: layerEditableIds,
       lifecycle,
       activeTool,
       activeLevel,
@@ -203,8 +220,8 @@ export function FeatureWorkspaceProvider({
   const engineRef = useRef<MapEngine | null>(null);
 
   const effectiveEditable = useMemo<IdSet>(
-    () => (config.permissions.edit ? editableFeatureIds : EMPTY_IDS),
-    [config.permissions.edit, editableFeatureIds],
+    () => (config.permissions.edit ? layerEditableIds : EMPTY_IDS),
+    [config.permissions.edit, layerEditableIds],
   );
 
   const report = useCallback((error: EditorError, operation: string) => {
@@ -235,7 +252,7 @@ export function FeatureWorkspaceProvider({
     const engine = engineRef.current;
     return engine
       ? ok(engine)
-      : err(mapEngineError('not_ready', 'The map is not ready yet'));
+      : err(mapEngineError('not_ready'));
   }, []);
 
   /* --------------------------------- derived ---------------------------------- */
@@ -302,22 +319,16 @@ export function FeatureWorkspaceProvider({
   }, [featuresById, setSelectedFeatureId]);
 
   /* -------------------------------- operations -------------------------------- */
-  const issues = (error: {
-    issues: readonly { path: PropertyKey[]; message: string }[];
-  }) =>
-    error.issues.map((i) => ({ path: i.path.join('.'), message: i.message }));
-
   const createFeature = useCallback<WorkspaceOperations['createFeature']>(
     (request) => {
       const parsed = createFeatureRequestSchema.safeParse(request);
       if (!parsed.success)
         return errAsync(
           reported('create')(
-            validationError(
-              'invalid_schema',
-              'Invalid create request',
-              issues(parsed.error),
-            ),
+            validationError('invalid_schema', {
+              subject: 'create',
+              issues: issuesFromZod(parsed.error),
+            }),
           ),
         );
       const { config: cfg, operations: ops } = latest.current;
@@ -342,11 +353,10 @@ export function FeatureWorkspaceProvider({
       if (!parsed.success)
         return errAsync(
           reported('update')(
-            validationError(
-              'invalid_schema',
-              'Invalid update request',
-              issues(parsed.error),
-            ),
+            validationError('invalid_schema', {
+              subject: 'update',
+              issues: issuesFromZod(parsed.error),
+            }),
           ),
         );
       const {
@@ -386,17 +396,16 @@ export function FeatureWorkspaceProvider({
       if (!parsed.success)
         return errAsync(
           reported('delete')(
-            validationError(
-              'invalid_schema',
-              'Invalid delete request',
-              issues(parsed.error),
-            ),
+            validationError('invalid_schema', {
+              subject: 'delete',
+              issues: issuesFromZod(parsed.error),
+            }),
           ),
         );
       if (!byId.has(id))
         return errAsync(
           reported('delete')(
-            domainError('feature_not_found', `Feature ${id} does not exist`),
+            domainError('feature_not_found', { featureId: id }),
           ),
         );
       const allowed = checkDelete(cfg.permissions, editable, id);
@@ -404,10 +413,7 @@ export function FeatureWorkspaceProvider({
       if (!ignoreSession && !isResting(lc)) {
         return errAsync(
           reported('delete')(
-            domainError(
-              'session_in_progress',
-              'Finish or cancel the current edit first',
-            ),
+            domainError('session_in_progress', { action: 'edit' }),
           ),
         );
       }
@@ -456,7 +462,7 @@ export function FeatureWorkspaceProvider({
       ? runDraftSave(draft)
       : errAsync(
           reported('save-draft')(
-            domainError('no_active_session', 'There is no draft to save'),
+            domainError('no_active_session', { what: 'draft' }),
           ),
         );
   }, [reported, runDraftSave]);
@@ -466,17 +472,16 @@ export function FeatureWorkspaceProvider({
     if (!session)
       return errAsync(
         reported('save-edit')(
-          domainError('no_active_session', 'There is no edit to save'),
+          domainError('no_active_session', { what: 'edit' }),
         ),
       );
     if (session.conflict) {
       return errAsync(
         reported('save-edit')(
-          applicationError(
-            'conflict',
-            'The feature changed on the server. Resolve the conflict before saving.',
-            session.featureId,
-          ),
+          applicationError('conflict', {
+            source: 'server_changed',
+            featureId: session.featureId,
+          }),
         ),
       );
     }
@@ -500,7 +505,7 @@ export function FeatureWorkspaceProvider({
     const { lifecycle: lc } = latest.current;
     if (lc.status !== 'failed')
       return errAsync(
-        reported('retry')(domainError('no_active_session', 'Nothing to retry')),
+        reported('retry')(domainError('no_active_session', { what: 'retry' })),
       );
     const { failure } = lc;
     if (failure.draft) return runDraftSave(failure.draft);
@@ -511,7 +516,7 @@ export function FeatureWorkspaceProvider({
     }
     return errAsync(
       reported('retry')(
-        domainError('invalid_state', 'Failure has nothing to retry'),
+        domainError('invalid_state', { reason: 'not_retryable' }),
       ),
     );
   }, [reported, runDelete, runDraftSave, saveEdit]);
@@ -542,10 +547,7 @@ export function FeatureWorkspaceProvider({
         if (canCreate.isErr()) return failNow(canCreate.error, 'set-tool');
         if (!isResting(lc) && lc.status !== 'drawing') {
           return failNow(
-            domainError(
-              'session_in_progress',
-              'Finish or cancel the current draft or edit first',
-            ),
+            domainError('session_in_progress', { action: 'tool' }),
             'set-tool',
           );
         }
@@ -562,6 +564,34 @@ export function FeatureWorkspaceProvider({
     [failNow],
   );
 
+  /**
+   * Switching layers moves the selection and the editable set with it. An unsaved edit belongs
+   * to a feature of the layer being left, so it must be saved or cancelled first (the same
+   * rule `setActiveTool` applies); otherwise the selection is simply cleared if it belongs to
+   * the previous layer.
+   */
+  const changeActiveLevel = useCallback<WorkspaceActions['setActiveLevel']>(
+    (level) => {
+      const {
+        activeLevel: current,
+        lifecycle: lc,
+        selectedFeatureId: selected,
+        featuresById: byId,
+      } = latest.current;
+      if (level === current) return ok(undefined);
+      if (activeSession(lc) !== null)
+        return failNow(
+          domainError('session_in_progress', { action: 'layer' }),
+          'set-level',
+        );
+      setActiveLevel(level);
+      if (selected !== null && byId.get(selected)?.properties.level !== level)
+        setSelectedFeatureId(null);
+      return ok(undefined);
+    },
+    [failNow, setSelectedFeatureId],
+  );
+
   const actions = useMemo<WorkspaceActions>(() => {
     const engineCmd = <T,>(
       run: (engine: MapEngine) => Result<T, EditorError>,
@@ -574,9 +604,20 @@ export function FeatureWorkspaceProvider({
 
     return {
       selectFeature(id) {
-        if (!latest.current.featuresById.has(id))
+        const target = latest.current.featuresById.get(id);
+        if (!target)
           return failNow(
-            domainError('feature_not_found', `Feature ${id} does not exist`),
+            domainError('feature_not_found', { featureId: id }),
+            'select',
+          );
+        if (target.properties.level !== latest.current.activeLevel)
+          return failNow(
+            domainError('invalid_state', {
+                reason: 'inactive_layer',
+                layer: target.properties.level,
+                activeLayer: latest.current.activeLevel,
+                featureId: id,
+              }),
             'select',
           );
         if (latest.current.activeTool !== 'select') {
@@ -592,20 +633,20 @@ export function FeatureWorkspaceProvider({
       },
       setActiveTool,
       cancelDrawing: () => setActiveTool('select'),
-      setActiveLevel,
+      setActiveLevel: changeActiveLevel,
       setVisibleFeatureIds,
       setEditableFeatureIds,
       focusFeature(id) {
         const feature = latest.current.featuresById.get(id);
         if (!feature)
           return failNow(
-            domainError('feature_not_found', `Feature ${id} does not exist`),
+            domainError('feature_not_found', { featureId: id }),
             'focus',
           );
         const bounds = boundsOf([feature]);
         if (!bounds)
           return failNow(
-            domainError('invalid_state', 'Feature has no geometry'),
+            domainError('invalid_state', { reason: 'no_geometry' }),
             'focus',
           );
         return engineCmd(
@@ -617,10 +658,7 @@ export function FeatureWorkspaceProvider({
         const { lifecycle: lc } = latest.current;
         if (lc.status !== 'configuring') {
           return failNow(
-            domainError(
-              'no_active_session',
-              'There is no draft awaiting configuration',
-            ),
+            domainError('no_active_session', { what: 'configuration' }),
             'complete-draft-configuration',
           );
         }
@@ -628,11 +666,10 @@ export function FeatureWorkspaceProvider({
         const parsed = draftConfigurationPropertiesSchema.safeParse(properties);
         if (!parsed.success) {
           return failNow(
-            validationError(
-              'invalid_schema',
-              'Invalid draft configuration',
-              issues(parsed.error),
-            ),
+            validationError('invalid_schema', {
+              subject: 'configuration',
+              issues: issuesFromZod(parsed.error),
+            }),
             'complete-draft-configuration',
           );
         }
@@ -654,11 +691,33 @@ export function FeatureWorkspaceProvider({
         void runDraftSave(draft);
         return ok(undefined);
       },
+      dismissDraftConfiguration() {
+        const { lifecycle: lc } = latest.current;
+        if (lc.status !== 'configuring') {
+          return failNow(
+            domainError('no_active_session', { what: 'configuration' }),
+            'dismiss-draft-configuration',
+          );
+        }
+        dispatch({ type: 'configuration-dismissed' });
+        return ok(undefined);
+      },
+      reopenDraftConfiguration() {
+        const { lifecycle: lc } = latest.current;
+        if (lc.status !== 'configuring') {
+          return failNow(
+            domainError('no_active_session', { what: 'configuration' }),
+            'reopen-draft-configuration',
+          );
+        }
+        dispatch({ type: 'configuration-reopened' });
+        return ok(undefined);
+      },
       cancelSession() {
         const { lifecycle: lc } = latest.current;
         if (lc.status === 'saving' || lc.status === 'updating') {
           return failNow(
-            domainError('session_in_progress', 'A save is in progress'),
+            domainError('session_in_progress', { action: 'save' }),
             'cancel-session',
           );
         }
@@ -669,7 +728,7 @@ export function FeatureWorkspaceProvider({
         const session = activeSession(latest.current.lifecycle);
         if (!session?.conflict)
           return failNow(
-            domainError('no_active_session', 'There is no conflict to resolve'),
+            domainError('no_active_session', { what: 'conflict' }),
             'resolve-conflict',
           );
         if (
@@ -700,6 +759,7 @@ export function FeatureWorkspaceProvider({
       redo: () => engineCmd((e) => e.commands.redo(), 'redo'),
     };
   }, [
+    changeActiveLevel,
     failNow,
     reported,
     requireEngine,
@@ -726,6 +786,12 @@ export function FeatureWorkspaceProvider({
             setActiveTool(cfg.drawing.defaultTool);
           return;
         case 'selection-requested':
+          // The engine only reports active-layer features; anything else is refused here too.
+          if (
+            event.featureId !== null &&
+            byId.get(event.featureId)?.properties.level !== level
+          )
+            return;
           setSelectedFeatureId(event.featureId);
           return;
         case 'tool-changed':
@@ -768,10 +834,9 @@ export function FeatureWorkspaceProvider({
           const base = byId.get(event.featureId);
           if (!base) {
             report(
-              domainError(
-                'feature_not_found',
-                `Edited feature ${event.featureId} is not in the workspace`,
-              ),
+              domainError('feature_not_found', {
+                featureId: event.featureId,
+              }),
               'geometry-edited',
             );
             return;
@@ -804,7 +869,7 @@ export function FeatureWorkspaceProvider({
       featuresById,
       selectedFeatureId,
       visibleFeatureIds: visibleFeatureIds ?? new Set<string>(),
-      editableFeatureIds,
+      editableFeatureIds: layerEditableIds,
       activeTool,
       activeLevel,
       lifecycle,
@@ -814,7 +879,7 @@ export function FeatureWorkspaceProvider({
       featuresById,
       selectedFeatureId,
       visibleFeatureIds,
-      editableFeatureIds,
+      layerEditableIds,
       activeTool,
       activeLevel,
       lifecycle,

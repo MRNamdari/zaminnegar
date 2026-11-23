@@ -63,14 +63,14 @@ export function FeatureMap() {
     queryFn: loadFeatureCollection,
   });
 
-  // 4. Gateway (stable; reads the level of existing features from the same cache entry)...
-  const gateway = useApiFeatureGateway(api, featuresQueryKey, {
-    onDiagnostic: logDiagnostic,
-  });
+  // 4. Gateway (stable: one request per operation, against /map/features)...
+  const gateway = useApiFeatureGateway(api, { onDiagnostic: logDiagnostic });
   // 5. ...and the editor's operations, which also write confirmed results back to that cache.
   const operations = useFeatureOperations(gateway, featuresQueryKey);
 
   if (!features) return null;
+  // Errors the editor reports appear as react-toastify toasts (the provider's default `onError`),
+  // so the app renders one <ToastContainer rtl /> somewhere, once.
   return (
     <FeatureWorkspaceProvider value={{ features }} operations={operations}>
       <MapEditor />

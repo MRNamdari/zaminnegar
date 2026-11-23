@@ -64,9 +64,15 @@ export function DraftConfigurationFlow<V extends Record<string, unknown>>({
 
   if (steps.length === 0) return null;
 
+  const configuring = lifecycle.status === 'configuring' ? lifecycle : undefined;
+
   return (
+    // Keyed by draft: the step reached and the values entered belong to one drawn feature, so a new draft starts
+    // from the first step with empty forms instead of inheriting the previous feature's answers.
     <DraftConfigurationSession<V>
-      draft={lifecycle.status === 'configuring' ? lifecycle.draft : undefined}
+      key={configuring?.draft.draftId ?? 'none'}
+      draft={configuring?.draft}
+      dialogOpen={configuring?.dialogOpen ?? false}
       steps={steps}
     />
   );
@@ -74,11 +80,14 @@ export function DraftConfigurationFlow<V extends Record<string, unknown>>({
 
 interface DraftConfigurationSessionProps<V extends Record<string, unknown>> {
   draft?: Draft;
+  /** False after the dialog was closed without submitting; the draft (and what was entered) is kept. */
+  dialogOpen: boolean;
   steps: readonly DraftConfigurationStep<V>[];
 }
 
 function DraftConfigurationSession<V extends Record<string, unknown>>({
   draft,
+  dialogOpen,
   steps,
 }: DraftConfigurationSessionProps<V>) {
   const actions = useWorkspaceActions();
@@ -130,14 +139,19 @@ function DraftConfigurationSession<V extends Record<string, unknown>>({
     actions.cancelSession();
   };
 
+  // Closing the dialog is not cancelling: the draft stays, and the status bar offers to open the dialog again.
+  const handleDismiss = () => {
+    actions.dismissDraftConfiguration();
+  };
+
   return (
     <Dialog
-      open={draft ? true : false}
+      open={draft !== undefined && dialogOpen}
       onOpenChange={(open) => {
-        !open && handleCancel();
+        !open && handleDismiss();
       }}
-      title={steps[stepIndex].label}
-      description={steps[stepIndex].description}
+      title={steps[stepIndex]?.label}
+      description={steps[stepIndex]?.description}
       closeOnBackdropClick={false}
       closeOnEscape={false}
     >
