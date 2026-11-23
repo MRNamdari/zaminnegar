@@ -13,12 +13,15 @@ import { ParcelModule } from './modules/parcel/parcel.module';
 import { ProjectModule } from './modules/project/project.module';
 import { RegionModule } from './modules/region/region.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
+import { ScheduleModule } from '@nestjs/schedule';
+import tilesConfig from './modules/tiles/config';
+import { TilesModule } from './modules/tiles/tiles.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+      load: [tilesConfig],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -42,6 +45,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     BlockModule,
     ParcelModule,
     OwnerModule,
+    ScheduleModule.forRoot(),
+    TilesModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: DatabaseExceptionFilter }],
 })

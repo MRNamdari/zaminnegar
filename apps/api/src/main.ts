@@ -8,6 +8,7 @@ import {
   buildOpenApiDocument,
   SWAGGER_UI_OPTIONS,
 } from './openapi/build-openapi-document';
+import { TileExceptionFilter } from './common/filters/tile-exception.filter';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -15,12 +16,16 @@ async function bootstrap(): Promise<void> {
   // Behind a reverse proxy, set TRUST_PROXY (hop count, or `true`) so `req.ip` is the client, not the proxy:
   // the per-IP OTP limit depends on it. Leave it unset when the app is exposed directly.
   const trustProxy = process.env.TRUST_PROXY;
-  if (trustProxy) app.set('trust proxy', /^\d+$/.test(trustProxy) ? Number(trustProxy) : trustProxy === 'true');
+  if (trustProxy)
+    app.set(
+      'trust proxy',
+      /^\d+$/.test(trustProxy) ? Number(trustProxy) : trustProxy === 'true',
+    );
 
   // `transform` is required: it applies the pagination defaults and turns page/limit into numbers.
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.enableShutdownHooks();
-
+  app.useGlobalFilters(new TileExceptionFilter());
   // Same document the client generator uses, so /docs and the generated client never disagree.
   SwaggerModule.setup(
     'docs',
