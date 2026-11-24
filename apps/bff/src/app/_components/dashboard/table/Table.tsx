@@ -36,8 +36,8 @@ export type TablePagination = {
 
 type TableProps<TData extends RowData> = {
   table: ReactTable<typeof BASIC_TABLE_FEATURES, TData>;
-  pagination: TablePagination;
-  onPageChange: (page: number) => void;
+  pagination?: TablePagination;
+  onPageChange?: (page: number) => void;
   onRowClick?: (data: TData) => void;
   isLoading?: boolean;
 };
@@ -145,7 +145,9 @@ export function Table<TData extends RowData>({
         </table>
       </div>
 
-      <Paginator {...pagination} onPageChange={onPageChange} />
+      {pagination && onPageChange && (
+        <Paginator {...pagination} onPageChange={onPageChange} />
+      )}
     </div>
   );
 }
