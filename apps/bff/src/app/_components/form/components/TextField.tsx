@@ -20,7 +20,7 @@ export function TextField({
   const field = useFieldContext<string>();
   const errors = useSelector(field.store, (state) => state.meta.errors);
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 w-full">
       {label && (
         <label className="block text-foreground text-sm mb-2">
           {label}
