@@ -21,17 +21,15 @@ import {
   useLoginMutation,
 } from '@/app/features/auth/mutation';
 import { api } from '@/app/_lib/api.client';
-import SelectProject from '../SelectProject';
-import ProjectsFormCreate from '../../dashboard/projects/ProjectsFormCreate';
-import ProjectsFormUpdate from '../../dashboard/projects/ProjectsFormUpdate';
+
 import { Dialog } from '../../Dialog';
-import { ProjectFormValue } from '../../dashboard/projects/schema/ProjectsCreate.schema';
+
 import {
   useCreateProjectMutation,
   useDeleteProjectMutation,
   useUpdateProjectMutation,
 } from '@/app/features/projects/mutation';
-import { UpdateFormProjectValues } from '../../dashboard/projects/schema/ProjectsUpdate.schema';
+
 
 z.config(fa());
 
@@ -127,63 +125,11 @@ export default function LoginForm() {
   };
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const createProject = useCreateProjectMutation();
-  const handleCreateProject = async (values: ProjectFormValue) => {
-    try {
-      const result = await createProject.mutateAsync({
-        name: values.name,
-        description: values.description,
-      });
-
-      if (!result.success) {
-        toast.error(result.message);
-        return;
-      }
-
-      toast.success('پروژه با موفقیت ایجاد شد');
-
-      setIsCreateOpen(false);
-
-      void refetch();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'خطا در ایجاد پروژه',
-      );
-    }
-  };
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const updateProject = useUpdateProjectMutation();
 
-  const handleUpdateProject = async (value: UpdateFormProjectValues) => {
-    if (!selectedProject) return;
-
-    try {
-      const result = await updateProject.mutateAsync({
-        id: selectedProject.id,
-        value: {
-          name: value.name,
-          description: value.description,
-        },
-      });
-
-      if (!result.success) {
-        toast.error(result.message);
-        return;
-      }
-
-      toast.success('پروژه با موفقیت ویرایش شد');
-
-      setIsEditOpen(false);
-      setSelectedProject(null);
-
-      void refetch();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'خطا در ویرایش پروژه',
-      );
-    }
-  };
   const handleEditProject = (project: Project) => {
     setSelectedProject(project);
     setIsEditOpen(true);
@@ -363,55 +309,6 @@ export default function LoginForm() {
           </div>
         </div>
       </div>
-      <SelectProject
-        onDelete={handleDeleteProjectClick}
-        onEdit={handleEditProject}
-        addProject={true}
-        onAddProject={() => setIsCreateOpen(true)}
-        open={isOpen}
-        onOpenChange={setIsOpen}
-        projects={projects}
-        isLoading={isLoading}
-        isError={isError}
-        error={error instanceof Error ? error.message : undefined}
-        isSelecting={activeProjectMutation.isPending}
-        onRetry={() => void refetch()}
-        onSelect={handleSelectProject}
-      />
-      <Dialog
-        open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
-        title="افزودن پروژه جدید"
-        description="اطلاعات پروژه جدید را وارد کنید."
-      >
-        <ProjectsFormCreate
-          onSubmit={handleCreateProject}
-          onCancel={() => setIsCreateOpen(false)}
-        />
-      </Dialog>
-      <Dialog
-        open={isEditOpen}
-        onOpenChange={(open) => {
-          setIsEditOpen(open);
-
-          if (!open) {
-            setSelectedProject(null);
-          }
-        }}
-        title="ویرایش پروژه"
-        description="اطلاعات پروژه را ویرایش کنید."
-      >
-        {selectedProject && (
-          <ProjectsFormUpdate
-            project={selectedProject}
-            onSubmit={handleUpdateProject}
-            onCancel={() => {
-              setIsEditOpen(false);
-              setSelectedProject(null);
-            }}
-          />
-        )}
-      </Dialog>
       <Dialog
         open={isDeleteProjectModalOpen}
         onOpenChange={setIsDeleteProjectModalOpen}
