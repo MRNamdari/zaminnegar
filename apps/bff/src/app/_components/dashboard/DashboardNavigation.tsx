@@ -5,6 +5,7 @@ import { IconType } from "react-icons";
 import { CiMap, CiUser, CiGrid42, CiGrid32, CiGrid41 } from "react-icons/ci";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { PiPolygonLight } from "react-icons/pi";
+import { GoShieldCheck } from "react-icons/go";
 
 export type NavigationItem = {
   label: string;
@@ -20,6 +21,7 @@ const navigationItems: NavigationItem[] = [
   { label: "بلوک‌ها", href: "/blocks", icon: CiGrid42 },
   { label: "قطعات", href: "/parcels", icon: CiGrid32 },
   { label: "آپلود مدارک", href: "/documents", icon: IoDocumentTextOutline },
+  { label: "نقش ها", href: "/access-management", icon: GoShieldCheck },
 ];
 
 export default function DashboardNavigation() {
