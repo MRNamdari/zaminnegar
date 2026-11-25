@@ -197,7 +197,7 @@ export function Dialog({
       `}
     >
       {(title || description || showCloseButton) && (
-        <header className="mb-5 flex items-start justify-between gap-4">
+        <header className="mb-5 flex items-start justify-between gap-4" dir="rtl">
           <div className="min-w-0 flex-1">
             {title && (
               <h2
