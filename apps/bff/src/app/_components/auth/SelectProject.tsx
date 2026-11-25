@@ -75,14 +75,14 @@ export default function SelectProject({
               هیچ پروژه‌ای برای شما ثبت نشده است.
             </p>
 
-              <button
-                type="button"
-                onClick={onAddProject}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-black py-3 font-medium text-text transition duration-300 hover:border-action-primary hover:text-primary"
-              >
-                <span className="text-lg">+</span>
-                افزودن پروژه
-              </button>
+            <button
+              type="button"
+              onClick={onAddProject}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-black py-3 font-medium text-text transition duration-300 hover:border-action-primary hover:text-primary"
+            >
+              <span className="text-lg">+</span>
+              افزودن پروژه
+            </button>
           </div>
         )}
 
@@ -106,15 +106,15 @@ export default function SelectProject({
                   className="relative w-full cursor-pointer text-right disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <div className="flex items-center justify-between gap-4">
-                    {/* Project Icon */}
+                    {/* Select Arrow */}
                     <div
-                      className={`flex size-12 shrink-0 items-center justify-center rounded-2xl transition-all duration-300 ${
+                      className={`flex size-9 shrink-0 items-center justify-center rounded-full transition-all duration-300 ${
                         isActive
                           ? 'bg-primary text-white'
-                          : 'bg-background-contrast text-action-primary'
+                          : 'bg-muted text-muted-foreground group-hover:bg-primary group-hover:-translate-x-2'
                       }`}
                     >
-                      <FolderOpen size={23} strokeWidth={1.8} />
+                      <ArrowLeft size={18} strokeWidth={2} />
                     </div>
 
                     {/* Project Info */}
@@ -129,16 +129,15 @@ export default function SelectProject({
                         {project.name}
                       </h3>
                     </div>
-
-                    {/* Select Arrow */}
+                    {/* Project Icon */}
                     <div
-                      className={`flex size-9 shrink-0 items-center justify-center rounded-full transition-all duration-300 ${
+                      className={`flex size-12 shrink-0 items-center justify-center rounded-2xl transition-all duration-300 ${
                         isActive
                           ? 'bg-primary text-white'
-                          : 'bg-muted text-muted-foreground group-hover:bg-primary group-hover:-translate-x-2'
+                          : 'bg-background-contrast text-action-primary'
                       }`}
                     >
-                      <ArrowLeft size={18} strokeWidth={2} />
+                      <FolderOpen size={23} strokeWidth={1.8} />
                     </div>
                   </div>
                 </button>
