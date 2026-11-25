@@ -13,6 +13,10 @@
 :root {
   color-scheme: light;
 
+  /* FIXED COLORS */
+  --app-black: #000000;
+  --app-black-coal: #232323;
+
   /* SURFACES */
   --app-bg: #ffffff;
   --app-surface: #f4f6f1;
@@ -215,6 +219,10 @@
 ========================================= */
 
 @theme inline {
+  /* FIXED COLORS */
+  --color-black-fixed: var(--app-black);
+  --color-coal-fixed: var(--app-black-coal);
+
   /* SURFACES */
   --color-background: var(--app-bg);
   --color-surface: var(--app-surface);
