@@ -186,7 +186,7 @@ export function Dialog({
         max-h-[calc(100dvh-env(safe-area-inset-top)-1rem)]
         overflow-y-auto overscroll-contain
         rounded-t-2xl border-0
-        bg-surface-raised p-5 
+        bg-background p-5 
         text-foreground shadow-2xl
 
         sm:m-auto sm:w-[calc(100%-2rem)]
@@ -211,7 +211,7 @@ export function Dialog({
             {description && (
               <p
                 id={descriptionId}
-                className="mt-1 text-sm leading-6 text-foreground-secondary"
+                className="mt-1 text-sm leading-6 text-text"
               >
                 {description}
               </p>
