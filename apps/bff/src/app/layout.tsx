@@ -32,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         // dir="rtl"
         className={`"h-svh ${geistSans.variable} ${geistMono.variable} h-full antialiased `}
       >
-        <body className="h-svh overflow-hidden bg-background text-foreground">
+        <body className="h-svh overflow-hidden bg-(--app-surface) text-foreground">
           {children}
           <ToastProvider />
         </body>
