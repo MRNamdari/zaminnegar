@@ -10,19 +10,18 @@
   color-scheme: light dark;
 
   /* Surfaces */
-  --app-bg: light-dark(#f1f5f9, #071426);
-  --app-surface: light-dark(#ffffff, #0b1f35);
-  --app-surface-raised: light-dark(#f8fafc, #102b48);
-  --app-surface-muted: light-dark(#e2e8f0, #183653);
+  --app-bg: light-dark(#F4F6F1, #0a0a0a);
+  --app-surface: light-dark(#ffffff, #000);
+  --app-surface-raised: light-dark(#e9ebe5, #141414);
+  --app-surface-muted: light-dark(#dadbd7, #2c2c2c);
 
   /* Borders */
-  --app-border: light-dark(#d4dce6, rgb(47, 62, 104));
-  --app-border-strong: light-dark(#64748b, #476581);
+  --app-border: light-dark(#E4E8E0, #E4E8E0);
 
   /* Text */
-  --app-text: light-dark(#0f172a, #e2e8f0);
-  --app-text-secondary: light-dark(#334155, #cbd5e1);
-  --app-text-muted: light-dark(#64748b, #94a3b8);
+  --app-text: light-dark(#000, #fff);
+  --app-text-secondary: light-dark(#CBFF6A, #CBFF6A);
+  --app-text-muted: light-dark(#e0ffa6, #e0ffa6);
 
   /* Actions */
   --app-primary: light-dark(#1d4ed8, #2563eb);
