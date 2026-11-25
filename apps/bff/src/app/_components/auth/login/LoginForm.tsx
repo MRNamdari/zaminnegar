@@ -140,6 +140,7 @@ export default function LoginForm() {
       <span className="font-medium">مدیریت هوشمند زمین‌های کشاورزی</span>
 
       <form
+        dir="rtl"
         className="mt-10 flex w-full flex-col gap-5"
         onSubmit={(e) => {
           e.preventDefault();
