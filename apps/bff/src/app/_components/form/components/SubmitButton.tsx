@@ -24,7 +24,7 @@ export default function SubmitButton({
         <button
           type="submit"
           disabled={disabled || !canSubmit || isSubmitting}
-          className="w-full py-2.5 rounded-lg bg-action-primary hover:bg-action-primary-hover transition duration-300 cursor-pointer disabled:bg-action-primary/50 disabled:cursor-not-allowed"
+          className="w-full py-2.5 rounded-lg bg-action-primary font-medium text-dark hover:bg-action-primary-hover transition duration-300 cursor-pointer disabled:bg-action-primary/50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? loadingText : label}
         </button>
