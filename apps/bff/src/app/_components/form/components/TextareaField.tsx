@@ -26,7 +26,7 @@ export function TextareaField({
         {required && <span className="text-red-400">*</span>}
       </label>
       <textarea
-        className="w-full p-2.5 rounded-lg bg-surface text-foreground border border-border outline-none resize-none"
+        className="w-full resize-none px-2.5 py-4 text-text font-medium rounded-lg bg-background outline-none"
         required={required}
         value={field.state.value}
         onBlur={field.handleBlur}
