@@ -29,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     <QueryProviders>
       <html
         lang="fa"
-        dir="rtl"
+        // dir="rtl"
         className={`"h-svh ${geistSans.variable} ${geistMono.variable} h-full antialiased `}
       >
         <body className="h-svh overflow-hidden bg-background text-foreground">
