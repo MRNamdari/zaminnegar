@@ -15,10 +15,10 @@ export default async function AuthenticatedDashboard({
       <SessionRenewal />
       <div className="max-h-svh h-full grid grid-rows-[auto_1fr] grid-cols-12">
         <div className="col-span-12">
-          <DashboardHeader />
+          {/* <DashboardHeader />  */}
         </div>
         <main className="col-span-11 h-full overflow-y-auto">{children}</main>
-        <DashboardNavigation />
+        {/* <DashboardNavigation /> */}
       </div>
     </>
   );
