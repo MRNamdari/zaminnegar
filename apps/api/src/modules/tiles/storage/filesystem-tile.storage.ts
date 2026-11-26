@@ -4,11 +4,12 @@ import { createHash } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import lockfile = require('proper-lockfile');
-import tilesConfig from '../../config';
-import { TileCoordinate } from '../../domain/tile-coordinate';
-import { getTileImageContentType } from '../../domain/tile-image';
-import { TileLockError, TileStorageError } from '../../domain/tile.errors';
-import { StoredTile, TileStorage } from '../../domain/tile.types';
+import tilesConfig from '../config';
+import { TileCoordinate } from '../domain/tile-coordinate';
+import { getTileImageContentType } from '../domain/tile-image';
+import { StoredTile, TileStorage } from '../domain/tile.types';
+import { TileLockError } from '../errors/tile-lock.error';
+import { TileStorageError } from '../errors/tile-storage.error';
 
 @Injectable()
 export class FilesystemTileStorage implements TileStorage, OnModuleInit {
@@ -18,10 +19,16 @@ export class FilesystemTileStorage implements TileStorage, OnModuleInit {
     private readonly config: ConfigType<typeof tilesConfig>,
   ) {}
   async onModuleInit(): Promise<void> {
-    await fs.mkdir(this.config.cacheDir, { recursive: true });
-    await fs.mkdir(path.join(this.config.cacheDir, '.locks'), {
-      recursive: true,
-    });
+    try {
+      await fs.mkdir(this.config.cacheDir, { recursive: true });
+      await fs.mkdir(path.join(this.config.cacheDir, '.locks'), {
+        recursive: true,
+      });
+    } catch (error) {
+      throw new TileStorageError("Unable to create cache directory", {
+        cause: error,
+      });
+    }
   }
   private file(coordinate: TileCoordinate): string {
     return path.join(

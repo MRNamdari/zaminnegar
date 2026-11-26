@@ -1,4 +1,4 @@
-export type TileImageContentType = "image/png" | "image/jpeg";
+export type TileImageContentType = 'image/png' | 'image/jpeg';
 
 export function getTileImageContentType(
   buffer: Buffer,
@@ -10,7 +10,7 @@ export function getTileImageContentType(
     buffer.readUInt32BE(16) === 256 &&
     buffer.readUInt32BE(20) === 256
   ) {
-    return "image/png";
+    return 'image/png';
   }
 
   if (
@@ -27,7 +27,9 @@ export function getTileImageContentType(
     0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce,
     0xcf,
   ]);
+
   let offset = 2;
+  
   while (offset < buffer.length) {
     if (buffer[offset] !== 0xff) return null;
     while (buffer[offset] === 0xff) offset++;
@@ -49,7 +51,7 @@ export function getTileImageContentType(
       if (segmentLength < 8) return null;
       const height = buffer.readUInt16BE(offset + 3);
       const width = buffer.readUInt16BE(offset + 5);
-      return width === 256 && height === 256 ? "image/jpeg" : null;
+      return width === 256 && height === 256 ? 'image/jpeg' : null;
     }
 
     offset += segmentLength;

@@ -17,11 +17,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { GetTileQuery } from '../application/queries/get-tile/get-tile.query';
-import { TileParamsDto } from '../application/dto/tile-params.dto';
-import { TileResult } from '../application/queries/get-tile/get-tile.handler';
-import { getTileImageContentType } from '../domain/tile-image';
-import { Public } from '../../access/decorators/access.decorators';
+import { GetTileQuery } from './queries/get-tile.query';
+import { TileParamsDto } from './dto/tile-params.dto';
+import { TileResult } from './queries/get-tile.handler';
+import { getTileImageContentType } from './domain/tile-image';
+import { Public } from '@/modules/access/decorators/access.decorators';
 
 @ApiTags('Tiles')
 @Controller('tiles')
@@ -33,7 +33,7 @@ export class TilesController {
   @ApiOperation({
     summary: 'Get an Esri World Imagery map tile',
     description:
-      'Returns a cached 256×256 PNG or JPEG tile. On a cache miss, request headers are forwarded to Esri except credentials and hop-by-hop headers.',
+      'Returns a cached 256x256 PNG or JPEG tile. On a cache miss, request headers are forwarded to Esri except credentials and hop-by-hop headers.',
   })
   @ApiParam({ name: 'z', type: Number, example: 12 })
   @ApiParam({

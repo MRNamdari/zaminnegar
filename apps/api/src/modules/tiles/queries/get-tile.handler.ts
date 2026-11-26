@@ -2,20 +2,19 @@ import { Inject } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { createHash } from 'node:crypto';
-import tilesConfig from '../../../config';
-import { TileCoordinate } from '../../../domain/tile-coordinate';
-import {
-  TileNotFoundError,
-  TileProviderError,
-} from '../../../domain/tile.errors';
+import tilesConfig from '../config';
+import { TileCoordinate } from '../domain/tile-coordinate';
+
 import {
   TILE_PROVIDER,
   TILE_STORAGE,
   TileProvider,
   TileStorage,
   StoredTile,
-} from '../../../domain/tile.types';
+} from '../domain/tile.types';
 import { GetTileQuery } from './get-tile.query';
+import { TileProviderError } from '../errors/provider-failure.error';
+import { TileNotFoundError } from '../errors/tile-not-found.error';
 export interface TileResult extends StoredTile {
   readonly cache: 'HIT' | 'MISS';
 }

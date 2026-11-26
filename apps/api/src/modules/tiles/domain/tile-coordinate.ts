@@ -1,9 +1,5 @@
-export class InvalidTileCoordinateError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "InvalidTileCoordinateError";
-  }
-}
+import { InvalidTileCoordinateError } from "./tile.errors";
+
 export class TileCoordinate {
   private constructor(
     readonly z: number,

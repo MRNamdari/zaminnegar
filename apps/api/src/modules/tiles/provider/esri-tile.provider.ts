@@ -3,11 +3,11 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { IncomingHttpHeaders } from 'node:http';
 import { firstValueFrom } from 'rxjs';
-import tilesConfig from '../../config';
-import { TileCoordinate } from '../../domain/tile-coordinate';
-import { getTileImageContentType } from '../../domain/tile-image';
-import { TileProviderError } from '../../domain/tile.errors';
-import { TileProvider } from '../../domain/tile.types';
+import { TileCoordinate } from '../domain/tile-coordinate';
+import { getTileImageContentType } from '../domain/tile-image';
+import { TileProvider } from '../domain/tile.types';
+import { TileProviderError } from '../errors/provider-failure.error';
+import tilesConfig from '../config'
 
 const excludedHeaders = new Set([
   'authorization',
