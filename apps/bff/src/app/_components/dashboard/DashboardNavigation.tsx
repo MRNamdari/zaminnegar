@@ -34,9 +34,9 @@ export default function DashboardNavigation() {
   const pathName = usePathname();
   return (
     <aside className="w-full h-full bg-black-fixed">
-      <div className='flex flex-col items-center mt-3 gap-2 border-b border-surface/20 mx-3 pb-3'>
+      <div className='flex flex-col items-center mt-3 gap-2 border-b border-border mx-3 pb-3'>
         <Map className="flex size-11 items-center justify-center rounded-3xl bg-action-primary p-3 stroke-action-secondary" />
-        <h1 className="font-black text-surface">زمین نگار</h1>
+        <h1 className="font-black text-white">زمین نگار</h1>
       </div>
       <ul className="flex flex-col gap-2 w-full p-2 ">
         {navigationItems.map((item, key) => (
