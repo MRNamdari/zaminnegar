@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { ManualAreaField } from '../../../common/decorators/manual-area-field.decorator';
 import { PolygonField } from '../decorators/polygon-field.decorator';
 import { MAP_FEATURE_STATUSES, MapFeatureStatusValue } from '../map-feature-level';
 import { MapPolygon } from './map-polygon';
@@ -29,4 +30,7 @@ export class UpdateMapFeatureDto {
   @PolygonField({ optional: true })
   @IsOptional()
   geometry?: MapPolygon;
+
+  @ManualAreaField()
+  manualAreaM2?: number | null;
 }

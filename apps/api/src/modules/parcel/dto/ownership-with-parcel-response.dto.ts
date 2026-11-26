@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, plainToInstance, Type } from 'class-transformer';
-import { IParcelOwnership } from '../../../common/interfaces/parcel-ownership.interface';
+import { IParcelOwnership } from '@/common/interfaces/parcel-ownership.interface';
 import { OwnershipResponseDto } from './ownership-response.dto';
 import { ParcelResponseDto } from './parcel-response.dto';
 

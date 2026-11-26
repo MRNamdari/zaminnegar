@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, plainToInstance } from 'class-transformer';
-import { IParcelOwnership } from '../../../common/interfaces/parcel-ownership.interface';
+import { IParcelOwnership } from '@/common/interfaces/parcel-ownership.interface';
 
 export class OwnershipResponseDto {
   @ApiProperty({ format: 'uuid' }) @Expose() parcelId!: string;

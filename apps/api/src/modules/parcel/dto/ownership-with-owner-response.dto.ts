@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, plainToInstance, Type } from 'class-transformer';
-import { IParcelOwnership } from '../../../common/interfaces/parcel-ownership.interface';
-import { OwnerResponseDto } from '../../owner/dto/owner-response.dto';
+import { IParcelOwnership } from '@/common/interfaces/parcel-ownership.interface';
+import { OwnerResponseDto } from '@/modules/owner/dto/owner-response.dto';
 import { OwnershipResponseDto } from './ownership-response.dto';
 
 /** An ownership with the owner's profile (shown when a parcel is selected). */

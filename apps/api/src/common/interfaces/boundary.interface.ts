@@ -12,7 +12,9 @@ export interface IBoundary {
   /** Outline in WGS 84 (EPSG:4326), `[longitude, latitude]`. */
   geometry: IMultiPolygon;
   /** Geodesic area in square meters, computed by PostGIS (`ST_Area(geom::geography)`). */
-  areaM2: number;
+  computedAreaM2: number;
+  /** Area assigned by the user; null when none was supplied. */
+  manualAreaM2: number | null;
   createdAt: Date;
   updatedAt: Date;
   /** Only present when the relation is explicitly loaded. */

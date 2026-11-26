@@ -22,7 +22,14 @@ import { ParcelController } from './parcel.controller';
   controllers: [ParcelController],
   imports: [
     CqrsModule,
-    TypeOrmModule.forFeature([Parcel, ParcelOwnership, Owner, Block, Region, Project]),
+    TypeOrmModule.forFeature([
+      Parcel,
+      ParcelOwnership,
+      Owner,
+      Block,
+      Region,
+      Project,
+    ]),
     GeometryModule,
   ],
   providers: [

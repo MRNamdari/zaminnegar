@@ -29,12 +29,12 @@ export class CreateRegionHandler implements ICommandHandler<CreateRegionCommand,
 
       const boundary = await this.geometry.acquire(
         input,
-        { projectId: input.projectId, name: input.name },
+        { projectId: input.projectId, name: input.name, manualAreaM2: input.manualAreaM2 },
         (geometry) => this.spatial.assertRegionRules(geometry, { projectId: input.projectId }, manager),
         manager,
       );
 
-      return this.regions.save(
+      const saved = await this.regions.save(
         this.regions.build({
           projectId: input.projectId,
           boundaryId: boundary.id,
@@ -44,6 +44,8 @@ export class CreateRegionHandler implements ICommandHandler<CreateRegionCommand,
         }),
         manager,
       );
+      // Re-read: the area comes from the boundary and is not part of what save returns.
+      return (await this.regions.findById(saved.id, manager)) as Region;
     });
   }
 }

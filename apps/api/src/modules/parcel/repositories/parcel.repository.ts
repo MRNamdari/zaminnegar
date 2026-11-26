@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
-import { BaseRepository } from '../../../common/base/base.repository';
-import { escapeLike, paginate, PaginatedResult } from '../../../common/utils/paginate';
-import { applyProjectScope } from '../../../common/utils/project-scope';
+import { BaseRepository } from '@/common/base/base.repository';
+import { escapeLike, paginate, PaginatedResult } from '@/common/utils/paginate';
+import { applyProjectScope } from '@/common/utils/project-scope';
 import { ParcelQueryDto } from '../dto/parcel-query.dto';
 import { Parcel } from '../entities/parcel.entity';
 
@@ -65,8 +65,8 @@ export class ParcelRepository extends BaseRepository<Parcel> {
   }
 
   /**
-   * Recomputes `area_m2`, `region_occupancy_pct` and `block_occupancy_pct` in a single
-   * UPDATE from the boundaries' generated areas. Pass at least one scope key.
+   * Recomputes `region_occupancy_pct` and `block_occupancy_pct` in a single UPDATE from the boundaries'
+   * effective areas (`manual_area_m2` when set, otherwise `computed_area_m2`). Pass at least one scope key.
    * Occupancy = parcel area / container area * 100, capped at 100.
    * Returns the number of parcels updated.
    */
@@ -78,8 +78,7 @@ export class ParcelRepository extends BaseRepository<Parcel> {
     const result = await em.query(
       `
       UPDATE parcels AS p
-      SET area_m2 = m.parcel_area,
-          region_occupancy_pct = LEAST(100, COALESCE(m.parcel_area / NULLIF(m.region_area, 0) * 100, 0)),
+      SET region_occupancy_pct = LEAST(100, COALESCE(m.parcel_area / NULLIF(m.region_area, 0) * 100, 0)),
           block_occupancy_pct = CASE
             WHEN p.block_id IS NULL THEN NULL
             ELSE LEAST(100, COALESCE(m.parcel_area / NULLIF(m.block_area, 0) * 100, 0))
@@ -87,9 +86,9 @@ export class ParcelRepository extends BaseRepository<Parcel> {
           updated_at = now()
       FROM (
         SELECT src.id,
-               pb.area_m2 AS parcel_area,
-               rb.area_m2 AS region_area,
-               bb.area_m2 AS block_area
+               COALESCE(pb.manual_area_m2, pb.computed_area_m2) AS parcel_area,
+               COALESCE(rb.manual_area_m2, rb.computed_area_m2) AS region_area,
+               COALESCE(bb.manual_area_m2, bb.computed_area_m2) AS block_area
         FROM parcels src
         JOIN boundaries pb ON pb.id = src.boundary_id
         JOIN regions r ON r.id = src.region_id

@@ -14,7 +14,7 @@ export interface IParcel {
   boundaryId: string;
   name: string;
   status: ParcelStatus;
-  /** Geodesic area in square meters, computed by PostGIS (`ST_Area(geom::geography)`). */
+  /** Taken from the parcel's boundary: its `manualAreaM2` when set, otherwise its `computedAreaM2`. */
   areaM2: number;
   /** Percentage of the region's area this parcel occupies (0-100). Computed by PostGIS. */
   regionOccupancyPct: number;

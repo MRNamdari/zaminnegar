@@ -31,7 +31,7 @@ export class CreateBlockHandler implements ICommandHandler<CreateBlockCommand, B
 
       const boundary = await this.geometry.acquire(
         input,
-        { projectId: input.projectId, name: input.name },
+        { projectId: input.projectId, name: input.name, manualAreaM2: input.manualAreaM2 },
         async (geometry) => {
           const regionId = await this.spatial.resolveRegionId('block', geometry, input.projectId, manager);
           if (await this.blocks.findByRegionAndName(regionId, input.name, manager)) {
@@ -52,7 +52,7 @@ export class CreateBlockHandler implements ICommandHandler<CreateBlockCommand, B
         }),
         manager,
       );
-      // Re-read: region_id and area_m2 were filled in by the database.
+      // Re-read: region_id was filled in by the database and the area comes from the boundary.
       return (await this.blocks.findById(saved.id, manager)) as Block;
     });
   }

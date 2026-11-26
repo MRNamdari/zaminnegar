@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DataSource } from 'typeorm';
-import { ProjectNotFoundError } from '../../project/errors/project-not-found.error';
-import { ProjectRepository } from '../../project/repositories/project.repository';
+import { ProjectNotFoundError } from '@/modules/project/errors/project-not-found.error';
+import { ProjectRepository } from '@/modules/project/repositories/project.repository';
 import { Owner } from '../entities/owner.entity';
 import { OwnerRepository } from '../repositories/owner.repository';
 import { CreateOwnerCommand } from './create-owner.command';

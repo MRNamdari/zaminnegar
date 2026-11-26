@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DataSource } from 'typeorm';
-import { ParcelOwnershipRepository } from '../../parcel/repositories/parcel-ownership.repository';
+import { ParcelOwnershipRepository } from '@/modules/parcel/repositories/parcel-ownership.repository';
 import { OwnerHasOwnershipsError } from '../errors/owner-has-ownerships.error';
 import { OwnerNotFoundError } from '../errors/owner-not-found.error';
 import { OwnerRepository } from '../repositories/owner.repository';

@@ -1,4 +1,4 @@
-import { BoundarySource } from '../../../common/interfaces/boundary-source.interface';
+import { BoundarySource } from '@/common/interfaces/boundary-source.interface';
 import { CreateParcelDto } from '../dto/create-parcel.dto';
 
 /** The boundary comes from `geometry` or from the `boundaryId` of a finished draft. */

@@ -1,9 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DataSource } from 'typeorm';
-import { ProjectMismatchError } from '../../../common/errors/project-mismatch.error';
-import { exceedsFullOwnership, remainingShare } from '../../../common/utils/share';
-import { OwnerNotFoundError } from '../../owner/errors/owner-not-found.error';
-import { OwnerRepository } from '../../owner/repositories/owner.repository';
+import { ProjectMismatchError } from '@/common/errors/project-mismatch.error';
+import { exceedsFullOwnership, remainingShare } from '@/common/utils/share';
+import { OwnerNotFoundError } from '@/modules/owner/errors/owner-not-found.error';
+import { OwnerRepository } from '@/modules/owner/repositories/owner.repository';
 import { ParcelOwnership } from '../entities/parcel-ownership.entity';
 import { OwnerAlreadyAssignedError } from '../errors/owner-already-assigned.error';
 import { ParcelNotFoundError } from '../errors/parcel-not-found.error';
@@ -13,7 +13,10 @@ import { ParcelRepository } from '../repositories/parcel.repository';
 import { AssignOwnerCommand } from './assign-owner.command';
 
 @CommandHandler(AssignOwnerCommand)
-export class AssignOwnerHandler implements ICommandHandler<AssignOwnerCommand, ParcelOwnership> {
+export class AssignOwnerHandler implements ICommandHandler<
+  AssignOwnerCommand,
+  ParcelOwnership
+> {
   constructor(
     private readonly dataSource: DataSource,
     private readonly parcels: ParcelRepository,
@@ -29,19 +32,28 @@ export class AssignOwnerHandler implements ICommandHandler<AssignOwnerCommand, P
 
       const owner = await this.owners.findById(dto.ownerId, manager);
       if (!owner) throw new OwnerNotFoundError(dto.ownerId);
-      if (owner.projectId !== parcel.projectId) throw new ProjectMismatchError('owner', owner.id);
+      if (owner.projectId !== parcel.projectId)
+        throw new ProjectMismatchError('owner', owner.id);
 
       if (await this.ownerships.find(parcelId, dto.ownerId, manager)) {
         throw new OwnerAlreadyAssignedError(parcelId, dto.ownerId);
       }
 
-      const assigned = await this.ownerships.sumSharePct(parcelId, undefined, manager);
+      const assigned = await this.ownerships.sumSharePct(
+        parcelId,
+        undefined,
+        manager,
+      );
       if (exceedsFullOwnership(assigned, dto.sharePct)) {
         throw new SharesExceededError(dto.sharePct, remainingShare(assigned));
       }
 
       return this.ownerships.save(
-        this.ownerships.build({ parcelId, ownerId: dto.ownerId, sharePct: dto.sharePct }),
+        this.ownerships.build({
+          parcelId,
+          ownerId: dto.ownerId,
+          sharePct: dto.sharePct,
+        }),
         manager,
       );
     });

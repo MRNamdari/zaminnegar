@@ -13,6 +13,7 @@ export interface IBlock {
   name: string;
   description: string;
   status: BlockStatus;
+  /** Taken from the block's boundary: its `manualAreaM2` when set, otherwise its `computedAreaM2`. */
   areaM2: number;
   createdAt: Date;
   updatedAt: Date;

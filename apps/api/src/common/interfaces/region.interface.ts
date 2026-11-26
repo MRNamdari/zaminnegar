@@ -12,6 +12,7 @@ export interface IRegion {
   name: string;
   description: string;
   status: RegionStatus;
+  /** Taken from the region's boundary: its `manualAreaM2` when set, otherwise its `computedAreaM2`. */
   areaM2: number;
   createdAt: Date;
   updatedAt: Date;

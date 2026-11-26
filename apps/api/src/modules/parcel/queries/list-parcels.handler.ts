@@ -1,5 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { PaginatedResult } from '../../../common/utils/paginate';
+import { PaginatedResult } from '@/common/utils/paginate';
 import { Parcel } from '../entities/parcel.entity';
 import { ParcelRepository } from '../repositories/parcel.repository';
 import { ListParcelsQuery } from './list-parcels.query';

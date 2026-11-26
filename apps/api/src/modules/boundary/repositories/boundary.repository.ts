@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
-import { BaseRepository } from '../../../common/base/base.repository';
-import { BoundaryUsage, FeatureKind } from '../../../common/interfaces/boundary-usage.interface';
-import { applyProjectScope } from '../../../common/utils/project-scope';
-import { escapeLike, paginate, PaginatedResult } from '../../../common/utils/paginate';
 import { BoundaryQueryDto } from '../dto/boundary-query.dto';
 import { Boundary } from '../entities/boundary.entity';
+import { BaseRepository } from '@/common/base/base.repository';
+import { BoundaryUsage, FeatureKind } from '@/common/interfaces/boundary-usage.interface';
+import { PaginatedResult, escapeLike, paginate } from '@/common/utils/paginate';
+import { applyProjectScope } from '@/common/utils/project-scope';
 
 @Injectable()
 export class BoundaryRepository extends BaseRepository<Boundary> {
@@ -15,7 +15,7 @@ export class BoundaryRepository extends BaseRepository<Boundary> {
   }
 
   /**
-   * `area_m2` is a generated column, so it is not populated by INSERT/UPDATE.
+   * `computed_area_m2` is a generated column, so it is not populated by INSERT/UPDATE.
    * Save, then re-read to return the row with the computed area.
    */
   async saveAndReload(boundary: Boundary, manager?: EntityManager): Promise<Boundary> {

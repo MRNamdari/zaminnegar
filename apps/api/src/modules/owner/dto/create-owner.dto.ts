@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { OwnerStatus } from '../../../common/enums/owner-status.enum';
+import { OwnerStatus } from '@/common/enums/owner-status.enum';
 import {
   IsEmail,
   IsEnum,

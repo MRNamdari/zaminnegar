@@ -1,13 +1,14 @@
+import { ChildOutsideGeometryError } from '@/common/errors/child-outside-geometry.error';
+import { GeometryOutsideContainerError } from '@/common/errors/geometry-outside-container.error';
+import { GeometryOverlapError } from '@/common/errors/geometry-overlap.error';
+import { InvalidGeometryError } from '@/common/errors/invalid-geometry.error';
+import { NoContainingRegionError } from '@/common/errors/no-containing-region.error';
+import { FeatureKind } from '@/common/interfaces/boundary-usage.interface';
+import { IMultiPolygon } from '@/common/interfaces/geometry.interface';
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
-import { ChildOutsideGeometryError } from '../../../common/errors/child-outside-geometry.error';
-import { GeometryOutsideContainerError } from '../../../common/errors/geometry-outside-container.error';
-import { GeometryOverlapError } from '../../../common/errors/geometry-overlap.error';
-import { InvalidGeometryError } from '../../../common/errors/invalid-geometry.error';
-import { FeatureKind } from '../../../common/interfaces/boundary-usage.interface';
-import { IMultiPolygon } from '../../../common/interfaces/geometry.interface';
 import { GEOMETRY_TOLERANCE_M2 } from '../geometry.constants';
-import { NoContainingRegionError } from '../../../common/errors/no-containing-region.error';
+
 
 /** Siblings are compared inside this scope (a region's neighbours are the project's other regions, ...). */
 const SIBLING_SCOPE: Record<FeatureKind, { table: string; scopeColumn: string }> = {

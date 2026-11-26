@@ -10,15 +10,17 @@ import {
   PrimaryColumn,
   Relation,
   Unique,
+  VirtualColumn,
 } from 'typeorm';
-import { TimestampedEntity } from '../../../common/base/timestamped.entity';
-import { ParcelStatus } from '../../../common/enums/parcel-status.enum';
-import { IParcel } from '../../../common/interfaces/parcel.interface';
-import { numericTransformer } from '../../../database/transformers/numeric.transformer';
-import { Block } from '../../block/entities/block.entity';
-import { Boundary } from '../../boundary/entities/boundary.entity';
-import { Project } from '../../project/entities/project.entity';
-import { Region } from '../../region/entities/region.entity';
+import { TimestampedEntity } from '@/common/base/timestamped.entity';
+import { ParcelStatus } from '@/common/enums/parcel-status.enum';
+import { IParcel } from '@/common/interfaces/parcel.interface';
+import { effectiveAreaSql } from '@/common/utils/effective-area';
+import { numericTransformer } from '@/database/transformers/numeric.transformer';
+import { Block } from '@/modules/block/entities/block.entity';
+import { Boundary } from '@/modules/boundary/entities/boundary.entity';
+import { Project } from '@/modules/project/entities/project.entity';
+import { Region } from '@/modules/region/entities/region.entity';
 import { ParcelOwnership } from './parcel-ownership.entity';
 
 @Entity({ name: 'parcels' })
@@ -26,7 +28,6 @@ import { ParcelOwnership } from './parcel-ownership.entity';
 @Index('ix_parcels__project_id_status', ['projectId', 'status'])
 @Index('ix_parcels__region_id', ['regionId'])
 @Index('ix_parcels__block_id', ['blockId'])
-@Check('ck_parcels__area_m2_non_negative', '"area_m2" >= 0')
 @Check(
   'ck_parcels__region_occupancy_pct_range',
   '"region_occupancy_pct" BETWEEN 0 AND 100',
@@ -56,7 +57,13 @@ export class Parcel extends TimestampedEntity implements IParcel {
   regionId!: string;
 
   /** Assigned by trigger `trg_parcels_assign_references`: the block containing the parcel's boundary, or null. Never written by the ORM. */
-  @Column({ type: 'uuid', name: 'block_id', nullable: true, insert: false, update: false })
+  @Column({
+    type: 'uuid',
+    name: 'block_id',
+    nullable: true,
+    insert: false,
+    update: false,
+  })
   blockId?: string | null;
 
   /** UNIQUE: `uq_parcels__boundary_id`, named by ExplicitNamingStrategy. */
@@ -75,8 +82,11 @@ export class Parcel extends TimestampedEntity implements IParcel {
   })
   status!: ParcelStatus;
 
-  /** Maintained by trigger `trg_parcels_assign_references` (copied from the boundary). */
-  @Column({ type: 'double precision', name: 'area_m2', default: 0 })
+  /**
+   * Read-only: the boundary's `manualAreaM2` when set, otherwise its `computedAreaM2`. Nothing is stored on this
+   * table, so the value cannot drift from the boundary.
+   */
+  @VirtualColumn({ type: 'double precision', query: effectiveAreaSql })
   areaM2!: number;
 
   /** Maintained by trigger `trg_parcels_assign_references`. */

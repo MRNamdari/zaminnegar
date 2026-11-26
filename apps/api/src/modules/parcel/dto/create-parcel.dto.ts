@@ -8,13 +8,14 @@ import {
   MaxLength,
   ValidateIf,
 } from 'class-validator';
-import { MultiPolygonField } from '../../../common/decorators/multi-polygon-field.decorator';
-import { ParcelStatus } from '../../../common/enums/parcel-status.enum';
-import { IMultiPolygon } from '../../../common/interfaces/geometry.interface';
+import { ManualAreaField } from '@/common/decorators/manual-area-field.decorator';
+import { MultiPolygonField } from '@/common/decorators/multi-polygon-field.decorator';
+import { ParcelStatus } from '@/common/enums/parcel-status.enum';
+import { IMultiPolygon } from '@/common/interfaces/geometry.interface';
 
 /**
- * `regionId`, `blockId`, `areaM2`, `regionOccupancyPct` and `blockOccupancyPct` are derived from the outline by the
- * database and cannot be sent.
+ * `regionId`, `blockId`, `regionOccupancyPct` and `blockOccupancyPct` are derived from the outline by the database
+ * and cannot be sent. The area lives on the boundary: `manualAreaM2` is stored there.
  */
 interface CreateDtoShape {
   boundaryId?: string;
@@ -54,4 +55,7 @@ export class CreateParcelDto {
   @ValidateIf((o: CreateDtoShape) => o.boundaryId === undefined)
   @MultiPolygonField({ optional: true })
   geometry?: IMultiPolygon;
+
+  @ManualAreaField()
+  manualAreaM2?: number | null;
 }

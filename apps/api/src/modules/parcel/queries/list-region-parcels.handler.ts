@@ -1,8 +1,8 @@
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { ListRegionParcelsQuery } from "./list-region-parcels.query";
-import { RegionRepository } from "../../region/repositories/region.repository";
-import { RegionNotFoundError } from "../../region/errors/region-not-found.error";
-import { Region } from "../../region/entities/region.entity";
+import { RegionRepository } from "@/modules/region/repositories/region.repository";
+import { RegionNotFoundError } from "@/modules/region/errors/region-not-found.error";
+import { Region } from "@/modules/region/entities/region.entity";
 
 @QueryHandler(ListRegionParcelsQuery)
 export class ListRegionParcelsHandler implements IQueryHandler<

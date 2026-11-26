@@ -9,10 +9,12 @@ import {
   PrimaryColumn,
   Relation,
   Unique,
+  VirtualColumn,
 } from 'typeorm';
 import { TimestampedEntity } from '../../../common/base/timestamped.entity';
 import { RegionStatus } from '../../../common/enums/region-status.enum';
 import { IRegion } from '../../../common/interfaces/region.interface';
+import { effectiveAreaSql } from '../../../common/utils/effective-area';
 import { Block } from '../../block/entities/block.entity';
 import { Boundary } from '../../boundary/entities/boundary.entity';
 import { Parcel } from '../../parcel/entities/parcel.entity';
@@ -43,8 +45,11 @@ export class Region extends TimestampedEntity implements IRegion {
   @Column({ type: 'text', name: 'description', default: '' })
   description!: string;
 
-  /** Maintained by ParcelRepository.recalculateMetrics (copied from the boundary). */
-  @Column({ type: 'double precision', name: 'area_m2', default: 0 })
+  /**
+   * Read-only: the boundary's `manualAreaM2` when set, otherwise its `computedAreaM2`. Nothing is stored on this
+   * table, so the value cannot drift from the boundary.
+   */
+  @VirtualColumn({ type: 'double precision', query: effectiveAreaSql })
   areaM2!: number;
 
   @Column({

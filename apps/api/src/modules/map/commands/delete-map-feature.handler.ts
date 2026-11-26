@@ -1,9 +1,9 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { AccessPolicyService } from '../../access/abilities/access-policy.service';
-import { Action } from '../../access/permissions';
-import { DeleteBlockCommand } from '../../block/commands/delete-block.command';
-import { DeleteParcelCommand } from '../../parcel/commands/delete-parcel.command';
-import { DeleteRegionCommand } from '../../region/commands/delete-region.command';
+import { AccessPolicyService } from '@/modules/access/abilities/access-policy.service';
+import { Action } from '@/modules/access/permissions';
+import { DeleteBlockCommand } from '@/modules/block/commands/delete-block.command';
+import { DeleteParcelCommand } from '@/modules/parcel/commands/delete-parcel.command';
+import { DeleteRegionCommand } from '@/modules/region/commands/delete-region.command';
 import { MapRepository } from '../repositories/map.repository';
 import { locateAuthorized } from './map-feature-access';
 import { DeleteMapFeatureCommand } from './delete-map-feature.command';

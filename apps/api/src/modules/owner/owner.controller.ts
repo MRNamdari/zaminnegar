@@ -1,12 +1,35 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ActiveProjectId, ApiSessionAuth, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
+import {
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  ActiveProjectId,
+  ApiSessionAuth,
+  ProjectScope,
+  RequirePermission,
+} from '../access/decorators/access.decorators';
 import { ApiErrorResponse } from '../access/decorators/api-error-responses.decorator';
 import { Action, Resource } from '../access/permissions';
-import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
-import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
-import { PaginatedResult } from '../../common/utils/paginate';
+import { ApiPaginatedResponse } from '@/common/decorators/api-paginated-response.decorator';
+import { PaginatedResponseDto } from '@/common/dto/paginated-response.dto';
+import { PaginatedResult } from '@/common/utils/paginate';
 import { CreateOwnerCommand } from './commands/create-owner.command';
 import { DeleteOwnerCommand } from './commands/delete-owner.command';
 import { UpdateOwnerCommand } from './commands/update-owner.command';
@@ -35,8 +58,13 @@ export class OwnerController {
   @ApiOperation({ summary: 'Create a owner' })
   @ApiCreatedResponse({ type: OwnerResponseDto })
   @ApiErrorResponse(409, 'No active project selected (`NO_ACTIVE_PROJECT`)')
-  async create(@Body() dto: CreateOwnerDto, @ActiveProjectId() projectId: string): Promise<OwnerResponseDto> {
-    const entity = await this.commandBus.execute<CreateOwnerCommand, Owner>(new CreateOwnerCommand(dto, projectId));
+  async create(
+    @Body() dto: CreateOwnerDto,
+    @ActiveProjectId() projectId: string,
+  ): Promise<OwnerResponseDto> {
+    const entity = await this.commandBus.execute<CreateOwnerCommand, Owner>(
+      new CreateOwnerCommand(dto, projectId),
+    );
     return OwnerResponseDto.from(entity);
   }
 
@@ -44,8 +72,14 @@ export class OwnerController {
   @RequirePermission(Resource.owner, Action.read, { scope: 'query' })
   @ApiOperation({ summary: 'List owners' })
   @ApiPaginatedResponse(OwnerResponseDto)
-  async list(@Query() query: OwnerQueryDto, @ProjectScope() projectScope: string[] | null): Promise<PaginatedResponseDto<OwnerResponseDto>> {
-    const result = await this.queryBus.execute<ListOwnersQuery, PaginatedResult<Owner>>(new ListOwnersQuery(query, projectScope));
+  async list(
+    @Query() query: OwnerQueryDto,
+    @ProjectScope() projectScope: string[] | null,
+  ): Promise<PaginatedResponseDto<OwnerResponseDto>> {
+    const result = await this.queryBus.execute<
+      ListOwnersQuery,
+      PaginatedResult<Owner>
+    >(new ListOwnersQuery(query, projectScope));
     return PaginatedResponseDto.of(result, OwnerResponseDto.from);
   }
 
@@ -54,7 +88,9 @@ export class OwnerController {
   @ApiOperation({ summary: 'Get a owner by id' })
   @ApiOkResponse({ type: OwnerResponseDto })
   async get(@Param('id', ParseUUIDPipe) id: string): Promise<OwnerResponseDto> {
-    const entity = await this.queryBus.execute<GetOwnerQuery, Owner>(new GetOwnerQuery(id));
+    const entity = await this.queryBus.execute<GetOwnerQuery, Owner>(
+      new GetOwnerQuery(id),
+    );
     return OwnerResponseDto.from(entity);
   }
 
@@ -62,8 +98,13 @@ export class OwnerController {
   @RequirePermission(Resource.owner, Action.update)
   @ApiOperation({ summary: 'Update a owner' })
   @ApiOkResponse({ type: OwnerResponseDto })
-  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateOwnerDto): Promise<OwnerResponseDto> {
-    const entity = await this.commandBus.execute<UpdateOwnerCommand, Owner>(new UpdateOwnerCommand(id, dto));
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateOwnerDto,
+  ): Promise<OwnerResponseDto> {
+    const entity = await this.commandBus.execute<UpdateOwnerCommand, Owner>(
+      new UpdateOwnerCommand(id, dto),
+    );
     return OwnerResponseDto.from(entity);
   }
 
@@ -73,17 +114,25 @@ export class OwnerController {
   @ApiOperation({ summary: 'Delete a owner' })
   @ApiNoContentResponse()
   async remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    await this.commandBus.execute<DeleteOwnerCommand, void>(new DeleteOwnerCommand(id));
+    await this.commandBus.execute<DeleteOwnerCommand, void>(
+      new DeleteOwnerCommand(id),
+    );
   }
 
   @Get(':id/parcels')
   @RequirePermission(Resource.ownership, Action.read, { idOf: Resource.owner })
-  @ApiOperation({ summary: 'List the parcels an owner holds shares in, with the share of each' })
+  @ApiOperation({
+    summary:
+      'List the parcels an owner holds shares in, with the share of each',
+  })
   @ApiOkResponse({ type: OwnershipWithParcelResponseDto, isArray: true })
-  async listParcels(@Param('id', ParseUUIDPipe) id: string): Promise<OwnershipWithParcelResponseDto[]> {
-    const ownerships = await this.queryBus.execute<ListOwnerParcelsQuery, ParcelOwnership[]>(
-      new ListOwnerParcelsQuery(id),
-    );
+  async listParcels(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<OwnershipWithParcelResponseDto[]> {
+    const ownerships = await this.queryBus.execute<
+      ListOwnerParcelsQuery,
+      ParcelOwnership[]
+    >(new ListOwnerParcelsQuery(id));
     return ownerships.map(OwnershipWithParcelResponseDto.from);
   }
 }

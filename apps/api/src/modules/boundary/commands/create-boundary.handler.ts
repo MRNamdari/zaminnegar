@@ -21,7 +21,12 @@ export class CreateBoundaryHandler implements ICommandHandler<CreateBoundaryComm
       if (!(await this.projects.findById(dto.projectId, manager))) throw new ProjectNotFoundError(dto.projectId);
       await this.spatial.assertValid(dto.geometry, manager);
       return this.boundaries.saveAndReload(
-        this.boundaries.build({ projectId: dto.projectId, name: dto.name, geometry: dto.geometry }),
+        this.boundaries.build({
+          projectId: dto.projectId,
+          name: dto.name,
+          geometry: dto.geometry,
+          manualAreaM2: dto.manualAreaM2 ?? null,
+        }),
         manager,
       );
     });

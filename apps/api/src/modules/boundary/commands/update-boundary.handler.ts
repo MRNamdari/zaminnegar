@@ -24,6 +24,8 @@ export class UpdateBoundaryHandler implements ICommandHandler<UpdateBoundaryComm
       if (!boundary) throw new BoundaryNotFoundError(id);
 
       if (dto.name !== undefined) boundary.name = dto.name;
+      // null clears the manual area, so responses fall back to the computed one.
+      if (dto.manualAreaM2 !== undefined) boundary.manualAreaM2 = dto.manualAreaM2;
       if (dto.geometry) return this.geometry.applyGeometry(boundary, dto.geometry, manager);
       return this.boundaries.saveAndReload(boundary, manager);
     });

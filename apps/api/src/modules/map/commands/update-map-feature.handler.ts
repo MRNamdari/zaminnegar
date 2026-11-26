@@ -1,15 +1,15 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlockStatus } from '../../../common/enums/block-status.enum';
-import { ParcelStatus } from '../../../common/enums/parcel-status.enum';
-import { RegionStatus } from '../../../common/enums/region-status.enum';
-import { AccessPolicyService } from '../../access/abilities/access-policy.service';
-import { Action } from '../../access/permissions';
-import { UpdateBlockCommand } from '../../block/commands/update-block.command';
-import { Block } from '../../block/entities/block.entity';
-import { UpdateParcelCommand } from '../../parcel/commands/update-parcel.command';
-import { Parcel } from '../../parcel/entities/parcel.entity';
-import { UpdateRegionCommand } from '../../region/commands/update-region.command';
-import { Region } from '../../region/entities/region.entity';
+import { BlockStatus } from '@/common/enums/block-status.enum';
+import { ParcelStatus } from '@/common/enums/parcel-status.enum';
+import { RegionStatus } from '@/common/enums/region-status.enum';
+import { AccessPolicyService } from '@/modules/access/abilities/access-policy.service';
+import { Action } from '@/modules/access/permissions';
+import { UpdateBlockCommand } from '@/modules/block/commands/update-block.command';
+import { Block } from '@/modules/block/entities/block.entity';
+import { UpdateParcelCommand } from '@/modules/parcel/commands/update-parcel.command';
+import { Parcel } from '@/modules/parcel/entities/parcel.entity';
+import { UpdateRegionCommand } from '@/modules/region/commands/update-region.command';
+import { Region } from '@/modules/region/entities/region.entity';
 import { MapFeatureResponseDto } from '../dto/map-feature-response.dto';
 import { UpdateMapFeatureDto } from '../dto/update-map-feature.dto';
 import { MapFeatureNotFoundError } from '../errors/map-feature-not-found.error';
@@ -20,22 +20,39 @@ import { toMultiPolygon } from './geometry';
 import { UpdateMapFeatureCommand } from './update-map-feature.command';
 
 @CommandHandler(UpdateMapFeatureCommand)
-export class UpdateMapFeatureHandler implements ICommandHandler<UpdateMapFeatureCommand, MapFeatureResponseDto> {
+export class UpdateMapFeatureHandler implements ICommandHandler<
+  UpdateMapFeatureCommand,
+  MapFeatureResponseDto
+> {
   constructor(
     private readonly commands: CommandBus,
     private readonly map: MapRepository,
     private readonly access: AccessPolicyService,
   ) {}
 
-  async execute({ id, dto, principal }: UpdateMapFeatureCommand): Promise<MapFeatureResponseDto> {
-    const { level } = await locateAuthorized(this.map, this.access, principal, id, Action.update);
+  async execute({
+    id,
+    dto,
+    principal,
+  }: UpdateMapFeatureCommand): Promise<MapFeatureResponseDto> {
+    const { level } = await locateAuthorized(
+      this.map,
+      this.access,
+      principal,
+      id,
+      Action.update,
+    );
     await this.update(level, id, dto);
     const row = await this.map.findFeature(level, id);
     if (!row) throw new MapFeatureNotFoundError(id);
     return toMapFeatureResponse(row);
   }
 
-  private async update(level: 'region' | 'block' | 'parcel', id: string, dto: UpdateMapFeatureDto): Promise<void> {
+  private async update(
+    level: 'region' | 'block' | 'parcel',
+    id: string,
+    dto: UpdateMapFeatureDto,
+  ): Promise<void> {
     const geometry = dto.geometry && toMultiPolygon(dto.geometry);
     switch (level) {
       case 'region':
@@ -45,6 +62,7 @@ export class UpdateMapFeatureHandler implements ICommandHandler<UpdateMapFeature
             description: dto.description,
             status: dto.status && RegionStatus[dto.status],
             geometry,
+            manualAreaM2: dto.manualAreaM2,
           }),
         );
         return;
@@ -55,12 +73,18 @@ export class UpdateMapFeatureHandler implements ICommandHandler<UpdateMapFeature
             description: dto.description,
             status: dto.status && BlockStatus[dto.status],
             geometry,
+            manualAreaM2: dto.manualAreaM2,
           }),
         );
         return;
       case 'parcel':
         await this.commands.execute<UpdateParcelCommand, Parcel>(
-          new UpdateParcelCommand(id, { name: dto.name, status: dto.status && ParcelStatus[dto.status], geometry }),
+          new UpdateParcelCommand(id, {
+            name: dto.name,
+            status: dto.status && ParcelStatus[dto.status],
+            geometry,
+            manualAreaM2: dto.manualAreaM2,
+          }),
         );
         return;
     }

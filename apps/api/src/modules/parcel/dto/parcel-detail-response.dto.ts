@@ -1,10 +1,10 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Expose, plainToInstance, Type } from 'class-transformer';
-import { IParcel } from '../../../common/interfaces/parcel.interface';
-import { BlockResponseDto } from '../../block/dto/block-response.dto';
-import { BoundaryResponseDto } from '../../boundary/dto/boundary-response.dto';
-import { ProjectResponseDto } from '../../project/dto/project-response.dto';
-import { RegionResponseDto } from '../../region/dto/region-response.dto';
+import { IParcel } from '@/common/interfaces/parcel.interface';
+import { BlockResponseDto } from '@/modules/block/dto/block-response.dto';
+import { BoundaryResponseDto } from '@/modules/boundary/dto/boundary-response.dto';
+import { ProjectResponseDto } from '@/modules/project/dto/project-response.dto';
+import { RegionResponseDto } from '@/modules/region/dto/region-response.dto';
 import { OwnershipWithOwnerResponseDto } from './ownership-with-owner-response.dto';
 import { ParcelResponseDto } from './parcel-response.dto';
 

@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
-import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
-import { ParcelStatus } from '../../../common/enums/parcel-status.enum';
+import { PaginationQueryDto } from '@/common/dto/pagination-query.dto';
+import { ParcelStatus } from '@/common/enums/parcel-status.enum';
 
 export class ParcelQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ format: 'uuid' })

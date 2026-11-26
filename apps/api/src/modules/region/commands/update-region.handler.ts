@@ -31,7 +31,14 @@ export class UpdateRegionHandler implements ICommandHandler<UpdateRegionCommand,
 
       // Re-checks overlap with other regions and that all blocks/parcels still fit; the triggers then
       // re-validate every block/parcel reference of the region and recompute the parcels' metrics.
-      if (dto.geometry) await this.geometry.replaceGeometry(region.boundaryId, dto.geometry, manager);
+      // A manual area (or null, which clears it) is stored on the boundary together with the outline.
+      if (dto.geometry || dto.manualAreaM2 !== undefined) {
+        await this.geometry.update(
+          region.boundaryId,
+          { geometry: dto.geometry, manualAreaM2: dto.manualAreaM2 },
+          manager,
+        );
+      }
       return (await this.regions.findById(id, manager)) as Region;
     });
   }

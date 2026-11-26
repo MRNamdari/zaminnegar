@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, plainToInstance } from 'class-transformer';
-import { IOwner } from '../../../common/interfaces/owner.interface';
-import { OwnerStatus } from '../../../common/enums/owner-status.enum';
+import { IOwner } from '@/common/interfaces/owner.interface';
+import { OwnerStatus } from '@/common/enums/owner-status.enum';
 
 export class OwnerResponseDto {
   @ApiProperty({ format: 'uuid' }) @Expose() id!: string;

@@ -8,11 +8,11 @@ import {
   PrimaryColumn,
   Relation,
 } from 'typeorm';
-import { TimestampedEntity } from '../../../common/base/timestamped.entity';
-import { IOwner } from '../../../common/interfaces/owner.interface';
-import { ParcelOwnership } from '../../parcel/entities/parcel-ownership.entity';
-import { Project } from '../../project/entities/project.entity';
-import { OwnerStatus } from '../../../common/enums/owner-status.enum';
+import { TimestampedEntity } from '@/common/base/timestamped.entity';
+import { IOwner } from '@/common/interfaces/owner.interface';
+import { ParcelOwnership } from '@/modules/parcel/entities/parcel-ownership.entity';
+import { Project } from '@/modules/project/entities/project.entity';
+import { OwnerStatus } from '@/common/enums/owner-status.enum';
 
 @Entity({ name: 'owners' })
 @Index('ix_owners__project_id', ['projectId'])

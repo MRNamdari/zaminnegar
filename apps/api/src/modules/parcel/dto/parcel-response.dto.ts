@@ -1,9 +1,9 @@
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { Expose, plainToInstance, Type } from 'class-transformer';
-import { ParcelStatus } from '../../../common/enums/parcel-status.enum';
-import { IParcel } from '../../../common/interfaces/parcel.interface';
-import { BlockResponseDto } from '../../block/dto/block-response.dto';
-import { RegionResponseDto } from '../../region/dto/region-response.dto';
+import { ParcelStatus } from '@/common/enums/parcel-status.enum';
+import { IParcel } from '@/common/interfaces/parcel.interface';
+import { BlockResponseDto } from '@/modules/block/dto/block-response.dto';
+import { RegionResponseDto } from '@/modules/region/dto/region-response.dto';
 import { OwnershipWithOwnerResponseDto } from './ownership-with-owner-response.dto';
 
 export class ParcelResponseDto {
@@ -25,17 +25,21 @@ export class ParcelResponseDto {
   })
   @Expose()
   blockId?: string | null;
+
   @ApiProperty({ format: 'uuid' }) @Expose() boundaryId!: string;
   @ApiProperty() @Expose() name!: string;
   @ApiProperty({ enum: ParcelStatus, enumName: 'ParcelStatus' })
   @Expose()
   status!: ParcelStatus;
+
   @ApiProperty({
     type: 'number',
-    description: 'Geodesic area in square meters',
+    description:
+      "Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2",
   })
   @Expose()
   areaM2!: number;
+
   @ApiProperty({
     type: 'number',
     minimum: 0,
@@ -68,7 +72,7 @@ export class ParcelResponseDto {
 
   @ApiProperty({
     type: 'array',
-    items: {$ref: getSchemaPath(OwnershipWithOwnerResponseDto)},
+    items: { $ref: getSchemaPath(OwnershipWithOwnerResponseDto) },
     required: false,
     description: 'Only present in list responses',
   })

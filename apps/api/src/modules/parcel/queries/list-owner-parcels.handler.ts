@@ -1,6 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { OwnerNotFoundError } from '../../owner/errors/owner-not-found.error';
-import { OwnerRepository } from '../../owner/repositories/owner.repository';
+import { OwnerNotFoundError } from '@/modules/owner/errors/owner-not-found.error';
+import { OwnerRepository } from '@/modules/owner/repositories/owner.repository';
 import { ParcelOwnership } from '../entities/parcel-ownership.entity';
 import { ParcelOwnershipRepository } from '../repositories/parcel-ownership.repository';
 import { ListOwnerParcelsQuery } from './list-owner-parcels.query';

@@ -3,11 +3,10 @@ import { Expose, plainToInstance, Type } from 'class-transformer';
 import { BlockStatus } from '../../../common/enums/block-status.enum';
 import { ParcelStatus } from '../../../common/enums/parcel-status.enum';
 import { RegionStatus } from '../../../common/enums/region-status.enum';
-import {
-  IMultiPolygon,
-  Position,
-} from '../../../common/interfaces/geometry.interface';
+import { Position } from '../../../common/interfaces/geometry.interface';
+import { effectiveAreaM2 } from '../../../common/utils/effective-area';
 import { Block } from '../../block/entities/block.entity';
+import { Boundary } from '../../boundary/entities/boundary.entity';
 import { Parcel } from '../../parcel/entities/parcel.entity';
 import { Region } from '../../region/entities/region.entity';
 
@@ -42,7 +41,7 @@ export class MapFeaturePropertiesResponseDto {
   @Expose()
   name!: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'areaM2 in hectares' })
   @Expose()
   areaHa!: number;
 
@@ -58,9 +57,17 @@ export class MapFeaturePropertiesResponseDto {
   @Expose()
   status!: MapFeatureStatus;
 
-  @ApiProperty()
+  @ApiProperty({ description: "The boundary's manualAreaM2 when set, otherwise its computedAreaM2" })
   @Expose()
   areaM2!: number;
+
+  @ApiProperty({ description: 'Geodesic area computed from the geometry' })
+  @Expose()
+  computedAreaM2!: number;
+
+  @ApiProperty({ type: 'number', nullable: true, description: 'Area assigned by the user; null when none was supplied' })
+  @Expose()
+  manualAreaM2!: number | null;
 
   @ApiPropertyOptional()
   @Expose()
@@ -92,13 +99,15 @@ export class MapFeatureResponseDto {
     boundaryId: string;
     name: string;
     description?: string;
-    areaM2: number;
     parentId: string | null;
     status: MapFeatureStatus;
-    geometry: IMultiPolygon;
+    /** The feature's boundary: the single source of its geometry and areas. */
+    boundary: Pick<Boundary, 'geometry' | 'computedAreaM2' | 'manualAreaM2'>;
   }): MapFeatureResponseDto | null {
-    const [coordinates] = input.geometry.coordinates;
-    if (input.geometry.coordinates.length !== 1 || !coordinates) return null;
+    const { geometry, computedAreaM2, manualAreaM2 } = input.boundary;
+    const [coordinates] = geometry.coordinates;
+    if (geometry.coordinates.length !== 1 || !coordinates) return null;
+    const areaM2 = effectiveAreaM2(input.boundary);
 
     return plainToInstance(
       MapFeatureResponseDto,
@@ -109,11 +118,13 @@ export class MapFeatureResponseDto {
         properties: {
           level: input.level,
           name: input.name,
-          areaHa: input.areaM2 / 10_000,
+          areaHa: areaM2 / 10_000,
           parentId: input.parentId,
           status: input.status,
           boundaryId: input.boundaryId,
-          areaM2: input.areaM2,
+          areaM2,
+          computedAreaM2,
+          manualAreaM2,
           ...(input.description !== undefined
             ? { description: input.description }
             : {}),
@@ -130,10 +141,9 @@ export class MapFeatureResponseDto {
       boundaryId: region.boundaryId,
       name: region.name,
       description: region.description,
-      areaM2: region.areaM2,
       parentId: null,
       status: region.status,
-      geometry: region.boundary!.geometry,
+      boundary: region.boundary!,
     });
   }
 
@@ -144,10 +154,9 @@ export class MapFeatureResponseDto {
       boundaryId: block.boundaryId,
       name: block.name,
       description: block.description,
-      areaM2: block.areaM2,
       parentId: block.regionId,
       status: block.status,
-      geometry: block.boundary!.geometry,
+      boundary: block.boundary!,
     });
   }
 
@@ -157,10 +166,9 @@ export class MapFeatureResponseDto {
       level: 'parcel',
       boundaryId: parcel.boundaryId,
       name: parcel.name,
-      areaM2: parcel.areaM2,
       parentId: parcel.blockId ?? parcel.regionId,
       status: parcel.status,
-      geometry: parcel.boundary!.geometry,
+      boundary: parcel.boundary!,
     });
   }
 }

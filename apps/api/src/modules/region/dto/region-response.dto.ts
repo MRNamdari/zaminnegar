@@ -10,7 +10,9 @@ export class RegionResponseDto {
   @ApiProperty() @Expose() name!: string;
   @ApiProperty() @Expose() description!: string;
   @ApiProperty({ enum: RegionStatus, enumName: 'RegionStatus' }) @Expose() status!: RegionStatus;
-  @ApiProperty({ type: 'number', description: 'Geodesic area in square meters' }) @Expose() areaM2!: number;
+  @ApiProperty({ type: 'number', description: "Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2" })
+  @Expose()
+  areaM2!: number;
   @ApiProperty() @Expose() createdAt!: Date;
   @ApiProperty() @Expose() updatedAt!: Date;
 

@@ -1,4 +1,4 @@
-import type { Principal } from '../../access/access.types';
+import type { Principal } from '@/modules/access/access.types';
 import { UpdateMapFeatureDto } from '../dto/update-map-feature.dto';
 
 export class UpdateMapFeatureCommand {

@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
-import { InvalidBoundarySourceError } from '../../../common/errors/invalid-boundary-source.error';
-import { ProjectMismatchError } from '../../../common/errors/project-mismatch.error';
-import { BoundarySource } from '../../../common/interfaces/boundary-source.interface';
-import { BoundaryUsage } from '../../../common/interfaces/boundary-usage.interface';
-import { IMultiPolygon } from '../../../common/interfaces/geometry.interface';
-import { BoundaryInUseError } from '../../boundary/errors/boundary-in-use.error';
-import { BoundaryNotFoundError } from '../../boundary/errors/boundary-not-found.error';
-import { Boundary } from '../../boundary/entities/boundary.entity';
-import { BoundaryRepository } from '../../boundary/repositories/boundary.repository';
-import { ParcelRepository } from '../../parcel/repositories/parcel.repository';
 import { SpatialRulesService } from './spatial-rules.service';
+import { InvalidBoundarySourceError } from '@/common/errors/invalid-boundary-source.error';
+import { ProjectMismatchError } from '@/common/errors/project-mismatch.error';
+import { BoundarySource } from '@/common/interfaces/boundary-source.interface';
+import { BoundaryUsage } from '@/common/interfaces/boundary-usage.interface';
+import { IMultiPolygon } from '@/common/interfaces/geometry.interface';
+import { Boundary } from '@/modules/boundary/entities/boundary.entity';
+import { BoundaryInUseError } from '@/modules/boundary/errors/boundary-in-use.error';
+import { BoundaryNotFoundError } from '@/modules/boundary/errors/boundary-not-found.error';
+import { BoundaryRepository } from '@/modules/boundary/repositories/boundary.repository';
+import { ParcelRepository } from '@/modules/parcel/repositories/parcel.repository';
 
 /**
  * The one place that decides how a boundary comes into being and how its outline changes,
@@ -27,11 +27,12 @@ export class BoundaryGeometryService {
   /**
    * Returns the boundary a new region/block/parcel will own: either the locked draft named by
    * `source.boundaryId`, or a new row created from `source.geometry`. `assertRules` runs on the
-   * geometry before anything is written.
+   * geometry before anything is written. `ctx.manualAreaM2`, when sent, is stored on the boundary (a draft
+   * is updated with it); when left out a new boundary gets null and a draft keeps the value it already has.
    */
   async acquire(
     source: BoundarySource,
-    ctx: { projectId: string; name: string },
+    ctx: { projectId: string; name: string; manualAreaM2?: number | null },
     assertRules: (geometry: IMultiPolygon) => Promise<void>,
     manager: EntityManager,
   ): Promise<Boundary> {
@@ -39,12 +40,19 @@ export class BoundaryGeometryService {
     if (source.boundaryId) {
       const draft = await this.lockDraft(source.boundaryId, ctx.projectId, manager);
       await assertRules(draft.geometry);
-      return draft;
+      if (ctx.manualAreaM2 === undefined) return draft;
+      draft.manualAreaM2 = ctx.manualAreaM2;
+      return this.boundaries.saveAndReload(draft, manager);
     }
     if (!source.geometry) throw new InvalidBoundarySourceError('none');
     await assertRules(source.geometry);
     return this.boundaries.saveAndReload(
-      this.boundaries.build({ projectId: ctx.projectId, name: ctx.name, geometry: source.geometry }),
+      this.boundaries.build({
+        projectId: ctx.projectId,
+        name: ctx.name,
+        geometry: source.geometry,
+        manualAreaM2: ctx.manualAreaM2 ?? null,
+      }),
       manager,
     );
   }
@@ -58,6 +66,22 @@ export class BoundaryGeometryService {
     return boundary;
   }
 
+  /**
+   * Locks the boundary by id and applies what the owning region/block/parcel update sent: a new outline
+   * (see {@link applyGeometry}) and/or a manual area (null clears it). Fields left undefined are untouched.
+   */
+  async update(
+    boundaryId: string,
+    changes: { geometry?: IMultiPolygon; manualAreaM2?: number | null },
+    manager: EntityManager,
+  ): Promise<Boundary> {
+    const boundary = await this.boundaries.findByIdForUpdate(boundaryId, manager);
+    if (!boundary) throw new BoundaryNotFoundError(boundaryId);
+    if (changes.manualAreaM2 !== undefined) boundary.manualAreaM2 = changes.manualAreaM2;
+    if (changes.geometry) return this.applyGeometry(boundary, changes.geometry, manager);
+    return this.boundaries.saveAndReload(boundary, manager);
+  }
+
   /** Locks the boundary by id and replaces its outline (see {@link applyGeometry}). */
   async replaceGeometry(boundaryId: string, geometry: IMultiPolygon, manager: EntityManager): Promise<Boundary> {
     const boundary = await this.boundaries.findByIdForUpdate(boundaryId, manager);
@@ -68,7 +92,7 @@ export class BoundaryGeometryService {
   /**
    * Replaces the outline of `boundary`. A draft only has to be valid; a boundary owned by a
    * region/block/parcel must also satisfy that feature's containment and overlap rules, and the
-   * affected parcels' area and occupancy metrics are recalculated afterwards.
+   * affected parcels' occupancy metrics are recalculated afterwards.
    */
   async applyGeometry(boundary: Boundary, geometry: IMultiPolygon, manager: EntityManager): Promise<Boundary> {
     const usage = await this.boundaries.findUsage(boundary.id, manager);

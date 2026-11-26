@@ -1,14 +1,29 @@
-import { Check, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn, Relation } from 'typeorm';
-import { TimestampedEntity } from '../../../common/base/timestamped.entity';
-import { IParcelOwnership } from '../../../common/interfaces/parcel-ownership.interface';
-import { numericTransformer } from '../../../database/transformers/numeric.transformer';
-import { Owner } from '../../owner/entities/owner.entity';
+import {
+  Check,
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryColumn,
+  Relation,
+} from 'typeorm';
+import { TimestampedEntity } from '@/common/base/timestamped.entity';
+import { IParcelOwnership } from '@/common/interfaces/parcel-ownership.interface';
+import { numericTransformer } from '@/database/transformers/numeric.transformer';
+import { Owner } from '@/modules/owner/entities/owner.entity';
 import { Parcel } from './parcel.entity';
 
 @Entity({ name: 'parcel_ownerships' })
 @Index('ix_parcel_ownerships__owner_id', ['ownerId'])
-@Check('ck_parcel_ownerships__share_pct_range', '"share_pct" > 0 AND "share_pct" <= 100')
-export class ParcelOwnership extends TimestampedEntity implements IParcelOwnership {
+@Check(
+  'ck_parcel_ownerships__share_pct_range',
+  '"share_pct" > 0 AND "share_pct" <= 100',
+)
+export class ParcelOwnership
+  extends TimestampedEntity
+  implements IParcelOwnership
+{
   @PrimaryColumn({
     type: 'uuid',
     name: 'parcel_id',
@@ -32,7 +47,10 @@ export class ParcelOwnership extends TimestampedEntity implements IParcelOwnersh
   })
   sharePct!: number;
 
-  @ManyToOne(() => Parcel, (parcel) => parcel.ownerships, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Parcel, (parcel) => parcel.ownerships, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({
     name: 'parcel_id',
     referencedColumnName: 'id',
@@ -40,7 +58,10 @@ export class ParcelOwnership extends TimestampedEntity implements IParcelOwnersh
   })
   parcel?: Relation<Parcel>;
 
-  @ManyToOne(() => Owner, (owner) => owner.ownerships, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Owner, (owner) => owner.ownerships, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({
     name: 'owner_id',
     referencedColumnName: 'id',

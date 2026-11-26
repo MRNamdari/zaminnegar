@@ -1,10 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DataSource } from 'typeorm';
-import { ParcelStatus } from '../../../common/enums/parcel-status.enum';
-import { BoundaryGeometryService } from '../../geometry/services/boundary-geometry.service';
-import { SpatialRulesService } from '../../geometry/services/spatial-rules.service';
-import { ProjectNotFoundError } from '../../project/errors/project-not-found.error';
-import { ProjectRepository } from '../../project/repositories/project.repository';
+import { ParcelStatus } from '@/common/enums/parcel-status.enum';
+import { BoundaryGeometryService } from '@/modules/geometry/services/boundary-geometry.service';
+import { SpatialRulesService } from '@/modules/geometry/services/spatial-rules.service';
+import { ProjectNotFoundError } from '@/modules/project/errors/project-not-found.error';
+import { ProjectRepository } from '@/modules/project/repositories/project.repository';
 import { Parcel } from '../entities/parcel.entity';
 import { ParcelNameTakenError } from '../errors/parcel-name-taken.error';
 import { ParcelRepository } from '../repositories/parcel.repository';
@@ -16,7 +16,10 @@ import { CreateParcelCommand } from './create-parcel.command';
  * resolves the same references up front only to apply the sibling rules before anything is written.
  */
 @CommandHandler(CreateParcelCommand)
-export class CreateParcelHandler implements ICommandHandler<CreateParcelCommand, Parcel> {
+export class CreateParcelHandler implements ICommandHandler<
+  CreateParcelCommand,
+  Parcel
+> {
   constructor(
     private readonly dataSource: DataSource,
     private readonly parcels: ParcelRepository,
@@ -27,19 +30,43 @@ export class CreateParcelHandler implements ICommandHandler<CreateParcelCommand,
 
   execute({ input }: CreateParcelCommand): Promise<Parcel> {
     return this.dataSource.transaction(async (manager) => {
-      if (!(await this.projects.findById(input.projectId, manager))) throw new ProjectNotFoundError(input.projectId);
+      if (!(await this.projects.findById(input.projectId, manager)))
+        throw new ProjectNotFoundError(input.projectId);
 
-      if (await this.parcels.findByProjectAndName(input.projectId, input.name, manager)) {
+      if (
+        await this.parcels.findByProjectAndName(
+          input.projectId,
+          input.name,
+          manager,
+        )
+      ) {
         throw new ParcelNameTakenError(input.name);
       }
 
       const boundary = await this.geometry.acquire(
         input,
-        { projectId: input.projectId, name: input.name },
+        {
+          projectId: input.projectId,
+          name: input.name,
+          manualAreaM2: input.manualAreaM2,
+        },
         async (geometry) => {
-          const regionId = await this.spatial.resolveRegionId('parcel', geometry, input.projectId, manager);
-          const blockId = await this.spatial.resolveBlockId(geometry, regionId, manager);
-          await this.spatial.assertParcelRules(geometry, { regionId, blockId }, manager);
+          const regionId = await this.spatial.resolveRegionId(
+            'parcel',
+            geometry,
+            input.projectId,
+            manager,
+          );
+          const blockId = await this.spatial.resolveBlockId(
+            geometry,
+            regionId,
+            manager,
+          );
+          await this.spatial.assertParcelRules(
+            geometry,
+            { regionId, blockId },
+            manager,
+          );
         },
         manager,
       );
@@ -53,7 +80,7 @@ export class CreateParcelHandler implements ICommandHandler<CreateParcelCommand,
         }),
         manager,
       );
-      // Re-read: region_id, block_id, area and occupancy were filled in by the database.
+      // Re-read: region_id, block_id and occupancy were filled in by the database and the area comes from the boundary.
       return (await this.parcels.findById(saved.id, manager)) as Parcel;
     });
   }

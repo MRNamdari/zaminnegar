@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength, ValidateIf } from 'class-validator';
+import { ManualAreaField } from '../../../common/decorators/manual-area-field.decorator';
 import { MultiPolygonField } from '../../../common/decorators/multi-polygon-field.decorator';
 import { RegionStatus } from '../../../common/enums/region-status.enum';
 import { IMultiPolygon } from '../../../common/interfaces/geometry.interface';
@@ -39,4 +40,8 @@ export class CreateRegionDto {
   @ValidateIf((o: CreateDtoShape) => o.boundaryId === undefined)
   @MultiPolygonField({ optional: true })
   geometry?: IMultiPolygon;
+
+  /** Stored on the boundary: set on the new boundary created from `geometry`, or on the draft named by `boundaryId`. */
+  @ManualAreaField()
+  manualAreaM2?: number | null;
 }

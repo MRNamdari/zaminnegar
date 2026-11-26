@@ -31,9 +31,10 @@ export class OwnerRepository extends BaseRepository<Owner> {
       }, 'parcelsCount')
       .addSelect((subQuery) => {
         return subQuery
-          .select('COALESCE(SUM(po.share_pct * p.area_m2 / 100), 0)')
+          .select('COALESCE(SUM(po.share_pct * COALESCE(pb.manual_area_m2, pb.computed_area_m2) / 100), 0)')
           .from(ParcelOwnership, 'po')
           .innerJoin('po.parcel', 'p')
+          .innerJoin('p.boundary', 'pb')
           .where('po.owner_id = owner.id');
       }, 'totalArea');
 

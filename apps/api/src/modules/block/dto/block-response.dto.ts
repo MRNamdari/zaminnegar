@@ -16,7 +16,7 @@ export class BlockResponseDto {
   @ApiProperty({ enum: BlockStatus, enumName: 'BlockStatus' })
   @Expose()
   status!: BlockStatus;
-  @ApiProperty({ type: 'number', description: 'Geodesic area in square meters' })
+  @ApiProperty({ type: 'number', description: "Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2" })
   @Expose()
   areaM2!: number;
   @ApiProperty() @Expose() createdAt!: Date;

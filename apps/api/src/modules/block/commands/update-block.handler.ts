@@ -31,7 +31,14 @@ export class UpdateBlockHandler implements ICommandHandler<UpdateBlockCommand, B
 
       // Re-checks the rules against the region the new outline falls into. The triggers then re-derive the
       // block's region and re-link its parcels (attach / detach) and recompute their metrics.
-      if (dto.geometry) await this.geometry.replaceGeometry(block.boundaryId, dto.geometry, manager);
+      // A manual area (or null, which clears it) is stored on the boundary together with the outline.
+      if (dto.geometry || dto.manualAreaM2 !== undefined) {
+        await this.geometry.update(
+          block.boundaryId,
+          { geometry: dto.geometry, manualAreaM2: dto.manualAreaM2 },
+          manager,
+        );
+      }
       return (await this.blocks.findById(id, manager)) as Block;
     });
   }
