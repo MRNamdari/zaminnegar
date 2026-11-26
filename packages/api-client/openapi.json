@@ -3928,6 +3928,55 @@
           "owners"
         ]
       }
+    },
+    "/tiles/{z}/{x}/{y}": {
+      "get": {
+        "description": "Returns a cached 256×256 PNG or JPEG tile. On a cache miss, request headers are forwarded to Esri except credentials and hop-by-hop headers.",
+        "operationId": "TilesController_getTile",
+        "parameters": [
+          {
+            "name": "y",
+            "required": true,
+            "in": "path",
+            "description": "Esri tile column (third path coordinate)",
+            "schema": {
+              "example": 1539,
+              "type": "number"
+            }
+          },
+          {
+            "name": "x",
+            "required": true,
+            "in": "path",
+            "description": "Esri tile row (second path coordinate)",
+            "schema": {
+              "example": 1205,
+              "type": "number"
+            }
+          },
+          {
+            "name": "z",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": 12,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PNG or JPEG map tile"
+          },
+          "404": {
+            "description": "Tile does not exist"
+          }
+        },
+        "summary": "Get an Esri World Imagery map tile",
+        "tags": [
+          "Tiles"
+        ]
+      }
     }
   },
   "info": {
@@ -4883,6 +4932,12 @@
                 }
               }
             }
+          },
+          "manualAreaM2": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "description": "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it."
           }
         },
         "required": [
@@ -4907,11 +4962,74 @@
           },
           "geometry": {
             "type": "object",
-            "additionalProperties": true
+            "description": "GeoJSON MultiPolygon, WGS 84, [longitude, latitude]",
+            "example": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      8.68,
+                      50.11
+                    ],
+                    [
+                      8.69,
+                      50.11
+                    ],
+                    [
+                      8.69,
+                      50.12
+                    ],
+                    [
+                      8.68,
+                      50.12
+                    ],
+                    [
+                      8.68,
+                      50.11
+                    ]
+                  ]
+                ]
+              ]
+            },
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "MultiPolygon",
+                  "Polygon"
+                ]
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "computedAreaM2": {
+            "type": "number",
+            "description": "Geodesic area in square meters, computed from the geometry"
+          },
+          "manualAreaM2": {
+            "type": "number",
+            "nullable": true,
+            "description": "Area assigned by the user; null when none was supplied"
           },
           "areaM2": {
             "type": "number",
-            "description": "Geodesic area in square meters"
+            "description": "manualAreaM2 when set, otherwise computedAreaM2"
           },
           "createdAt": {
             "format": "date-time",
@@ -4927,6 +5045,8 @@
           "projectId",
           "name",
           "geometry",
+          "computedAreaM2",
+          "manualAreaM2",
           "areaM2",
           "createdAt",
           "updatedAt"
@@ -4996,6 +5116,12 @@
                 }
               }
             }
+          },
+          "manualAreaM2": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "description": "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it."
           }
         }
       },
@@ -5041,7 +5167,8 @@
             "type": "string"
           },
           "areaHa": {
-            "type": "number"
+            "type": "number",
+            "description": "areaM2 in hectares"
           },
           "parentId": {
             "type": "string",
@@ -5060,7 +5187,17 @@
             ]
           },
           "areaM2": {
-            "type": "number"
+            "type": "number",
+            "description": "The boundary's manualAreaM2 when set, otherwise its computedAreaM2"
+          },
+          "computedAreaM2": {
+            "type": "number",
+            "description": "Geodesic area computed from the geometry"
+          },
+          "manualAreaM2": {
+            "type": "number",
+            "nullable": true,
+            "description": "Area assigned by the user; null when none was supplied"
           },
           "description": {
             "type": "string"
@@ -5073,7 +5210,9 @@
           "parentId",
           "boundaryId",
           "status",
-          "areaM2"
+          "areaM2",
+          "computedAreaM2",
+          "manualAreaM2"
         ]
       },
       "MapFeatureResponseDto": {
@@ -5204,6 +5343,12 @@
           },
           "geometry": {
             "$ref": "#/components/schemas/MapPolygon"
+          },
+          "manualAreaM2": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "description": "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it."
           }
         },
         "required": [
@@ -5232,6 +5377,12 @@
           },
           "geometry": {
             "$ref": "#/components/schemas/MapPolygon"
+          },
+          "manualAreaM2": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "description": "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it."
           }
         }
       },
@@ -5323,6 +5474,12 @@
                 }
               }
             }
+          },
+          "manualAreaM2": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "description": "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it."
           }
         },
         "required": [
@@ -5359,7 +5516,7 @@
           },
           "areaM2": {
             "type": "number",
-            "description": "Geodesic area in square meters"
+            "description": "Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2"
           },
           "createdAt": {
             "format": "date-time",
@@ -5432,7 +5589,7 @@
           },
           "areaM2": {
             "type": "number",
-            "description": "Geodesic area in square meters"
+            "description": "Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2"
           },
           "createdAt": {
             "format": "date-time",
@@ -5513,7 +5670,7 @@
           },
           "areaM2": {
             "type": "number",
-            "description": "Geodesic area in square meters"
+            "description": "Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2"
           },
           "regionOccupancyPct": {
             "type": "number",
@@ -5609,7 +5766,7 @@
           },
           "areaM2": {
             "type": "number",
-            "description": "Geodesic area in square meters"
+            "description": "Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2"
           },
           "createdAt": {
             "format": "date-time",
@@ -5738,6 +5895,12 @@
                 }
               }
             }
+          },
+          "manualAreaM2": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "description": "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it."
           }
         }
       },
@@ -5822,6 +5985,12 @@
                 }
               }
             }
+          },
+          "manualAreaM2": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "description": "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it."
           }
         },
         "required": [
@@ -5863,7 +6032,7 @@
           },
           "areaM2": {
             "type": "number",
-            "description": "Geodesic area in square meters"
+            "description": "Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2"
           },
           "createdAt": {
             "format": "date-time",
@@ -5986,6 +6155,12 @@
                 }
               }
             }
+          },
+          "manualAreaM2": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "description": "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it."
           }
         }
       },
@@ -6067,6 +6242,12 @@
                 }
               }
             }
+          },
+          "manualAreaM2": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "description": "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it."
           }
         },
         "required": [
@@ -6210,7 +6391,7 @@
           },
           "areaM2": {
             "type": "number",
-            "description": "Geodesic area in square meters"
+            "description": "Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2"
           },
           "regionOccupancyPct": {
             "type": "number",
@@ -6353,6 +6534,12 @@
                 }
               }
             }
+          },
+          "manualAreaM2": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "description": "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it."
           }
         }
       },

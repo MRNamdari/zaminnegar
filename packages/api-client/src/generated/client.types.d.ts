@@ -250,14 +250,29 @@ export namespace Schemas {
      * GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
      */
     geometry: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
+    /**
+     * User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.
+     */
+    manualAreaM2?: number | null;
   };
   export type BoundaryResponseDto = {
     id: string;
     projectId: string;
     name: string;
-    geometry: Record<string, unknown>;
     /**
-     * Geodesic area in square meters
+     * GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
+     */
+    geometry: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
+    /**
+     * Geodesic area in square meters, computed from the geometry
+     */
+    computedAreaM2: number;
+    /**
+     * Area assigned by the user; null when none was supplied
+     */
+    manualAreaM2: number | null;
+    /**
+     * manualAreaM2 when set, otherwise computedAreaM2
      */
     areaM2: number;
     createdAt: Date;
@@ -269,16 +284,34 @@ export namespace Schemas {
      * GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
      */
     geometry: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
+    /**
+     * User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.
+     */
+    manualAreaM2: number | null;
   }>;
   export type MapFeatureGeometryResponseDto = { type: "Polygon"; coordinates: Array<Array<Array<number>>> };
   export type MapFeaturePropertiesResponseDto = {
     level: "region" | "block" | "parcel";
     name: string;
+    /**
+     * areaM2 in hectares
+     */
     areaHa: number;
     parentId: string | null;
     boundaryId: string;
     status: "active" | "inactive";
+    /**
+     * The boundary's manualAreaM2 when set, otherwise its computedAreaM2
+     */
     areaM2: number;
+    /**
+     * Geodesic area computed from the geometry
+     */
+    computedAreaM2: number;
+    /**
+     * Area assigned by the user; null when none was supplied
+     */
+    manualAreaM2: number | null;
     description?: string;
   };
   export type MapFeatureResponseDto = {
@@ -304,6 +337,10 @@ export namespace Schemas {
     description?: string;
     status?: "active" | "inactive";
     geometry: MapPolygon;
+    /**
+     * User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.
+     */
+    manualAreaM2?: number | null;
   };
   export type UpdateMapFeatureDto = Partial<{
     name: string;
@@ -313,6 +350,10 @@ export namespace Schemas {
     description: string;
     status: "active" | "inactive";
     geometry: MapPolygon;
+    /**
+     * User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.
+     */
+    manualAreaM2: number | null;
   }>;
   export type RegionStatus = "active" | "inactive";
   export type CreateRegionDto = {
@@ -327,6 +368,10 @@ export namespace Schemas {
      * GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
      */
     geometry?: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
+    /**
+     * User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.
+     */
+    manualAreaM2?: number | null;
   };
   export type RegionResponseDto = {
     id: string;
@@ -336,7 +381,7 @@ export namespace Schemas {
     description: string;
     status: RegionStatus;
     /**
-     * Geodesic area in square meters
+     * Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2
      */
     areaM2: number;
     createdAt: Date;
@@ -363,7 +408,7 @@ export namespace Schemas {
     description: string;
     status: BlockStatus;
     /**
-     * Geodesic area in square meters
+     * Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2
      */
     areaM2: number;
     createdAt: Date;
@@ -412,7 +457,7 @@ export namespace Schemas {
     name: string;
     status: ParcelStatus;
     /**
-     * Geodesic area in square meters
+     * Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2
      */
     areaM2: number;
     /**
@@ -447,7 +492,7 @@ export namespace Schemas {
     description: string;
     status: RegionStatus;
     /**
-     * Geodesic area in square meters
+     * Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2
      */
     areaM2: number;
     createdAt: Date;
@@ -473,6 +518,10 @@ export namespace Schemas {
      * GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
      */
     geometry: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
+    /**
+     * User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.
+     */
+    manualAreaM2: number | null;
   }>;
   export type CreateBlockDto = {
     name: string;
@@ -486,6 +535,10 @@ export namespace Schemas {
      * GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
      */
     geometry?: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
+    /**
+     * User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.
+     */
+    manualAreaM2?: number | null;
   };
   export type BlockDetailResponseDto = {
     id: string;
@@ -499,7 +552,7 @@ export namespace Schemas {
     description: string;
     status: BlockStatus;
     /**
-     * Geodesic area in square meters
+     * Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2
      */
     areaM2: number;
     createdAt: Date;
@@ -521,6 +574,10 @@ export namespace Schemas {
      * GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
      */
     geometry: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
+    /**
+     * User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.
+     */
+    manualAreaM2: number | null;
   }>;
   export type CreateParcelDto = {
     name: string;
@@ -533,6 +590,10 @@ export namespace Schemas {
      * GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
      */
     geometry?: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
+    /**
+     * User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.
+     */
+    manualAreaM2?: number | null;
   };
   export type ParcelDetailResponseDto = {
     id: string;
@@ -549,7 +610,7 @@ export namespace Schemas {
     name: string;
     status: ParcelStatus;
     /**
-     * Geodesic area in square meters
+     * Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2
      */
     areaM2: number;
     /**
@@ -579,6 +640,10 @@ export namespace Schemas {
      * GeoJSON MultiPolygon, WGS 84, [longitude, latitude]
      */
     geometry: Partial<{ type: "MultiPolygon" | "Polygon"; coordinates: Array<Array<Array<Array<number>>>> }>;
+    /**
+     * User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.
+     */
+    manualAreaM2: number | null;
   }>;
   export type AssignOwnerDto = {
     /**
@@ -1527,6 +1592,19 @@ export namespace Endpoints {
     };
     responses: { 200: Array<Schemas.OwnershipWithParcelResponseDto> };
   };
+  /**
+   * Returns a cached 256×256 PNG or JPEG tile. On a cache miss, request headers are forwarded to Esri except credentials and hop-by-hop headers.
+   */
+  export type get_TilesController_getTile = {
+    method: "GET";
+    path: "/tiles/{z}/{x}/{y}";
+    requestFormat: "json";
+    responseFormat: "json";
+    parameters: {
+      path: { y: number; x: number; z: number };
+    };
+    responses: { 200: unknown; 404: unknown };
+  };
 
   // </Endpoints>
 }
@@ -1581,6 +1659,7 @@ export type EndpointByMethod = {
     "/owners": Endpoints.get_OwnerController_list;
     "/owners/{id}": Endpoints.get_OwnerController_get;
     "/owners/{id}/parcels": Endpoints.get_OwnerController_listParcels;
+    "/tiles/{z}/{x}/{y}": Endpoints.get_TilesController_getTile;
   };
   put: {
     "/auth/session/project": Endpoints.put_ActiveProjectController_setActiveProject;

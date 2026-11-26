@@ -356,6 +356,17 @@ export const CreateBoundaryDto = z.strictObject({
     })
     .partial()
     .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]"),
+  manualAreaM2: z
+    .number()
+    .min(0)
+    .describe(
+      "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+    )
+    .nullable()
+    .describe(
+      "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+    )
+    .optional(),
 });
 
 export type BoundaryResponseDto = __TypedOpenapi.Schemas.BoundaryResponseDto;
@@ -363,8 +374,20 @@ export const BoundaryResponseDto = z.strictObject({
   id: z.uuid(),
   projectId: z.uuid(),
   name: z.string(),
-  geometry: z.record(z.string(), z.unknown()),
-  areaM2: z.number().describe("Geodesic area in square meters"),
+  geometry: z
+    .strictObject({
+      type: z.enum(["MultiPolygon", "Polygon"]),
+      coordinates: z.array(z.array(z.array(z.array(z.number())))),
+    })
+    .partial()
+    .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]"),
+  computedAreaM2: z.number().describe("Geodesic area in square meters, computed from the geometry"),
+  manualAreaM2: z
+    .number()
+    .describe("Area assigned by the user; null when none was supplied")
+    .nullable()
+    .describe("Area assigned by the user; null when none was supplied"),
+  areaM2: z.number().describe("manualAreaM2 when set, otherwise computedAreaM2"),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
     if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
@@ -388,6 +411,16 @@ export const UpdateBoundaryDto = z
       })
       .partial()
       .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]"),
+    manualAreaM2: z
+      .number()
+      .min(0)
+      .describe(
+        "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+      )
+      .nullable()
+      .describe(
+        "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+      ),
   })
   .partial();
 
@@ -401,11 +434,17 @@ export type MapFeaturePropertiesResponseDto = __TypedOpenapi.Schemas.MapFeatureP
 export const MapFeaturePropertiesResponseDto = z.strictObject({
   level: z.enum(["region", "block", "parcel"]),
   name: z.string(),
-  areaHa: z.number(),
+  areaHa: z.number().describe("areaM2 in hectares"),
   parentId: z.uuid().nullable(),
   boundaryId: z.uuid(),
   status: z.enum(["active", "inactive"]),
-  areaM2: z.number(),
+  areaM2: z.number().describe("The boundary's manualAreaM2 when set, otherwise its computedAreaM2"),
+  computedAreaM2: z.number().describe("Geodesic area computed from the geometry"),
+  manualAreaM2: z
+    .number()
+    .describe("Area assigned by the user; null when none was supplied")
+    .nullable()
+    .describe("Area assigned by the user; null when none was supplied"),
   description: z.string().optional(),
 });
 
@@ -440,6 +479,17 @@ export const CreateMapFeatureDto = z.strictObject({
   description: z.string().describe("Ignored for parcels, which have no description").optional(),
   status: z.enum(["active", "inactive"]).optional(),
   geometry: MapPolygon,
+  manualAreaM2: z
+    .number()
+    .min(0)
+    .describe(
+      "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+    )
+    .nullable()
+    .describe(
+      "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+    )
+    .optional(),
 });
 
 export type UpdateMapFeatureDto = __TypedOpenapi.Schemas.UpdateMapFeatureDto;
@@ -449,6 +499,16 @@ export const UpdateMapFeatureDto = z
     description: z.string().describe("Ignored for parcels, which have no description"),
     status: z.enum(["active", "inactive"]),
     geometry: MapPolygon,
+    manualAreaM2: z
+      .number()
+      .min(0)
+      .describe(
+        "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+      )
+      .nullable()
+      .describe(
+        "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+      ),
   })
   .partial();
 
@@ -469,6 +529,17 @@ export const CreateRegionDto = z.strictObject({
     .partial()
     .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]")
     .optional(),
+  manualAreaM2: z
+    .number()
+    .min(0)
+    .describe(
+      "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+    )
+    .nullable()
+    .describe(
+      "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+    )
+    .optional(),
 });
 
 export type RegionResponseDto = __TypedOpenapi.Schemas.RegionResponseDto;
@@ -479,7 +550,9 @@ export const RegionResponseDto = z.strictObject({
   name: z.string(),
   description: z.string(),
   status: RegionStatus,
-  areaM2: z.number().describe("Geodesic area in square meters"),
+  areaM2: z
+    .number()
+    .describe("Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2"),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
     if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
@@ -506,7 +579,9 @@ export const BlockResponseDto = z.strictObject({
   name: z.string(),
   description: z.string(),
   status: BlockStatus,
-  areaM2: z.number().describe("Geodesic area in square meters"),
+  areaM2: z
+    .number()
+    .describe("Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2"),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
     if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
@@ -580,7 +655,9 @@ export const ParcelResponseDto = z.strictObject({
   boundaryId: z.uuid(),
   name: z.string(),
   status: ParcelStatus,
-  areaM2: z.number().describe("Geodesic area in square meters"),
+  areaM2: z
+    .number()
+    .describe("Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2"),
   regionOccupancyPct: z.number().min(0).max(100).describe("% of the region this parcel occupies"),
   blockOccupancyPct: z
     .number()
@@ -622,7 +699,9 @@ export const RegionDetailResponseDto = z.strictObject({
   name: z.string(),
   description: z.string(),
   status: RegionStatus,
-  areaM2: z.number().describe("Geodesic area in square meters"),
+  areaM2: z
+    .number()
+    .describe("Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2"),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
     if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
@@ -654,6 +733,16 @@ export const UpdateRegionDto = z
       })
       .partial()
       .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]"),
+    manualAreaM2: z
+      .number()
+      .min(0)
+      .describe(
+        "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+      )
+      .nullable()
+      .describe(
+        "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+      ),
   })
   .partial();
 
@@ -671,6 +760,17 @@ export const CreateBlockDto = z.strictObject({
     .partial()
     .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]")
     .optional(),
+  manualAreaM2: z
+    .number()
+    .min(0)
+    .describe(
+      "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+    )
+    .nullable()
+    .describe(
+      "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+    )
+    .optional(),
 });
 
 export type BlockDetailResponseDto = __TypedOpenapi.Schemas.BlockDetailResponseDto;
@@ -682,7 +782,9 @@ export const BlockDetailResponseDto = z.strictObject({
   name: z.string(),
   description: z.string(),
   status: BlockStatus,
-  areaM2: z.number().describe("Geodesic area in square meters"),
+  areaM2: z
+    .number()
+    .describe("Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2"),
   createdAt: z.iso.datetime().transform((s) => {
     const d = new Date(s);
     if (Number.isNaN(d.getTime())) throw new Error("Invalid Date");
@@ -713,6 +815,16 @@ export const UpdateBlockDto = z
       })
       .partial()
       .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]"),
+    manualAreaM2: z
+      .number()
+      .min(0)
+      .describe(
+        "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+      )
+      .nullable()
+      .describe(
+        "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+      ),
   })
   .partial();
 
@@ -728,6 +840,17 @@ export const CreateParcelDto = z.strictObject({
     })
     .partial()
     .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]")
+    .optional(),
+  manualAreaM2: z
+    .number()
+    .min(0)
+    .describe(
+      "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+    )
+    .nullable()
+    .describe(
+      "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+    )
     .optional(),
 });
 
@@ -745,7 +868,9 @@ export const ParcelDetailResponseDto = z.strictObject({
   boundaryId: z.uuid(),
   name: z.string(),
   status: ParcelStatus,
-  areaM2: z.number().describe("Geodesic area in square meters"),
+  areaM2: z
+    .number()
+    .describe("Area in square meters: the boundary's manualAreaM2 when set, otherwise its computedAreaM2"),
   regionOccupancyPct: z.number().min(0).max(100).describe("% of the region this parcel occupies"),
   blockOccupancyPct: z
     .number()
@@ -789,6 +914,16 @@ export const UpdateParcelDto = z
       })
       .partial()
       .describe("GeoJSON MultiPolygon, WGS 84, [longitude, latitude]"),
+    manualAreaM2: z
+      .number()
+      .min(0)
+      .describe(
+        "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+      )
+      .nullable()
+      .describe(
+        "User-assigned area in square meters. Optional; when null the geodesic area computed from the geometry is reported as areaM2. On update, send null to clear it.",
+      ),
   })
   .partial();
 
@@ -1861,6 +1996,16 @@ export const get_OwnerController_listParcels = {
   responses: { 200: z.array(OwnershipWithParcelResponseDto) },
 };
 
+export type get_TilesController_getTile = __TypedOpenapi.Endpoints.get_TilesController_getTile;
+export const get_TilesController_getTile = {
+  method: z.literal("GET"),
+  path: z.literal("/tiles/{z}/{x}/{y}"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ y: z.coerce.number(), x: z.coerce.number(), z: z.coerce.number() }) },
+  responses: { 200: z.unknown(), 404: z.unknown() },
+};
+
 // </Endpoints>
 
 // <EndpointByMethod>
@@ -1913,6 +2058,7 @@ export const EndpointByMethod = {
     "/owners": get_OwnerController_list,
     "/owners/{id}": get_OwnerController_get,
     "/owners/{id}/parcels": get_OwnerController_listParcels,
+    "/tiles/{z}/{x}/{y}": get_TilesController_getTile,
   },
   put: {
     "/auth/session/project": put_ActiveProjectController_setActiveProject,
@@ -2070,6 +2216,13 @@ export const endpointParameterStyles = {
     },
     "/owners/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
     "/owners/{id}/parcels": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
+    "/tiles/{z}/{x}/{y}": {
+      path: {
+        y: { style: "simple", explode: false, allowReserved: false },
+        x: { style: "simple", explode: false, allowReserved: false },
+        z: { style: "simple", explode: false, allowReserved: false },
+      },
+    },
   },
   patch: {
     "/users/{id}": { path: { id: { style: "simple", explode: false, allowReserved: false } } },
@@ -2153,6 +2306,7 @@ export const endpointSecurityRequirements = {
     "/auth/password/forgot": [],
     "/auth/password/reset": [],
   },
+  get: { "/tiles/{z}/{x}/{y}": [] },
 } as Partial<{ [M in keyof EndpointByMethod]: Partial<{ [P in keyof EndpointByMethod[M]]: SecurityRequirements }> }>;
 // </EndpointSecurityRequirements>
 
