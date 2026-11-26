@@ -72,10 +72,10 @@ export default function ThemeToggle({
       aria-label={isDark ? 'فعال‌سازی حالت روشن' : 'فعال‌سازی حالت تاریک'}
       aria-pressed={isDark}
       title={isDark ? 'حالت روشن' : 'حالت تاریک'}
-      className={`py-2.5 px-2.5 rounded-lg
-    bg-action-primary
-    font-medium text-dark
-    hover:bg-action-primary-hover
+      className={`p-4 rounded-lg
+    bg-background
+    text-text
+    font-medium
     transition duration-300
     cursor-pointer
     disabled:bg-action-primary/50
