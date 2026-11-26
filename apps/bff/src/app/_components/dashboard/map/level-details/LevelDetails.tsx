@@ -21,7 +21,7 @@ export default function LevelDetails() {
                 <OverViewRegion id={selectedFeatureId ?? ""} level={levelFeature}/>
             ) : "No feature selected."
             }
-            <OutLook/>
+            {/* <OutLook/> */}
         </div>
     );
 }
