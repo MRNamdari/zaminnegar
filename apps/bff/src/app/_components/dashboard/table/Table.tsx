@@ -39,6 +39,7 @@ type TableProps<TData extends RowData> = {
   pagination?: TablePagination;
   onPageChange?: (page: number) => void;
   onRowClick?: (data: TData) => void;
+  getRowHref?: (data: TData) => string;
   isLoading?: boolean;
 };
 
@@ -69,6 +70,7 @@ export function Table<TData extends RowData>({
   pagination,
   onPageChange,
   onRowClick,
+  getRowHref,
   isLoading = false,
 }: TableProps<TData>) {
   const rows = table.getRowModel().rows;
@@ -76,16 +78,16 @@ export function Table<TData extends RowData>({
 
   return (
     <div className="w-full space-y-4">
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-surface-raised">
+      <div className="overflow-x-auto rounded-xl bg-background p-4">
+        <table dir="rtl" className="w-full text-left font-normal">
+          <thead>
             {table.getHeaderGroups().map((group) => (
               <tr key={group.id}>
                 {group.headers.map((header) => (
                   <th
                     key={header.id}
                     scope="col"
-                    className="px-4 py-3 font-semibold"
+                    className="p-4 font-normal bg-surface first:rounded-r-xl last:rounded-l-xl"
                   >
                     {header.isPlaceholder ? null : (
                       <button
@@ -107,6 +109,7 @@ export function Table<TData extends RowData>({
                 ))}
               </tr>
             ))}
+            <tr className="h-2.5"></tr>
           </thead>
 
           <tbody aria-busy={isLoading}>
@@ -116,7 +119,7 @@ export function Table<TData extends RowData>({
               <tr>
                 <td
                   colSpan={Math.max(1, columns.length)}
-                  className="px-4 py-10 text-center text-gray-300"
+                  className="px-4 py-10 text-center text-text"
                 >
                   موردی یافت نشد
                 </td>
@@ -129,8 +132,8 @@ export function Table<TData extends RowData>({
                     onRowClick ? () => onRowClick(row.original) : undefined
                   }
                   className={[
-                    'even:bg-surface transition border-t border-border',
-                    onRowClick ? 'cursor-pointer hover:bg-surface-muted' : '',
+                    'even:bg-surface/70 transition duration-300 not-last:border-b border-border',
+                    onRowClick ? 'cursor-pointer hover:bg-surface/70' : '',
                   ].join(' ')}
                 >
                   {row.getVisibleCells().map((cell) => (
