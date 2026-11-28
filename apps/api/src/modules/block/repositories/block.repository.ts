@@ -48,7 +48,7 @@ export class BlockRepository extends BaseRepository<Block> {
   findDetailById(id: string, manager?: EntityManager): Promise<Block | null> {
     return this.repo(manager).findOne({
       where: { id },
-      relations: { project: true, region: true, boundary: true, parcels: true },
+      relations: { project: true, region: true, boundary: true, parcels: {boundary: true} },
       order: { parcels: { name: 'ASC' } },
     });
   }

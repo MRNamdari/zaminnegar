@@ -1,5 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from '@nestjs/common';
-import type { Response } from 'express';
+import { HttpAdapterHost } from '@nestjs/core';
 import { QueryFailedError } from 'typeorm';
 
 interface PgError {
@@ -18,24 +18,43 @@ interface PgError {
  */
 @Catch(QueryFailedError)
 export class DatabaseExceptionFilter implements ExceptionFilter {
+  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+
   catch(exception: QueryFailedError, host: ArgumentsHost): void {
-    const response = host.switchToHttp().getResponse<Response>();
+    const { httpAdapter } = this.httpAdapterHost;
+    const response: unknown = host.switchToHttp().getResponse();
     const error = exception.driverError as PgError;
 
     if (error.code === '23514' && error.detail && /^[A-Z_]+$/.test(error.detail)) {
-      response.status(HttpStatus.UNPROCESSABLE_ENTITY).json({ code: error.detail, message: error.message });
+      httpAdapter.reply(
+        response,
+        { code: error.detail, message: error.message },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     } else if (error.code === '23505') {
-      response.status(HttpStatus.CONFLICT).json({
-        code: 'UNIQUE_VIOLATION',
-        message: `Violates unique constraint ${error.constraint ?? ''}`.trim(),
-      });
+      httpAdapter.reply(
+        response,
+        {
+          code: 'UNIQUE_VIOLATION',
+          message: `Violates unique constraint ${error.constraint ?? ''}`.trim(),
+        },
+        HttpStatus.CONFLICT,
+      );
     } else if (error.code === '23503') {
-      response.status(HttpStatus.CONFLICT).json({
-        code: 'STILL_REFERENCED',
-        message: `Violates foreign key ${error.constraint ?? ''}`.trim(),
-      });
+      httpAdapter.reply(
+        response,
+        {
+          code: 'STILL_REFERENCED',
+          message: `Violates foreign key ${error.constraint ?? ''}`.trim(),
+        },
+        HttpStatus.CONFLICT,
+      );
     } else {
-      response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ statusCode: 500, message: 'Internal server error' });
+      httpAdapter.reply(
+        response,
+        { statusCode: 500, message: 'Internal server error' },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

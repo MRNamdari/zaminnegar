@@ -10,8 +10,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { Response } from 'express';
-
+import { HttpAdapterHost } from '@nestjs/core';
 
 @Catch(
   InvalidTileCoordinateError,
@@ -22,8 +21,13 @@ import { Response } from 'express';
 )
 export class TileExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(TileExceptionFilter.name);
+
+  /** Created in `main.ts` with `new`, so the host is passed in rather than injected. */
+  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+
   catch(exception: Error, host: ArgumentsHost): void {
-    const response = host.switchToHttp().getResponse<Response>();
+    const { httpAdapter } = this.httpAdapterHost;
+    const response: unknown = host.switchToHttp().getResponse();
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let code = 'TILE_INTERNAL_ERROR';
     let message = 'Unable to serve tile';
@@ -51,11 +55,15 @@ export class TileExceptionFilter implements ExceptionFilter {
       code = 'TILE_STORAGE_ERROR';
     }
     if (status >= 500) this.logger.error(`${code}: ${exception.message}`);
-    response.status(status).json({
-      statusCode: status,
-      code,
-      message,
-      timestamp: new Date().toISOString(),
-    });
+    httpAdapter.reply(
+      response,
+      {
+        statusCode: status,
+        code,
+        message,
+        timestamp: new Date().toISOString(),
+      },
+      status,
+    );
   }
 }

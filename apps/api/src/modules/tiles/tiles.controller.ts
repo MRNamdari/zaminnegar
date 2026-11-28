@@ -16,7 +16,7 @@ import {
   ApiProduces,
   ApiTags,
 } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { GetTileQuery } from './queries/get-tile.query';
 import { TileParamsDto } from './dto/tile-params.dto';
 import { TileResult } from './queries/get-tile.handler';
@@ -53,8 +53,8 @@ export class TilesController {
   @ApiNotFoundResponse({ description: 'Tile does not exist' })
   async getTile(
     @Param() params: TileParamsDto,
-    @Req() request: Request,
-    @Res() res: Response,
+    @Req() request: FastifyRequest,
+    @Res() reply: FastifyReply,
   ): Promise<void> {
     const result = await this.queryBus.execute<GetTileQuery, TileResult>(
       new GetTileQuery(params.z, params.x, params.y, request.headers),
@@ -63,7 +63,7 @@ export class TilesController {
     if (!contentType)
       throw new Error('Cached tile has an unsupported image format');
     const maxAge = 86400;
-    res.set({
+    reply.headers({
       'Content-Type': contentType,
       'Content-Length': String(result.buffer.length),
       'Cache-Control': `public, max-age=${maxAge}, stale-while-revalidate=3600`,
@@ -73,7 +73,7 @@ export class TilesController {
       'X-Content-Type-Options': 'nosniff',
     });
     if (request.headers['if-none-match'] === result.etag) {
-      res.status(304).end();
+      await reply.code(304).send();
       return;
     }
     const since = request.headers['if-modified-since'];
@@ -82,9 +82,10 @@ export class TilesController {
       Number.isFinite(Date.parse(since)) &&
       result.modifiedAt.getTime() <= Date.parse(since) + 999
     ) {
-      res.status(304).end();
+      await reply.code(304).send();
       return;
     }
-    res.status(200).send(result.buffer);
+    // A Buffer is sent as is (never JSON-serialized); Content-Type was set above.
+    await reply.code(200).send(result.buffer);
   }
 }

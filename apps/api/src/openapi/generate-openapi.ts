@@ -1,4 +1,8 @@
 import { NestFactory } from '@nestjs/core';
+import {
+  FastifyAdapter,
+  type NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 import { execFileSync } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -22,11 +26,15 @@ const API_CLIENT_PACKAGE = '@zaminnegar/api-client';
  * 3. runs the client package's `generate` script, which turns it into TypeScript types.
  */
 async function generate(): Promise<void> {
-  const app = await NestFactory.create(AppModule, {
-    preview: true,
-    abortOnError: false,
-    logger: ['error', 'warn'],
-  });
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter(),
+    {
+      preview: true,
+      abortOnError: false,
+      logger: ['error', 'warn'],
+    },
+  );
   configureApp(app);
   const document = buildOpenApiDocument(app);
   await app.close();

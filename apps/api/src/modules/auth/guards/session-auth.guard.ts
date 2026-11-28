@@ -5,7 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import type { Response } from 'express';
+import type { FastifyReply } from 'fastify';
 import { AUTH_CONFIG, type AuthConfig } from '../auth.config';
 import type { AuthenticatedRequest } from '../auth.types';
 import { IS_PUBLIC_KEY } from '../decorators/access.decorators';
@@ -34,7 +34,7 @@ export class SessionAuthGuard implements CanActivate {
     if (context.getType() !== 'http') return true;
     const http = context.switchToHttp();
     const request = http.getRequest<AuthenticatedRequest>();
-    const response = http.getResponse<Response>();
+    const reply = http.getResponse<FastifyReply>();
 
     this.assertTrustedOrigin(request);
 
@@ -49,13 +49,13 @@ export class SessionAuthGuard implements CanActivate {
 
     const session = await this.sessions.authenticate(token);
     if (!session) {
-      this.cookies.clear(response); // a dead cookie is of no use to the browser
+      this.cookies.clear(reply); // a dead cookie is of no use to the browser
       throw new NotAuthenticatedError();
     }
     request.principal = session.principal;
     if (session.rotation)
       this.cookies.write(
-        response,
+        reply,
         session.rotation.token,
         session.rotation.cookieMaxAgeMs,
       );

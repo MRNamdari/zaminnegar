@@ -1,4 +1,4 @@
-import type { Request } from 'express';
+import type { FastifyRequest } from 'fastify';
 import type { PermissionRef } from './permissions';
 
 /** An Iranian mobile number in E.164 form, e.g. `+989123456789`. The only phone format that is stored or compared. */
@@ -40,7 +40,16 @@ export interface Principal {
   readonly memberships: ReadonlyMap<string, PrincipalMembership>;
 }
 
-export interface AuthenticatedRequest extends Request {
+/**
+ * Fastify types `params`, `query` and `body` as `unknown` unless told otherwise. The guards validate every value they
+ * read from them, so they are typed as loosely as Express typed them.
+ */
+export interface AuthenticatedRequest
+  extends FastifyRequest<{
+    Params: Record<string, string | undefined>;
+    Querystring: Record<string, unknown>;
+    Body: unknown;
+  }> {
   principal?: Principal;
   /** Set by the permissions guard on list routes: projects the caller may access, `null` = all. */
   projectScope?: string[] | null;

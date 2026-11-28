@@ -18,7 +18,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Response } from 'express';
+import type { FastifyReply } from 'fastify';
 import type { Principal } from '../auth.types';
 import { LoginCommand } from '../commands/login.command';
 import { LogoutCommand } from '../commands/logout.command';
@@ -128,12 +128,13 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Ip() ip: string,
     @Headers('user-agent') userAgent: string | undefined,
-    @Res({ passthrough: true }) response: Response,
+    @Res({ passthrough: true }) reply: FastifyReply,
   ): Promise<SessionResponseDto> {
     const result = await this.commandBus.execute<LoginCommand, SessionResult>(
       new LoginCommand(dto, { userAgent: userAgent ?? null, ip: ip || null }),
     );
-    return this.respondWithSession(response, result);
+    console.log(result.session.token)
+    return this.respondWithSession(reply, result);
   }
 
   @Post('logout')
@@ -145,12 +146,12 @@ export class AuthController {
   @ApiProtectedErrors()
   async logout(
     @CurrentPrincipal() principal: Principal,
-    @Res({ passthrough: true }) response: Response,
+    @Res({ passthrough: true }) reply: FastifyReply,
   ): Promise<void> {
     await this.commandBus.execute<LogoutCommand, void>(
       new LogoutCommand(principal.sessionId),
     );
-    this.cookies.clear(response);
+    this.cookies.clear(reply);
   }
 
   @Post('session/renew')
@@ -167,13 +168,13 @@ export class AuthController {
   @ApiProtectedErrors()
   async renew(
     @CurrentPrincipal() principal: Principal,
-    @Res({ passthrough: true }) response: Response,
+    @Res({ passthrough: true }) reply: FastifyReply,
   ): Promise<SessionResponseDto> {
     const result = await this.commandBus.execute<
       RenewSessionCommand,
       SessionResult
     >(new RenewSessionCommand(principal));
-    return this.respondWithSession(response, result);
+    return this.respondWithSession(reply, result);
   }
 
   @Get('me')
@@ -234,10 +235,10 @@ export class AuthController {
   }
 
   private respondWithSession(
-    response: Response,
+    reply: FastifyReply,
     { session, user }: SessionResult,
   ): SessionResponseDto {
-    this.cookies.write(response, session.token, session.cookieMaxAgeMs);
+    this.cookies.write(reply, session.token, session.cookieMaxAgeMs);
     return SessionResponseDto.of({
       user,
       idleExpiresAt: session.idleExpiresAt,

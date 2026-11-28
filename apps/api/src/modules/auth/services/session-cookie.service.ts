@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { Request, Response } from 'express';
+import type { CookieSerializeOptions } from '@fastify/cookie';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { AUTH_CONFIG, type AuthConfig } from '../auth.config';
 import { SESSION_TOKEN_PATTERN } from '../utils/token';
 
@@ -12,7 +13,7 @@ export class SessionCookieService {
    * Returns the well-formed session identifier from the `Cookie` header, else null. Parsed by hand because only one
    * cookie matters; anything that is not exactly 43 base64url characters is rejected before it reaches the database.
    */
-  read(request: Request): string | null {
+  read(request: Pick<FastifyRequest, 'headers'>): string | null {
     const header = request.headers.cookie;
     if (!header) return null;
     for (const part of header.split(';')) {
@@ -28,18 +29,25 @@ export class SessionCookieService {
     return null;
   }
 
-  write(response: Response, token: string, maxAgeMs: number): void {
-    response.cookie(this.config.session.cookieName, token, {
+  /**
+   * `maxAgeMs` is in milliseconds, but `Max-Age` is in seconds and `@fastify/cookie` passes `maxAge` through as is
+   * (Express divided by 1000 itself). Express also sent `Expires`, so it is kept: the cookie looks the same on the wire.
+   */
+  write(reply: FastifyReply, token: string, maxAgeMs: number): void {
+    const lifetimeMs = Math.max(0, Math.floor(maxAgeMs));
+    reply.setCookie(this.config.session.cookieName, token, {
       ...this.baseOptions(),
-      maxAge: Math.max(0, Math.floor(maxAgeMs)),
+      maxAge: Math.floor(lifetimeMs / 1000),
+      expires: new Date(Date.now() + lifetimeMs),
     });
   }
 
-  clear(response: Response): void {
-    response.clearCookie(this.config.session.cookieName, this.baseOptions());
+  /** Same attributes as `write` (path, secure, sameSite, httpOnly; no domain), or the browser keeps the old cookie. */
+  clear(reply: FastifyReply): void {
+    reply.clearCookie(this.config.session.cookieName, this.baseOptions());
   }
 
-  private baseOptions(): {
+  private baseOptions(): CookieSerializeOptions & {
     httpOnly: true;
     secure: boolean;
     sameSite: 'lax' | 'strict' | 'none';
