@@ -12,12 +12,12 @@ export default function MapPage() {
   return (
     <MapWorkspace>
       <div className="grid grid-cols-12 h-full">
-        <div className="col-span-3 h-full overflow-y-auto scrollbar-gutter-stable border-e border-border p-5">
+        <div className="col-span-3 h-full overflow-y-auto scrollbar-gutter-stable px-5">
           <LevelDetails />
         </div>
-        <div className="col-span-7 h-full border-e border-border grid grid-rows-[1fr_auto]">
+        <div className="col-span-7 h-full grid grid-rows-[1fr_auto]">
           <div className="row-span-9 min-h-0">
-            <div className="h-full">
+            <div className="h-full rounded-xl overflow-hidden">
               <MapEditor />
               <DraftConfigurationFlow
                 steps={[
