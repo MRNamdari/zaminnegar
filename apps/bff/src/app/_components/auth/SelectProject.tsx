@@ -43,7 +43,7 @@ export default function SelectProject({
       title="پروژه‌های شما"
       description="برای ادامه، پروژه موردنظر خود را انتخاب کنید."
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2" dir='rtl'>
         {/* Loading */}
         {isLoading && (
           <p className="col-span-full py-8 text-center text-sm font-medium text-text">
@@ -95,13 +95,14 @@ export default function SelectProject({
             return (
               <div
                 key={project.id}
-                className={`group relative w-full overflow-hidden rounded-2xl p-5 text-right transition-all duration-300 hover:shadow-lg hover:shadow-black/10 ${
+                className={`group relative w-full overflow-hidden rounded-2xl p-5 text-right transition-all duration-300 ${
                   isActive ? 'bg-action-secondary' : 'bg-surface'
                 }`}
               >
                 <button
                   type="button"
                   disabled={isSelecting}
+                  dir='ltr'
                   onClick={() => void onSelect(project)}
                   className="relative w-full cursor-pointer text-right disabled:cursor-not-allowed disabled:opacity-60"
                 >
