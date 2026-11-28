@@ -34,7 +34,7 @@ export default function Page() {
   // and closes the dialog after a successful operation.
   const handleCreateProject = async (value: {
     name: string;
-    description: string;
+    description?: string;
   }) => {
     try {
       await createProjectMutation.mutateAsync(value);
