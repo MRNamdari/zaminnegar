@@ -20,7 +20,7 @@ export default function OverViewParcel({id, level}: OverViewParcelProps) {
         </h3>
         <p className="flex items-center gap-2 text-sm text-text">
           انتخاب شده
-          <span className="h-3 w-3 rounded-full bg-(--map-yellow)" />
+          <span className="h-3 w-3 rounded-full bg-map-yellow" />
         </p>
       </div>
       {isLoading ? (
