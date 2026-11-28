@@ -12,16 +12,19 @@ export default function LevelDetails() {
     const levelFeature = selectedFeature?.properties.level;
 
     return(
-        <div className="w-full flex flex-col gap-2 bg-(--app-bg) p-5 rounded-3xl" dir="rtl">
+        <div className="w-full h-199.5 flex flex-col bg-background p-5 rounded-3xl" dir="rtl">
             {levelFeature === "parcel" ? (
             <OverViewParcel id={selectedFeatureId ?? ""} level={levelFeature}/>
             ) : levelFeature === 'block' ? (
                 <OverViewBlock id={selectedFeatureId ?? ""} level={levelFeature}/>
             ) : levelFeature === 'region' ? (
                 <OverViewRegion id={selectedFeatureId ?? ""} level={levelFeature}/>
-            ) : "No feature selected."
+            ) : "بخشی انتخاب نشده است."
             }
-            {/* <OutLook/> */}
+            {levelFeature ? (
+            <OutLook id={selectedFeatureId ?? ""} level={levelFeature}/>
+            ) : "بخشی انتخاب نشده است."
+        }
         </div>
     );
 }
