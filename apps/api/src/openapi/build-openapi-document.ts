@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
-import { SESSION_AUTH_NAME } from '../modules/access/decorators/access.decorators';
+import { SESSION_AUTH_NAME } from '../modules/auth/decorators/access.decorators';
 
 /**
  * Cookie name shown in the document. The real name is configurable (SESSION_COOKIE_NAME); the cookie is set by
@@ -49,7 +49,10 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
       'users',
       'Account administration (system-level `user:*` permissions); every user can read their own account.',
     )
-    .addTag('roles', 'Permission catalogue, predefined system roles, and the roles of a project (predefined and custom).')
+    .addTag(
+      'roles',
+      'Permission catalogue, predefined system roles, and the roles of a project (predefined and custom).',
+    )
     .addTag(
       'project-members',
       'Which users act in a project, and with which role.',

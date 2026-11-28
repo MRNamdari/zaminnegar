@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeormOptionsExample } from './database/typeorm-options.example';
 import { APP_FILTER } from '@nestjs/core';
 import { DatabaseExceptionFilter } from './common/filters/database-exception.filter';
-import { AccessModule } from './modules/access/access.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { BlockModule } from './modules/block/block.module';
 import { BoundaryModule } from './modules/boundary/boundary.module';
 import { GeometryModule } from './modules/geometry/geometry.module';
@@ -36,7 +36,7 @@ import { TilesModule } from './modules/tiles/tiles.module';
         return typeormOptionsExample(host, port, username, password, database);
       },
     }),
-    AccessModule,
+    AuthModule,
     GeometryModule,
     ProjectModule,
     BoundaryModule,

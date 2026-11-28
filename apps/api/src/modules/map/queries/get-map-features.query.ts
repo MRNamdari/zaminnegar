@@ -1,4 +1,4 @@
-import type { Principal } from '../../access/access.types';
+import type { Principal } from '../../auth/auth.types';
 import { MapFeaturesQueryDto } from '../dto/map-features-query.dto';
 
 export class GetMapFeaturesQuery {

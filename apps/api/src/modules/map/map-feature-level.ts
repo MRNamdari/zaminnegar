@@ -1,7 +1,11 @@
-import { Resource } from '../access/permissions';
+import { Resource } from '../auth/permissions';
 import type { MapFeatureLevel } from './dto/map-feature-response.dto';
 
-export const MAP_FEATURE_LEVELS: readonly MapFeatureLevel[] = ['region', 'block', 'parcel'];
+export const MAP_FEATURE_LEVELS: readonly MapFeatureLevel[] = [
+  'region',
+  'block',
+  'parcel',
+];
 
 export const MAP_FEATURE_STATUSES = ['active', 'inactive'] as const;
 export type MapFeatureStatusValue = (typeof MAP_FEATURE_STATUSES)[number];

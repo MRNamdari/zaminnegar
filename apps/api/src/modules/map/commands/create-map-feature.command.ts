@@ -1,5 +1,4 @@
-
-import { Principal } from '@/modules/access/access.types';
+import { Principal } from '@/modules/auth/auth.types';
 import { CreateMapFeatureDto } from '../dto/create-map-feature.dto';
 
 export class CreateMapFeatureCommand {

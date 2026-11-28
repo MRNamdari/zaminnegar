@@ -11,33 +11,47 @@ import { toMultiPolygon } from './geometry';
 import { BlockStatus } from '@/common/enums/block-status.enum';
 import { ParcelStatus } from '@/common/enums/parcel-status.enum';
 import { RegionStatus } from '@/common/enums/region-status.enum';
-import { AccessPolicyService, projectAttributes } from '@/modules/access/abilities/access-policy.service';
-import { NoActiveProjectError } from '@/modules/access/errors/no-active-project.error';
+import {
+  AccessPolicyService,
+  projectAttributes,
+} from '@/modules/auth/abilities/access-policy.service';
+import { NoActiveProjectError } from '@/modules/auth/errors/no-active-project.error';
 import { CreateBlockCommand } from '@/modules/block/commands/create-block.command';
 import { Block } from '@/modules/block/entities/block.entity';
 import { CreateParcelCommand } from '@/modules/parcel/commands/create-parcel.command';
 import { Parcel } from '@/modules/parcel/entities/parcel.entity';
 import { CreateRegionCommand } from '@/modules/region/commands/create-region.command';
 import { Region } from '@/modules/region/entities/region.entity';
-import { Action } from '@/modules/access/permissions';
+import { Action } from '@/modules/auth/permissions';
 
 /**
  * One entry point for the map editor. The rules (name uniqueness, containment, overlap, derived parents; the optional manual area goes to the boundary)
  * stay in the region, block and parcel handlers; this only authorizes, dispatches by level and reads the result back.
  */
 @CommandHandler(CreateMapFeatureCommand)
-export class CreateMapFeatureHandler implements ICommandHandler<CreateMapFeatureCommand, MapFeatureResponseDto> {
+export class CreateMapFeatureHandler implements ICommandHandler<
+  CreateMapFeatureCommand,
+  MapFeatureResponseDto
+> {
   constructor(
     private readonly commands: CommandBus,
     private readonly map: MapRepository,
-    private readonly access: AccessPolicyService,
+    private readonly auth: AccessPolicyService,
   ) {}
 
-  async execute({ dto, principal }: CreateMapFeatureCommand): Promise<MapFeatureResponseDto> {
+  async execute({
+    dto,
+    principal,
+  }: CreateMapFeatureCommand): Promise<MapFeatureResponseDto> {
     const projectId = principal.activeProjectId;
     if (!projectId) throw new NoActiveProjectError();
     const resource = RESOURCE_OF_LEVEL[dto.level];
-    this.access.assertCan(principal, Action.create, resource, projectAttributes(resource, projectId));
+    this.auth.assertCan(
+      principal,
+      Action.create,
+      resource,
+      projectAttributes(resource, projectId),
+    );
 
     const { id } = await this.create(dto, projectId);
     const row = await this.map.findFeature(dto.level, id);
@@ -45,7 +59,10 @@ export class CreateMapFeatureHandler implements ICommandHandler<CreateMapFeature
     return toMapFeatureResponse(row);
   }
 
-  private create(dto: CreateMapFeatureDto, projectId: string): Promise<{ id: string }> {
+  private create(
+    dto: CreateMapFeatureDto,
+    projectId: string,
+  ): Promise<{ id: string }> {
     const base = {
       name: dto.name,
       projectId,
@@ -71,7 +88,10 @@ export class CreateMapFeatureHandler implements ICommandHandler<CreateMapFeature
         );
       case 'parcel':
         return this.commands.execute<CreateParcelCommand, Parcel>(
-          new CreateParcelCommand({ ...base, status: dto.status && ParcelStatus[dto.status] }),
+          new CreateParcelCommand({
+            ...base,
+            status: dto.status && ParcelStatus[dto.status],
+          }),
         );
     }
   }

@@ -10,9 +10,6 @@ import {
 import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
 import { PaginatedResult } from '../../common/utils/paginate';
-import { ActiveProjectId, ApiSessionAuth, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
-import { ApiErrorResponse } from '../access/decorators/api-error-responses.decorator';
-import { Action, Resource } from '../access/permissions';
 import { ParcelResponseDto } from '../parcel/dto/parcel-response.dto';
 import { ListBlockParcelsQuery } from '../parcel/queries/list-block-parcels.query';
 import { CreateBlockCommand, CreateBlockInput } from './commands/create-block.command';
@@ -27,6 +24,9 @@ import { Block } from './entities/block.entity';
 import { GetBlockDetailQuery } from './queries/get-block-detail.query';
 import { GetBlockQuery } from './queries/get-block.query';
 import { ListBlocksQuery } from './queries/list-blocks.query';
+import { ApiSessionAuth, RequirePermission, ActiveProjectId, ProjectScope } from '../auth/decorators/access.decorators';
+import { ApiErrorResponse } from '../auth/decorators/api-error-responses.decorator';
+import { Resource, Action } from '../auth/permissions';
 
 @ApiTags('blocks')
 @ApiSessionAuth()

@@ -21,7 +21,7 @@ import { GetTileQuery } from './queries/get-tile.query';
 import { TileParamsDto } from './dto/tile-params.dto';
 import { TileResult } from './queries/get-tile.handler';
 import { getTileImageContentType } from './domain/tile-image';
-import { Public } from '@/modules/access/decorators/access.decorators';
+import { Public } from '@/modules/auth/decorators/access.decorators';
 
 @ApiTags('Tiles')
 @Controller('tiles')

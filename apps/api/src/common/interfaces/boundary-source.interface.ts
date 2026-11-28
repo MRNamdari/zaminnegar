@@ -6,5 +6,5 @@ import type { IMultiPolygon } from './geometry.interface';
  *  - `boundaryId`: an existing, still unassigned (draft) boundary drawn earlier in the map editor.
  */
 export type BoundarySource =
-  | { geometry: IMultiPolygon; boundaryId?: undefined }
+  | { boundaryId?: undefined; geometry: IMultiPolygon }
   | { boundaryId: string; geometry?: undefined };

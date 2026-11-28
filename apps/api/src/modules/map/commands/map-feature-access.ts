@@ -1,9 +1,9 @@
-import type { Principal } from '@/modules/access/access.types';
+import type { Principal } from '@/modules/auth/auth.types';
 import {
   AccessPolicyService,
   projectAttributes,
-} from '@/modules/access/abilities/access-policy.service';
-import { Action } from '@/modules/access/permissions';
+} from '@/modules/auth/abilities/access-policy.service';
+import { Action } from '@/modules/auth/permissions';
 import { MapFeatureNotFoundError } from '../errors/map-feature-not-found.error';
 import { RESOURCE_OF_LEVEL } from '../map-feature-level';
 import type { MapFeatureRow } from '../map-feature-row';

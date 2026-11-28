@@ -1,9 +1,32 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiSessionAuth, CurrentPrincipal, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
-import type { Principal } from '../access/access.types';
-import { Action, Resource } from '../access/permissions';
+import {
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  ApiSessionAuth,
+  CurrentPrincipal,
+  ProjectScope,
+  RequirePermission,
+} from '../auth/decorators/access.decorators';
+import type { Principal } from '../auth/auth.types';
+import { Action, Resource } from '../auth/permissions';
 import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
 import { PaginatedResult } from '../../common/utils/paginate';
@@ -31,8 +54,13 @@ export class ProjectController {
   @RequirePermission(Resource.project, Action.create, { scope: 'system' })
   @ApiOperation({ summary: 'Create a project' })
   @ApiCreatedResponse({ type: ProjectResponseDto })
-  async create(@Body() dto: CreateProjectDto, @CurrentPrincipal() principal: Principal): Promise<ProjectResponseDto> {
-    const entity = await this.commandBus.execute<CreateProjectCommand, Project>(new CreateProjectCommand(dto, principal.user.id));
+  async create(
+    @Body() dto: CreateProjectDto,
+    @CurrentPrincipal() principal: Principal,
+  ): Promise<ProjectResponseDto> {
+    const entity = await this.commandBus.execute<CreateProjectCommand, Project>(
+      new CreateProjectCommand(dto, principal.user.id),
+    );
     return ProjectResponseDto.from(entity);
   }
 
@@ -40,8 +68,14 @@ export class ProjectController {
   @RequirePermission(Resource.project, Action.read, { scope: 'query' })
   @ApiOperation({ summary: 'List projects' })
   @ApiPaginatedResponse(ProjectResponseDto)
-  async list(@Query() query: ProjectQueryDto, @ProjectScope() projectScope: string[] | null): Promise<PaginatedResponseDto<ProjectResponseDto>> {
-    const result = await this.queryBus.execute<ListProjectsQuery, PaginatedResult<Project>>(new ListProjectsQuery(query, projectScope));
+  async list(
+    @Query() query: ProjectQueryDto,
+    @ProjectScope() projectScope: string[] | null,
+  ): Promise<PaginatedResponseDto<ProjectResponseDto>> {
+    const result = await this.queryBus.execute<
+      ListProjectsQuery,
+      PaginatedResult<Project>
+    >(new ListProjectsQuery(query, projectScope));
     return PaginatedResponseDto.of(result, ProjectResponseDto.from);
   }
 
@@ -49,8 +83,12 @@ export class ProjectController {
   @RequirePermission(Resource.project, Action.read)
   @ApiOperation({ summary: 'Get a project by id' })
   @ApiOkResponse({ type: ProjectResponseDto })
-  async get(@Param('id', ParseUUIDPipe) id: string): Promise<ProjectResponseDto> {
-    const entity = await this.queryBus.execute<GetProjectQuery, Project>(new GetProjectQuery(id));
+  async get(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ProjectResponseDto> {
+    const entity = await this.queryBus.execute<GetProjectQuery, Project>(
+      new GetProjectQuery(id),
+    );
     return ProjectResponseDto.from(entity);
   }
 
@@ -58,8 +96,13 @@ export class ProjectController {
   @RequirePermission(Resource.project, Action.update)
   @ApiOperation({ summary: 'Update a project' })
   @ApiOkResponse({ type: ProjectResponseDto })
-  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProjectDto): Promise<ProjectResponseDto> {
-    const entity = await this.commandBus.execute<UpdateProjectCommand, Project>(new UpdateProjectCommand(id, dto));
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateProjectDto,
+  ): Promise<ProjectResponseDto> {
+    const entity = await this.commandBus.execute<UpdateProjectCommand, Project>(
+      new UpdateProjectCommand(id, dto),
+    );
     return ProjectResponseDto.from(entity);
   }
 
@@ -69,6 +112,8 @@ export class ProjectController {
   @ApiOperation({ summary: 'Delete a project' })
   @ApiNoContentResponse()
   async remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    await this.commandBus.execute<DeleteProjectCommand, void>(new DeleteProjectCommand(id));
+    await this.commandBus.execute<DeleteProjectCommand, void>(
+      new DeleteProjectCommand(id),
+    );
   }
 }

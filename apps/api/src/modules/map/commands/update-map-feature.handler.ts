@@ -2,8 +2,8 @@ import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlockStatus } from '@/common/enums/block-status.enum';
 import { ParcelStatus } from '@/common/enums/parcel-status.enum';
 import { RegionStatus } from '@/common/enums/region-status.enum';
-import { AccessPolicyService } from '@/modules/access/abilities/access-policy.service';
-import { Action } from '@/modules/access/permissions';
+import { AccessPolicyService } from '@/modules/auth/abilities/access-policy.service';
+import { Action } from '@/modules/auth/permissions';
 import { UpdateBlockCommand } from '@/modules/block/commands/update-block.command';
 import { Block } from '@/modules/block/entities/block.entity';
 import { UpdateParcelCommand } from '@/modules/parcel/commands/update-parcel.command';
@@ -27,7 +27,7 @@ export class UpdateMapFeatureHandler implements ICommandHandler<
   constructor(
     private readonly commands: CommandBus,
     private readonly map: MapRepository,
-    private readonly access: AccessPolicyService,
+    private readonly auth: AccessPolicyService,
   ) {}
 
   async execute({
@@ -37,7 +37,7 @@ export class UpdateMapFeatureHandler implements ICommandHandler<
   }: UpdateMapFeatureCommand): Promise<MapFeatureResponseDto> {
     const { level } = await locateAuthorized(
       this.map,
-      this.access,
+      this.auth,
       principal,
       id,
       Action.update,

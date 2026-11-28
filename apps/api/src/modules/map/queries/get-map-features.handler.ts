@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { AccessPolicyService } from '../../access/abilities/access-policy.service';
-import { Action, Resource } from '../../access/permissions';
+import { AccessPolicyService } from '../../auth/abilities/access-policy.service';
+import { Action, Resource } from '../../auth/permissions';
 import { MapFeaturesResponseDto } from '../dto/map-features-response.dto';
 import { MapFeatureResponseDto } from '../dto/map-feature-response.dto';
 import { MapRepository } from '../repositories/map.repository';
@@ -16,7 +16,7 @@ export class GetMapFeaturesHandler implements IQueryHandler<
 
   constructor(
     private readonly map: MapRepository,
-    private readonly access: AccessPolicyService,
+    private readonly auth: AccessPolicyService,
   ) {}
 
   async execute({
@@ -30,7 +30,7 @@ export class GetMapFeaturesHandler implements IQueryHandler<
       Resource.block,
       Resource.parcel,
     ]) {
-      this.access.assertCan(principal, Action.read, resource, {
+      this.auth.assertCan(principal, Action.read, resource, {
         projectId: dto.projectId,
       });
     }

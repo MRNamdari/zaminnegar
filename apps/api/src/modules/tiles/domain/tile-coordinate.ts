@@ -1,4 +1,5 @@
-import { InvalidTileCoordinateError } from "./tile.errors";
+import { InvalidTileCoordinateError } from "../errors/invalid-tile-coordinate.error";
+
 
 export class TileCoordinate {
   private constructor(

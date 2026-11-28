@@ -1,3 +1,8 @@
+import { InvalidTileCoordinateError } from '@/modules/tiles/errors/invalid-tile-coordinate.error';
+import { TileProviderError } from '@/modules/tiles/errors/provider-failure.error';
+import { TileLockError } from '@/modules/tiles/errors/tile-lock.error';
+import { TileNotFoundError } from '@/modules/tiles/errors/tile-not-found.error';
+import { TileStorageError } from '@/modules/tiles/errors/tile-storage.error';
 import {
   ArgumentsHost,
   Catch,
@@ -6,13 +11,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { InvalidTileCoordinateError } from '../../modules/tiles/domain/tile-coordinate';
-import {
-  TileNotFoundError,
-  TileProviderError,
-  TileStorageError,
-  TileLockError,
-} from '../../modules/tiles/domain/tile.errors';
+
 
 @Catch(
   InvalidTileCoordinateError,

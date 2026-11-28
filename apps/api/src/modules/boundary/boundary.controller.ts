@@ -1,8 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiSessionAuth, ProjectScope, RequirePermission } from '../access/decorators/access.decorators';
-import { Action, Resource } from '../access/permissions';
 import { PaginatedResult } from '../../common/utils/paginate';
 import { CreateBoundaryCommand } from './commands/create-boundary.command';
 import { DeleteBoundaryCommand } from './commands/delete-boundary.command';
@@ -16,6 +14,8 @@ import { GetBoundaryQuery } from './queries/get-boundary.query';
 import { ListBoundariesQuery } from './queries/list-boundaries.query';
 import { ApiPaginatedResponse } from '@/common/decorators/api-paginated-response.decorator';
 import { PaginatedResponseDto } from '@/common/dto/paginated-response.dto';
+import { ApiSessionAuth, RequirePermission, ProjectScope } from '../auth/decorators/access.decorators';
+import { Resource, Action } from '../auth/permissions';
 
 @ApiTags('boundaries')
 @ApiSessionAuth()

@@ -24,9 +24,9 @@ import {
   ApiSessionAuth,
   ProjectScope,
   RequirePermission,
-} from '../access/decorators/access.decorators';
-import { ApiErrorResponse } from '../access/decorators/api-error-responses.decorator';
-import { Action, Resource } from '../access/permissions';
+} from '../auth/decorators/access.decorators';
+import { ApiErrorResponse } from '../auth/decorators/api-error-responses.decorator';
+import { Action, Resource } from '../auth/permissions';
 import { ApiPaginatedResponse } from '@/common/decorators/api-paginated-response.decorator';
 import { PaginatedResponseDto } from '@/common/dto/paginated-response.dto';
 import { PaginatedResult } from '@/common/utils/paginate';
