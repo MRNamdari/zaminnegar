@@ -79,7 +79,7 @@ export default function Page() {
         type="button"
         title="افزودن پروژه"
         onClick={handleOpenCreateDialog}
-        className="cursor-pointer p-4 rounded-full bg-action-primary fixed left-15 bottom-15 shadow-lg shadow-action-primary-hover/20"
+        className="cursor-pointer p-4 rounded-full bg-action-primary fixed left-4 bottom-15 shadow-lg shadow-action-primary-hover/20"
       >
         <Plus className="text-black-fixed" />
       </button>
