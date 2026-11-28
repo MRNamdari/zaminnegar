@@ -8,6 +8,7 @@ interface TextFieldProps {
   type?: React.HTMLInputTypeAttribute;
   required?: boolean;
   disabled?: boolean;
+  className?: string;
 }
 
 export function TextField({
@@ -16,6 +17,7 @@ export function TextField({
   type = 'text',
   required = false,
   disabled = false,
+  className,
 }: TextFieldProps) {
   const field = useFieldContext<string>();
   const errors = useSelector(field.store, (state) => state.meta.errors);
@@ -29,13 +31,12 @@ export function TextField({
       )}
       <input
         type={type}
-        // required={required}
         value={field.state.value ?? ''}
         disabled={disabled}
         onBlur={field.handleBlur}
         onChange={(e) => field.handleChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-2.5 py-4 text-text font-medium rounded-lg bg-surface outline-none"
+        className={`w-full px-2.5 py-4 text-text font-medium rounded-lg bg-surface outline-none ${className ?? ''}`}
       />
       {errors.length > 0 && (
         <span className="text-xs font-medium mt-2 text-red-400">
