@@ -13,12 +13,10 @@ export default async function AuthenticatedDashboard({
   return (
     <>
       <SessionRenewal />
-      <div className='grid grid-cols-[1fr_auto] h-svh'>
-        <div>
-          <header className='min-h-20'><DashboardHeader/></header>
-          <main className='h-full'>{children}</main>
-        </div>
+      <div className='grid grid-rows-[auto_1fr] grid-cols-[1fr_auto] h-screen'>
+        <div className='col-span-1 max-h-25 h-full'><DashboardHeader/></div>
         <DashboardNavigation/>
+        <main className='row-span-1 h-full overflow-y-auto'>{children}</main>
       </div>
     </>
   );
