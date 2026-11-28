@@ -33,7 +33,7 @@ const navigationItems: NavigationItem[] = [
 export default function DashboardNavigation() {
   const pathName = usePathname();
   return (
-    <aside className="w-full h-full bg-black-fixed">
+    <aside className="bg-black-fixed row-span-2 h-full w-fit">
       <div className='flex flex-col items-center mt-3 gap-2 border-b border-border mx-3 pb-3'>
         <Map className="flex size-11 items-center justify-center rounded-3xl bg-action-primary p-3 stroke-action-secondary" />
         <h1 className="font-black text-white">زمین نگار</h1>
