@@ -1,12 +1,8 @@
 import { useAppForm } from '@/app/_components/form/hooks/form';
-
-interface CreateProjectValues {
-  name: string;
-  description: string;
-}
+import { CreateProjectDto } from '@zaminnegar/api-client';
 
 interface ProjectsCreateFormProps {
-  onCreate: (value: CreateProjectValues) => void | Promise<void>;
+  onCreate: (value: CreateProjectDto) => void | Promise<void>;
 }
 
 export default function ProjectsCreateForm({
