@@ -37,30 +37,34 @@ export default function DashboardHeader() {
   return (
     <div className="px-4 py-6 w-full flex items-center justify-between">
       <div className="flex items-center gap-1.5">
-        <div className="bg-background flex items-center cursor-pointer gap-2 rounded-2xl p-4">
-          <UserRound size={20} />
-          <span className="font-medium text-sm">
-            {isPending
-              ? 'در حال دریافت...'
-              : isError
-                ? 'خطا در دریافت اطلاعات'
-                : name}
-          </span>
-          <ChevronDown size={20} className="ml-2.5" />
-        </div>
+        <button>
+          <div className="bg-background flex items-center cursor-pointer gap-2 rounded-2xl p-4">
+            <UserRound size={20} />
+            <span className="font-medium text-sm">
+              {isPending
+                ? 'در حال دریافت...'
+                : isError
+                  ? 'خطا در دریافت اطلاعات'
+                  : name}
+            </span>
+            <ChevronDown size={20} className="ml-2.5" />
+          </div>
+        </button>
 
-        <div className="bg-background flex items-center cursor-pointer rounded-xl justify-center p-4 relative">
-          <Bell size={20} />
-          <span
-            style={{ cornerShape: 'initial' } as any}
-            className="w-3 h-3 bg-background-contrast absolute rounded-full top-0 right-0"
-          ></span>
-        </div>
+        <button>
+          <div className="bg-background flex items-center cursor-pointer rounded-xl justify-center p-4 relative">
+            <Bell size={20} />
+            <span
+              style={{ cornerShape: 'initial' } as any}
+              className="w-3 h-3 bg-background-contrast absolute rounded-full top-0 right-0"
+            ></span>
+          </div>
+        </button>
 
         <ThemeToggle showLabel />
       </div>
 
-      <div dir="rtl">
+      <div dir="rtl" className="flex flex-col justify-center">
         {showBreadcrumb && (
           <div className="bread-crumb flex items-center gap-2 text-sm">
             <a
